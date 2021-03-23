@@ -1,0 +1,156 @@
+#addSection input {
+  width: 125px;
+}
+#sources,
+#urls {
+  list-style: none;
+  padding: 0;
+  overflow: auto;
+  overflow-x: hidden;
+  margin: 0;
+  width: 100%;
+}
+#sources {
+  display: none;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+}
+#bookmark {
+  width: 100%;
+  background: #ffff8d;
+  border-radius: 2px;
+  position: relative;
+  display: none;
+  flex-direction: column;
+}
+.bookmark {
+  padding: 8px;
+  margin: 0;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: row;
+}
+#bookmark .action.hide {
+  margin: 0;
+}
+#bookmark .submit {
+  margin-left: auto;
+  margin-right: 4px;
+  font-weight: 600;
+}
+#bookmark .bookmark-actions {
+  margin-left: auto;
+  white-space: nowrap;
+}
+.date {
+  margin-left: 8px;
+}
+h5 {
+  margin-top: 10px;
+  margin-bottom: 4px;
+  text-align: center;
+  position: relative;
+  font-size: 1rem;
+}
+h5 span.action {
+  font-size: 0.68rem;
+  letter-spacing: 0.1px;
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: auto;
+  flex-grow: 1;
+  margin: 0 8px 8px;
+  width: calc(100% - 16px);
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  max-height: 100vh;
+  height: 100vh;
+  margin: 0;
+}
+.action {
+  cursor: pointer;
+  color: cornflowerblue;
+}
+.hide:hover,
+.action:hover {
+  color: royalblue;
+}
+.hide {
+  cursor: pointer;
+  margin-left: 16px;
+  color: cornflowerblue;
+}
+.old .hide {
+  display: none;
+}
+.old {
+  opacity: 0.5;
+}
+html {
+  width: 500px;
+  height: 600px;
+  font-family: system-ui;
+  color: #000c21;
+}
+.date-wrapper {
+  white-space: nowrap;
+  margin-right: 4px;
+}
+#addSection .manual {
+    display: flex;
+}
+#addSection .import {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 4px;
+}
+#addSection .import .action {
+    margin-right: 4px;
+}
+#addSection {
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: solid 1px lightslategrey;
+  display: none;
+  margin: 0 8px 16px;
+  flex-direction: column;
+}
+
+#add {
+  margin-left: 4px;
+}
+.old-chapters {
+  border-bottom: solid 1px lightgray;
+  color: gray;
+  margin-top: 4px;
+}
+.source .data .title {
+  font-weight: 700;
+  font-size: 13px;
+  margin-right: 4px;
+}
+.source .data .url {
+  display: block;
+}
+.source .data {
+  margin-bottom: 8px;
+}
+.source .delete {
+  margin-right: 4px;
+}
+.source b {
+  font-weight: 500;
+}
+.action.load-more {
+  text-align: center;
+  margin-top: 4px;
+  font-size: 0.6rem;
+}

@@ -12,13 +12,12 @@
   },
   "permissions": [
     "alarms",
-    "action",
     "storage",
+    "unlimitedStorage",
     "notifications",
     "tabs",
     "activeTab",
-    "scripting",
-    "<allUrls>"
+    "scripting"
   ],
   "action": {
     "default_icon": {

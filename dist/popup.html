@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manga Poll</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="bookmark">
+      <p class="bookmark">
+        <span id="bookmark-title"></span>
+        <span class="bookmark-actions">
+          <span class="action submit" id="bookmark-track">Track</span>
+          <span class="action hide" id="bookmark-hide">Hide</span>
+        </span>
+      </p>
+    </div>
+    <h5>
+      <span id="popupTitle"> Chapters</span>
+      <div style="position: absolute; right: 10px; top: 0px">
+        <span class="action" id="hide">Hide All</span>
+        <span class="action" id="add">Manga Settings</span>
+      </div>
+    </h5>
+    <div class="list">
+      <ul id="urls"></ul>
+      <ul id="sources"></ul>
+    </div>
+    <div id="addSection">
+      <div class="import">
+        <label for="import" class="action">
+          Import Settings
+          <input
+            type="file"
+            id="import"
+            accept="application/json"
+            style="position: absolute; display: none"
+          />
+        </label>
+        <span id="export" class="action">Download Settings</span>
+      </div>
+      <div class="manual">
+        <label for="title">
+          Title
+          <input type="text" style="display: block" id="title" />
+        </label>
+        <label for="url" style="margin-left: 8px">
+          Url
+          <input type="text" style="display: block" id="url" />
+        </label>
+        <label for="mangaId" style="margin-left: 8px">
+          Manga-Id
+          <input type="text" style="display: block" id="mangaId" />
+        </label>
+        <button
+          id="submitSource"
+          style="margin-left: 8px; height: calc(100% - 16px); margin-top: auto"
+        >
+          Submit
+        </button>
+      </div>
+    </div>
+  </body>
+  <script src="popup.js"></script>
+</html>
