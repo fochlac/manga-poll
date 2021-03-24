@@ -1,6 +1,4 @@
 import { parse } from './utils'
-import {  customAlphabet, urlAlphabet } from 'nanoid'
-const nanoid = customAlphabet(urlAlphabet, 10)
 
 const NAMESPACES = {
     SYNC: 'sync',
@@ -37,10 +35,7 @@ export function writeSources (sources) {
 
 export async function addSource (source) {
     const sources = await readSources()
-    sources.push({
-        ...source,
-        id: nanoid()
-    })
+    sources.push(source)
     await writeSources(sources)
     return sources
 }
@@ -53,6 +48,14 @@ export async function deleteSource (sourceId) {
     return newSources
 }
 
+
+
+export async function isDirty () {
+    const { urls, sources } = await read(NAMESPACES.LOCAL, ['urls', 'sources'])
+
+    return !!urls || !!sources
+}
+    
 export async function getFilteredSortedUrls () {
     const { hiddenChapters: hiddenChaptersString, hide } = await read(NAMESPACES.SYNC, {hiddenChapters: '{}', hide: Date.now()})
     const { urls } = await read(NAMESPACES.LOCAL, {urls: '[]'})
@@ -97,33 +100,7 @@ export async function addHiddenChapter(id) {
     return write(NAMESPACES.SYNC, {hiddenChapters: JSON.stringify(hiddenChapters)})
 }
 
-function createThrottledUrlWriter () {
-    let urlUpdate = []
-    let writeTimeout
-    return (url) => {
-        if (!writeTimeout) {
-            writeTimeout = setTimeout(async () => {
-                const newUrls = urlUpdate
-                urlUpdate = []
-                writeTimeout = undefined
-                const { urls: rawUrls } = await read(NAMESPACES.LOCAL, { urls: '{}' })
-                const urls = parse(rawUrls, {})
-                const update = { ...urls }
-                newUrls.forEach((url) => {
-                    update[url.url] = {
-                        ...url,
-                        id: nanoid()
-                    }
-                })
-
-                if (Object.keys(update) > Object.keys(urls)) {
-                    write(NAMESPACES.LOCAL, { urls: JSON.stringify(update) })
-                }
-            }, 100)
-        }
-        urlUpdate.push(url)
-    }
+export function writeUrls (urls) {
+    return write(NAMESPACES.LOCAL, {urls: JSON.stringify(urls)})
 }
-
-export const addUrl = createThrottledUrlWriter()
 

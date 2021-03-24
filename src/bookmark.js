@@ -1,25 +1,17 @@
+import { Source } from "./api";
 import { addSource, readSources } from "./db";
 
 let currentSource = null
 
 const bookmark = document.getElementById("bookmark");
 const bookmarkTrack = document.getElementById("bookmark-track");
-const bookmarkHide = document.getElementById("bookmark-hide");
 const bookmarkTitle = document.getElementById("bookmark-title");
-const title = document.getElementById("title");
-const url = document.getElementById("url");
-const mangaId = document.getElementById("mangaId");
-
-bookmarkHide.addEventListener("click", () => {
-    bookmark.style.display = 'none'
-    bookmarkTitle.innerText = ''
-    currentSource = null
-});
 
 bookmarkTrack.addEventListener("click", () => {
     bookmark.style.display = 'none'
     bookmarkTitle.innerText = ''
-    addSource(currentSource)
+    Source.insert(currentSource)
+        .then((source) => source && addSource(source))
     currentSource = null
 });
 
@@ -52,8 +44,7 @@ function test() {
         document.querySelector('.chapter-selection')?.dataset?.['manga'],
         document.getElementById('manga-chapters-holder')?.dataset?.['id'],
         document.getElementById('manga-reading-nav-head')?.dataset?.['id'],
-        document.getElementById('manga-reading-nav-foot')?.dataset?.['id'],
-        document.querySelector('link[rel=shortlink]')?.href?.split('?p=')[1]
+        document.getElementById('manga-reading-nav-foot')?.dataset?.['id']
     ]
         .filter((title) => title)
         .reduce((map, id) => {
@@ -91,16 +82,10 @@ chrome.runtime.onMessage.addListener(async (request) => {
                 title: request.title,
                 url: request.url
             }
-            title.value = currentSource.title;
-            url.value = currentSource.url;
-            mangaId.value = currentSource.mangaId;
             return
         }
     }
 
-    title.value = "";
-    url.value = "";
-    mangaId.value = "";
     bookmark.style.display = 'none'
     bookmarkTitle.innerText = ''
     currentSource = null

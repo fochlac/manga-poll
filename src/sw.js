@@ -1,10 +1,19 @@
 import regeneratorRuntime from "regenerator-runtime"
-import { getFilteredSortedUrls } from "./db";
-import { fetchAllUrls } from "./fetch-urls";
-chrome.alarms.create('refresh', { periodInMinutes: 5 });
+import { Urls } from "./api";
+import { getFilteredSortedUrls, isDirty, readSources, writeUrls } from "./db";
 
-chrome.alarms.onAlarm.addListener((alarm) => {
-    fetchAllUrls()
+const ALARMS = {
+    URLS: 'urls'
+}
+
+chrome.alarms.create(ALARMS.URLS, { periodInMinutes: 5 });
+
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+    if (alarm.name === ALARMS.URLS) {
+        const sources = await readSources()
+        Urls.read(sources.map(source => source.id))
+            .then(writeUrls)
+    }
 });
 
 async function refreshBadge() {
@@ -25,8 +34,7 @@ chrome.storage.onChanged.addListener(function (changes) {
     if (['hide', 'hiddenChapters', 'urls'].some(changes.hasOwnProperty.bind(changes))) {
         refreshBadge()
     }
+    if (Object.keys(changes).some(change => change.includes('sources'))) {
+        refreshUrls()
+    }
 });
-
-fetchAllUrls()
-refreshBadge()
-

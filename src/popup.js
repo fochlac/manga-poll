@@ -6,13 +6,8 @@ import './import'
 
 const hideAll = document.getElementById("hide");
 const popupTitle = document.getElementById("popupTitle");
-const add = document.getElementById("add");
-const addSection = document.getElementById("addSection");
+const bookmarks = document.getElementById("add");
 const urls = document.getElementById("urls");
-const title = document.getElementById("title");
-const url = document.getElementById("url");
-const mangaId = document.getElementById("mangaId");
-const submitSource = document.getElementById("submitSource");
 const sources = document.getElementById("sources");
 
 let maxOld = 25
@@ -50,42 +45,20 @@ sources.addEventListener("click", (event) => {
     }
 });
 
-add.addEventListener("click", () => {
-    if (addSection.style.display !== 'flex') {
-        addSection.style.display = 'flex'
+bookmarks.addEventListener("click", () => {
+    if (sources.style.display !== 'block') {
         sources.style.display = 'block'
         urls.style.display = 'none'
         hideAll.style.display = 'none'
-        popupTitle.innerText = 'Manga Settings'
-        add.innerText = 'Chapters'
-        sources.innerHTML = '<li class="row" style="text-align: center;">...loading</li>'
-        writeSources()
+        popupTitle.innerText = 'Bookmarks'
+        bookmarks.innerText = 'Chapters'
     }
     else {
-        addSection.style.display = 'none'
         sources.style.display = 'none'
         urls.style.display = ''
-        add.innerText = 'Manga Settings'
+        bookmarks.innerText = 'Bookmarks'
         hideAll.style.display = ''
         popupTitle.innerText = 'Chapters'
-    }
-});
-
-submitSource.addEventListener("click", () => {
-    if (title.value && url.value && mangaId.value) {
-        submitSource.disabled = true;
-
-        db.addSource({
-            title: title.value,
-            url: url.value,
-            mangaId: mangaId.value,
-        })
-            .then(() => {
-                title.value = "";
-                url.value = "";
-                mangaId.value = "";
-                submitSource.disabled = false;
-            });
     }
 });
 
@@ -94,12 +67,11 @@ async function writeSources() {
 
     sources.innerHTML = data
         .sort((source1, source2) => String(source1.title).localeCompare(source2?.title))
-        .map((source) => (
+        .map((source) => source && (
             `<li class="row source">
                 <div class="data">
                     <span class="title">${source.title}</span>
-                    <span class="manga-id">(<b>Manga-Id</b>: ${source.mangaId})</span>
-                    <span class="url" title="${source.url}"><b>Url</b>: ${source.url}</span>
+                    <span class="manga-id">(${String(source.url).replace('/wp-admin/admin-ajax.php', '').replace(/https?:\/\//, '')})</span>
                 </div>
                 <span class="delete action" data-id="${source.id}">Delete</span>
             </li>`
