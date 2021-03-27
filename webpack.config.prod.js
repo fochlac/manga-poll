@@ -2,11 +2,11 @@ const webpack = require('webpack')
 const path = require('path')
 
 const config = {
-    mode: 'development',
-    devtool: 'inline-source-map',
+    mode: 'production',
+    devtool: 'none',
     entry: {
-        popup: './src/extension/popup.js',
-        sw: './src/extension/sw.js'
+        popup: './src/popup.js',
+        sw: './src/sw.js'
     },
     output: {
         path: path.resolve(__dirname, 'dist'),

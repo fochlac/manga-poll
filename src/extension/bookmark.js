@@ -1,20 +1,19 @@
-import { Source } from "./api";
-import { addSource, readSources } from "./db";
+import { Source } from '../common/api'
+import { db } from './storage'
 
 let currentSource = null
 
-const bookmark = document.getElementById("bookmark");
-const bookmarkTrack = document.getElementById("bookmark-track");
-const bookmarkTitle = document.getElementById("bookmark-title");
+const bookmark = document.getElementById('bookmark')
+const bookmarkTrack = document.getElementById('bookmark-track')
+const bookmarkTitle = document.getElementById('bookmark-title')
 
-bookmarkTrack.addEventListener("click", () => {
+bookmarkTrack.addEventListener('click', () => {
     bookmark.style.display = 'none'
     bookmarkTitle.innerText = ''
     Source.insert(currentSource)
-        .then((source) => source && addSource(source))
+        .then((source) => source && db.sources.add(source))
     currentSource = null
-});
-
+})
 
 export function testBookmark () {
     chrome.tabs.query(
@@ -27,8 +26,8 @@ export function testBookmark () {
     )
 }
 
-function test() {
-    function parse(string, fallback) {
+function test () {
+    function parse (string, fallback) {
         try {
             return JSON.parse(string)
         }
@@ -55,7 +54,7 @@ function test() {
 
     const titles = [
         Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
-            .map(script => parse(script.innerText)?.headline).find(h => h),
+            .map((script) => parse(script.innerText)?.headline).find((h) => h),
         document.getElementById('chapter-heading')?.innerText?.split(' - ')[0],
         document.querySelector('.post-title h1')?.innerText,
         document.querySelector('.rate-title')?.title
@@ -72,7 +71,7 @@ function test() {
 
 chrome.runtime.onMessage.addListener(async (request) => {
     if (request.id && request.title && request.url) {
-        const sources = await readSources()
+        const sources = await db.sources.read()
 
         if (!sources.some((source) => source.url === request.url && String(source.mangaId) === String(request.id))) {
             bookmark.style.display = 'flex'

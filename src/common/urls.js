@@ -1,0 +1,76 @@
+import { pad } from './utils'
+
+export function urlRenderer (db) {
+    const hideAll = document.getElementById('hide')
+    const urls = document.getElementById('urls')
+
+    let maxOld = 25
+
+    hideAll.addEventListener('click', () => {
+        db.urls.hideAll(Date.now())
+    })
+
+    urls.addEventListener('click', async (event) => {
+        const closestHide = event.target.closest('.row .hide')
+        if (closestHide && closestHide.dataset['id'] && urls.contains(closestHide)) {
+            db.urls.hide(closestHide.dataset['id'])
+        }
+        const closestLink = event.target.closest('.row.new .link')
+        if (closestLink && closestLink.dataset['id'] && urls.contains(closestLink)) {
+            event.preventDefault()
+            await db.urls.hide(closestLink.dataset['id'])
+            window.open(closestLink.href, '_blank')
+        }
+        const closestMore = event.target.closest('.action.load-more')
+        if (closestMore && urls.contains(closestMore)) {
+            maxOld += maxOld
+            renderUrls()
+        }
+    })
+
+    function createUrlRenderer (isOld) {
+        return (chapter) => {
+            const date = new Date(chapter.created)
+            const result = String(chapter.url).match(/\/[^/]*hapter[^/\d]*(\d*)[^\d/]*[^/]*\//) || []
+            const timeString = `${pad(date.getHours())}:${pad(date.getMinutes())}`
+            const dateString = `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${String(date.getFullYear()).slice(-2)}`
+            const fullDate = date.toISOString().split('T')[0] === new Date().toISOString().split('T')[0] ? timeString : dateString
+
+            return `
+                <li class="row${isOld ? ' old' : ' new'}">
+                    <a class="link" href="${chapter.url}" target="_blank" rel="noopener" data-id="${chapter.id}">
+                        ${chapter.title} - Chapter ${result[1]}
+                    </a>
+                    <span class="date-wrapper">
+                    <span class="date">${fullDate}</span>
+                    <span class="hide" data-id="${chapter.id}">Hide</span>
+                    </span>
+                </li>`
+        }
+    }
+
+    async function renderUrls () {
+        const { newUrls, oldUrls } = await db.urls.read()
+        const newRows = newUrls.map(createUrlRenderer(false))
+        const oldRows = oldUrls.map(createUrlRenderer(true))
+
+        if (newRows.length || oldRows.length) {
+            urls.innerHTML = newRows
+                .concat('<li class="old-chapters">Old Chapters</li>')
+                .concat(oldRows.slice(0, maxOld))
+                .concat(oldRows.length > maxOld ? [
+                    `<li class="action load-more">Load ${Math.min(maxOld, oldRows.length - maxOld)} more old chapters...</li>`
+                ] : [])
+                .join('\n')
+            document.title = newRows.length ? `(${newRows.length}) Manga Poll` : 'Manga Poll'
+        }
+        else {
+            urls.innerHTML = '<li class="row">No Chapters available.</li>'
+            document.title = 'Manga Poll'
+        }
+    }
+
+    return {
+        render: () => renderUrls()
+    }
+}

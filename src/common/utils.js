@@ -1,5 +1,4 @@
-
-export function parse(string, fallback) {
+export function parse (string, fallback) {
     try {
         return JSON.parse(string)
     }
@@ -8,7 +7,6 @@ export function parse(string, fallback) {
     }
 }
 
-
-export function pad(no) {
+export function pad (no) {
     return ('00' + no).slice(-2)
 }

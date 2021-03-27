@@ -1,21 +1,29 @@
 {
     "extends": [
-        "eslint:recommended",
-        "plugin:jest/recommended"
+        "eslint:recommended"
     ],
     "env": {
-        "browser": true,
-        "node": true,
-        "es6": true,
-        "jest": true
+        "es6": true
     },
-    "plugins": [
-        "jest"
+    "ignorePatterns": ["webpack.config.*"],
+    "overrides": [
+        {
+            "files": ["./src/**/*"],
+            "env": {
+                "browser": true,
+                "webextensions": true
+            }
+        },
+        {
+            "files": ["./server/**/*"],
+            "env": {
+                "node": true
+            }
+        }
     ],
     "root": true,
-    "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "ecmaVersion": 6,
+        "ecmaVersion": 12,
         "sourceType": "module",
         "ecmaFeatures": {
             "experimentalObjectRestSpread": true
@@ -105,10 +113,6 @@
                 "before": true,
                 "after": true
             }
-        ],
-        "linebreak-style": [
-            2,
-            "unix"
         ],
         "max-len": [
             2,
@@ -242,7 +246,9 @@
             2,
             {
                 "vars": "all",
-                "args": "none"
+                "args": "none", 
+                "argsIgnorePattern": "^_", 
+                "varsIgnorePattern": "^_"
             }
         ],
         "no-useless-call": 2,

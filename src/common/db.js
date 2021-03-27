@@ -1,0 +1,121 @@
+import { parse } from './utils'
+
+const NAMESPACES = {
+    SYNC: 'sync',
+    LOCAL: 'local'
+}
+
+export function createDB (storage) {
+    const { read, write } = storage
+
+    async function readSources () {
+        const registry = await read(NAMESPACES.SYNC, { 'sources': '["sources-1"]' })
+        return parse(registry, ['sources-1']).reduce((sources, key) => {
+            return Promise.all([sources, read(NAMESPACES.SYNC, { [key]: '[]' })])
+                .then(([sources, source]) => sources.concat(parse(source[key], [])))
+        }, Promise.resolve([]))
+    }
+
+    function writeSources (sources) {
+        const registry = []
+        const updates = {}
+        for (let x = 1; x <= Math.max(1, Math.ceil(sources.length / 20)); x++) {
+            const key = `sources-${x}`
+            registry.push(key)
+            updates[key] = JSON.stringify(sources.slice((x - 1) * 20, x * 20))
+        }
+        updates.registry = JSON.stringify(registry)
+        return write(NAMESPACES.SYNC, updates)
+    }
+
+    async function addSource (source) {
+        const sources = await readSources()
+        sources.push(source)
+        await writeSources(sources)
+        return sources
+    }
+
+    async function deleteSource (sourceId) {
+        const sources = await readSources()
+        const newSources = sources.filter((source) => source?.id !== sourceId)
+        await writeSources(newSources)
+
+        return newSources
+    }
+
+    async function isDirty () {
+        const { urls, sources } = await read(NAMESPACES.LOCAL, ['urls', 'sources'])
+
+        return !!urls || !!sources
+    }
+
+    async function getFilteredSortedUrls () {
+        const { hiddenChapters: hiddenChaptersString, hide } = await read(NAMESPACES.SYNC, { hiddenChapters: '{}', hide: Date.now() })
+        const { urls } = await read(NAMESPACES.LOCAL, { urls: '[]' })
+
+        const hiddenChapters = parse(hiddenChaptersString, {})
+        const urlList = parse(urls, [])
+
+        const checkOld = (chapter) => {
+            if (hide && chapter.created < hide || hiddenChapters[chapter.id]) {
+                return true
+            }
+            return false
+        }
+
+        const [oldUrls, newUrls] = Object.values(urlList)
+            .sort((url1, url2) => {
+                const diff = url2.created - url1.created
+                if (Math.abs(diff) < 500) {
+                    return String(url1).localeCompare(url2)
+                }
+                return diff
+            })
+            .reduce(([oldUrls, newUrls], url) => {
+                if (checkOld(url)) {
+                    oldUrls.push(url)
+                }
+                else {
+                    newUrls.push(url)
+                }
+                return [oldUrls, newUrls]
+            }, [[], []])
+
+        return {
+            oldUrls,
+            newUrls
+        }
+    }
+
+    async function hideUrl (id) {
+        const result = await read(NAMESPACES.SYNC, { hiddenChapters: '{}' })
+        const hiddenChapters = parse(result.hiddenChapters, {})
+        hiddenChapters[id] = true
+        return write(NAMESPACES.SYNC, { hiddenChapters: JSON.stringify(hiddenChapters) })
+    }
+
+    async function hideAllUrls (timestamp) {
+        return write(NAMESPACES.SYNC, { hiddenChapters: '{}', hide: timestamp })
+    }
+
+    function writeUrls (urls) {
+        return write(NAMESPACES.LOCAL, { urls: JSON.stringify(urls) })
+    }
+
+    return {
+        sources: {
+            read: readSources,
+            import: writeSources,
+            add: addSource,
+            delete: deleteSource
+        },
+        isDirty,
+        urls: {
+            read: getFilteredSortedUrls,
+            hide: hideUrl,
+            hideAll: hideAllUrls,
+            import: writeUrls
+        },
+        onChange: storage.addListener
+    }
+}
