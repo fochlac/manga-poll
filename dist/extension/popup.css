@@ -1,6 +1,3 @@
-#addSection input {
-  width: 125px;
-}
 #sources,
 #urls {
   list-style: none;
@@ -105,28 +102,20 @@ html {
   white-space: nowrap;
   margin-right: 4px;
 }
-#addSection .manual {
-    display: flex;
-}
 #addSection .import {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: 4px;
 }
 #addSection .import .action {
-    margin-right: 4px;
+    margin-right: 8px;
 }
 #addSection {
   justify-content: space-between;
   padding-top: 4px;
   border-top: solid 1px lightslategrey;
   display: none;
-  margin: 0 8px 16px;
+  margin: 0 8px 8px;
   flex-direction: column;
-}
-
-#add {
-  margin-left: 4px;
 }
 .old-chapters {
   border-bottom: solid 1px lightgray;

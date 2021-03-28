@@ -1,5 +1,6 @@
 export function sourceRenderer (db) {
     const hideAll = document.getElementById('hide')
+    const importSection = document.getElementById('addSection')
     const popupTitle = document.getElementById('popupTitle')
     const bookmarks = document.getElementById('add')
     const urls = document.getElementById('urls')
@@ -16,6 +17,7 @@ export function sourceRenderer (db) {
     bookmarks.addEventListener('click', () => {
         if (sources.style.display !== 'block') {
             sources.style.display = 'block'
+            importSection.style.display = 'block'
             urls.style.display = 'none'
             hideAll.style.display = 'none'
             popupTitle.innerText = 'Bookmarks'
@@ -23,6 +25,7 @@ export function sourceRenderer (db) {
         }
         else {
             sources.style.display = 'none'
+            importSection.style.display = 'none'
             urls.style.display = ''
             bookmarks.innerText = 'Bookmarks'
             hideAll.style.display = ''

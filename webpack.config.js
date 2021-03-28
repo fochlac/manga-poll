@@ -5,12 +5,25 @@ const config = {
     mode: 'development',
     devtool: 'inline-source-map',
     entry: {
-        popup: './src/extension/popup.js',
-        sw: './src/extension/sw.js'
+        popup: {
+            import: './src/extension/popup.js',
+            filename: 'extension/popup.js'
+        },
+        'ext-sw':  {
+            import: './src/extension/sw.js',
+            filename: 'extension/sw.js'
+        },
+        'page-sw':  {
+            import: './src/webapp/sw.js',
+            filename: 'webapp/sw.js'
+        },
+        page:  {
+            import: './src/webapp/index.js',
+            filename: 'webapp/index.js'
+        }
     },
     output: {
-        path: path.resolve(__dirname, 'dist'),
-        filename: '[name].js'
+        path: path.resolve(__dirname, 'dist')
     },
     module: {
         rules: [

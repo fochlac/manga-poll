@@ -6,7 +6,7 @@ const ALARMS = {
     URLS: 'urls'
 }
 
-chrome.alarms.create(ALARMS.URLS, { periodInMinutes: 5 })
+chrome.alarms.create(ALARMS.URLS, { periodInMinutes: 15 })
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name === ALARMS.URLS) {

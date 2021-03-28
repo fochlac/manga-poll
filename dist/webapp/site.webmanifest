@@ -1,0 +1,19 @@
+{
+    "name": "Manga-Poll",
+    "version": "1.0.0",
+    "manifest_version": 3,
+    "short_name": "Manga-Poll",
+    "theme_color": "#2196f3",
+    "background_color": "#2196f3",
+    "display": "standalone",
+    "orientation": "portrait",
+    "scope": "/",
+    "start_url": "/",
+    "icons": [
+        {
+            "src": "/android-chrome-144x144.png",
+            "sizes": "144x144",
+            "type": "image/png"
+        }
+    ]
+}
