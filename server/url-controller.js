@@ -16,9 +16,15 @@ catch (e) {
 
 let writeUrlsTimeout = null
 
-export function addUrl (source) {
-    return ({ url, created }) => {
-        const entry = { url, id: nanoid(), created, title: source.title, sourceId: source.id }
+export function addUrl (source, isNew = false) {
+    return ({ url, created, type }) => {
+        const entry = {
+            url,
+            id: nanoid(),
+            created: type === 'unparseable' && !isNew ? Date.now() : created,
+            title: source.title,
+            sourceId: source.id
+        }
         urls[url] = entry
         clearTimeout(writeUrlsTimeout)
         writeUrlsTimeout = setTimeout(() => {

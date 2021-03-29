@@ -4,7 +4,7 @@ import { parseMadaro } from './parse-madaro'
 import { addUrl } from './url-controller'
 import { getSources } from './source-controller'
 
-async function fetchUrls (source) {
+async function fetchUrls (source, isNew = false) {
     const formData = new FormData()
     formData.append('action', 'manga_get_chapters')
     formData.append('manga', source.mangaId)
@@ -15,7 +15,7 @@ async function fetchUrls (source) {
     if (urls.length) {
         console.log(`${urls.length} new urls for ${source.title}`)
     }
-    urls.forEach(addUrl)
+    urls.forEach(addUrl(source, isNew))
 }
 
 function fetchAllUrls () {
@@ -43,4 +43,4 @@ export function init () {
 }
 
 export const fetchAll = () => fetchAllUrls()
-export const fetchSource = (source) => fetchUrls(source)
+export const fetchSource = (source, isNew) => fetchUrls(source, isNew)

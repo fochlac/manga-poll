@@ -102,6 +102,9 @@ html {
   white-space: nowrap;
   margin-right: 4px;
 }
+.date {
+  cursor: default;
+}
 #addSection .import {
     display: flex;
     justify-content: flex-end;

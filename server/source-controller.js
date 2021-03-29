@@ -49,7 +49,7 @@ export function sourceController (app) {
             if (!entry) {
                 entry = await addSource(title, url, mangaId)
                 try {
-                    await fetchSource(entry)
+                    await fetchSource(entry, true)
                 }
                 catch (e) {
                     deleteSource(entry.id)
