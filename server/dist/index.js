@@ -12,6 +12,7 @@ const cors_1 = __importDefault(require("cors"));
 const source_controller_1 = require("./source-controller");
 const url_controller_1 = require("./url-controller");
 const scheduler_1 = require("./scheduler");
+const subscriptions_controller_1 = require("./subscriptions-controller");
 const app = express_1.default();
 const server = http_1.createServer(app);
 app.use(cors_1.default(), compression_1.default(), express_1.default.json(), express_1.default.static(path_1.resolve(__dirname, '../../dist/webapp')), (req, _res, next) => {
@@ -20,6 +21,7 @@ app.use(cors_1.default(), compression_1.default(), express_1.default.json(), exp
 });
 source_controller_1.sourceController(app);
 url_controller_1.urlController(app);
+subscriptions_controller_1.subscriptionsController(app);
 app.get('*', (_req, res) => {
     res.status(404).send('Not Found... :(');
 });
