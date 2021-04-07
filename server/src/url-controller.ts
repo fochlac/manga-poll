@@ -4,11 +4,21 @@ import { resolve } from 'path'
 
 const nanoid = customAlphabet(urlAlphabet, 10)
 
-const urlsPath = resolve('./urls.json')
+const urlsPath = resolve(__dirname, '../db/urls.json')
 
-let urls = {}
+declare global {
+    interface Url {
+        id: string;
+        title: string;
+        url: string;
+        created: number;
+        sourceId: string;
+    }
+}
+
+let urls: Record<string, Url> = {}
 try {
-    urls = JSON.parse(fs.readFileSync(urlsPath))
+    urls = JSON.parse(fs.readFileSync(urlsPath, {encoding: 'utf-8'}))
 }
 catch (e) {
     console.log(e)
@@ -46,13 +56,14 @@ export function urlController (app) {
             const sourceFilter = req.query.sources.split(',')
             payload = payload.filter((url) => sourceFilter.includes(url.sourceId))
         }
-        if (typeof req?.query?.date === 'number' && req.query.date > 0) {
-            const limit = req?.query?.old && !isNaN(Number(req.query.old)) && Number(req.query.old) || 25
+        if (!isNaN(Number(req?.query?.date)) && Number(req.query.date) > 0) {
+            const limit = req?.query?.limit && !isNaN(Number(req.query.limit)) && Number(req.query.limit) || 25
+            const date = Number(req.query.date)
             let old = 0
             payload = payload
-                .sort((url1, url2) => url1.created - url2.created)
+                .sort((url1, url2) => url2.created - url1.created)
                 .filter((url) => {
-                    if (url.created >= req.query.date) {
+                    if (url.created >= date) {
                         return true
                     }
                     else if (old <= limit) {

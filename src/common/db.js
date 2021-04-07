@@ -30,8 +30,10 @@ export function createDB (storage) {
 
     async function addSource (source) {
         const sources = await readSources()
-        sources.push(source)
-        await writeSources(sources)
+        if (!sources.some(({url, mangaId}) => source.url === url && mangaId === source.mangaId)) {
+            sources.push(source)
+            await writeSources(sources)
+        }
         return sources
     }
 
@@ -50,7 +52,7 @@ export function createDB (storage) {
     }
 
     async function getFilteredSortedUrls () {
-        const { hiddenChapters: hiddenChaptersString, hide } = await read(NAMESPACES.SYNC, { hiddenChapters: '{}', hide: Date.now() })
+        const { hiddenChapters: hiddenChaptersString, hide } = await read(NAMESPACES.SYNC, { hiddenChapters: '{}', hide: 0 })
         const { urls } = await read(NAMESPACES.LOCAL, { urls: '[]' })
 
         const hiddenChapters = parse(hiddenChaptersString, {})
@@ -102,6 +104,31 @@ export function createDB (storage) {
         return write(NAMESPACES.LOCAL, { urls: JSON.stringify(urls) })
     }
 
+    async function init () {
+        const { hide } = await read(NAMESPACES.SYNC, 'hide')
+        if (!hide) {
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+            await write(NAMESPACES.SYNC, { hide: today.getTime()})
+        }
+    }
+
+    async function setMaxOld (maxOld) {
+        await write(NAMESPACES.LOCAL, { maxOld })
+    }
+
+    async function getMaxOld () {
+        const { maxOld } = await read(NAMESPACES.LOCAL, { maxOld: 25 })
+        return maxOld
+    }
+
+    async function getHide () {
+        const { hide } = await read(NAMESPACES.SYNC, { hide: 0 })
+        return hide
+    }
+
+    init()
+
     return {
         sources: {
             read: readSources,
@@ -114,7 +141,10 @@ export function createDB (storage) {
             read: getFilteredSortedUrls,
             hide: hideUrl,
             hideAll: hideAllUrls,
-            import: writeUrls
+            import: writeUrls,
+            setMaxOld,
+            getMaxOld,
+            getHide
         },
         onChange: storage.addListener
     }

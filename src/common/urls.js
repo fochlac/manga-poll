@@ -1,10 +1,8 @@
 import { pad } from './utils'
 
 export function urlRenderer (db) {
-    const hideAll = document.getElementById('hide')
     const urls = document.getElementById('urls')
-
-    let maxOld = 25
+    const hideAll = document.getElementById('hide')
 
     hideAll.addEventListener('click', () => {
         db.urls.hideAll(Date.now())
@@ -23,8 +21,18 @@ export function urlRenderer (db) {
         }
         const closestMore = event.target.closest('.action.load-more')
         if (closestMore && urls.contains(closestMore)) {
-            maxOld += maxOld
-            renderUrls()
+            const maxOld = await db.urls.getMaxOld()
+            await db.urls.setMaxOld(maxOld + 100)
+        }
+    })
+
+    let maxScroll = 0
+    urls.addEventListener('scroll', async () => {
+        const scrollHeight = urls.offsetHeight + urls.scrollTop
+        if (urls.scrollHeight - scrollHeight <= 50 && maxScroll !== urls.scrollHeight) {
+            maxScroll = urls.scrollHeight
+            const maxOld = await db.urls.getMaxOld()
+            db.urls.setMaxOld(maxOld + 100)
         }
     })
 
@@ -42,14 +50,15 @@ export function urlRenderer (db) {
                         ${chapter.title} - Chapter ${result[1]}
                     </a>
                     <span class="date-wrapper">
-                    <span class="date">${fullDate}</span>
-                    <span class="hide" data-id="${chapter.id}">Hide</span>
+                        <span class="date" title="${`${dateString} ${timeString}`}">${fullDate}</span>
+                        <span class="hide" data-id="${chapter.id}">Hide</span>
                     </span>
                 </li>`
         }
     }
 
     async function renderUrls () {
+        const maxOld = await db.urls.getMaxOld()
         const { newUrls, oldUrls } = await db.urls.read()
         const newRows = newUrls.map(createUrlRenderer(false))
         const oldRows = oldUrls.map(createUrlRenderer(true))
@@ -58,9 +67,7 @@ export function urlRenderer (db) {
             urls.innerHTML = newRows
                 .concat('<li class="old-chapters">Old Chapters</li>')
                 .concat(oldRows.slice(0, maxOld))
-                .concat(oldRows.length > maxOld ? [
-                    `<li class="action load-more">Load ${Math.min(maxOld, oldRows.length - maxOld)} more old chapters...</li>`
-                ] : [])
+                .concat(oldRows.length >= maxOld ? ['<li class="action load-more">Load up to 100 more old chapters...</li>'] : [])
                 .join('\n')
             document.title = newRows.length ? `(${newRows.length}) Manga Poll` : 'Manga Poll'
         }

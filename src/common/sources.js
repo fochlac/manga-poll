@@ -1,6 +1,7 @@
 export function sourceRenderer (db) {
     const hideAll = document.getElementById('hide')
-    const importSection = document.getElementById('addSection')
+    const addSection = document.getElementById('addSection')
+    const importSection = document.querySelector('div.import')
     const popupTitle = document.getElementById('popupTitle')
     const bookmarks = document.getElementById('add')
     const urls = document.getElementById('urls')
@@ -17,7 +18,8 @@ export function sourceRenderer (db) {
     bookmarks.addEventListener('click', () => {
         if (sources.style.display !== 'block') {
             sources.style.display = 'block'
-            importSection.style.display = 'block'
+            importSection.style.display = 'flex'
+            addSection.style.display = 'flex'
             urls.style.display = 'none'
             hideAll.style.display = 'none'
             popupTitle.innerText = 'Bookmarks'
@@ -26,6 +28,7 @@ export function sourceRenderer (db) {
         else {
             sources.style.display = 'none'
             importSection.style.display = 'none'
+            addSection.style.display = 'none'
             urls.style.display = ''
             bookmarks.innerText = 'Bookmarks'
             hideAll.style.display = ''
@@ -38,15 +41,21 @@ export function sourceRenderer (db) {
 
         sources.innerHTML = data
             .sort((source1, source2) => String(source1.title).localeCompare(source2?.title))
-            .map((source) => source && (
-                `<li class="row source">
-                <div class="data">
-                    <span class="title">${source.title}</span>
-                    <span class="manga-id">(${String(source.url).replace('/wp-admin/admin-ajax.php', '').replace(/https?:\/\//, '')})</span>
-                </div>
-                <span class="delete action" data-id="${source.id}">Delete</span>
-            </li>`
-            ))
+            .map((source) => {
+                if (!source) {
+                    return ''
+                }
+                const url = String(source.url).replace('/wp-admin/admin-ajax.php', '').replace(/https?:\/\//, '')
+                return (
+                    `<li class="row source">
+                        <div class="data" title="${`${source.title} (${url})`}">
+                            <span class="title">${source.title}</span>
+                            <span class="manga-id">(${url})</span>
+                        </div>
+                        <span class="delete action" data-id="${source.id}">Delete</span>
+                    </li>`
+                )
+            })
             .join('\n')
     }
 

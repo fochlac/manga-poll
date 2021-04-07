@@ -3,6 +3,7 @@ import fetch from 'node-fetch'
 import { parseMadaro } from './parse-madaro'
 import { addUrl } from './url-controller'
 import { getSources } from './source-controller'
+// import { sendTopicMessage } from './subscriptions-controller'
 
 async function fetchUrls (source, isNew = false) {
     const formData = new FormData()
@@ -13,6 +14,7 @@ async function fetchUrls (source, isNew = false) {
 
     const urls = parseMadaro(source, body)
     if (urls.length) {
+        // sendTopicMessage(source.id)
         console.log(`${urls.length} new urls for ${source.title}`)
     }
     urls.forEach(addUrl(source, isNew))
@@ -20,7 +22,7 @@ async function fetchUrls (source, isNew = false) {
 
 function fetchAllUrls () {
     return Promise.all(Object.values(getSources()).map((source) => fetchUrls(source)
-        .then(() => ({ hasError: false, source }))
+        .then(() => ({ hasError: false, source, error: null }))
         .catch((error) => ({ hasError: true, error, source }))
     ))
         .then((results) => {

@@ -5,6 +5,8 @@ import { db } from './storage'
 import { urlRenderer } from '../common/urls'
 import { sourceRenderer } from '../common/sources'
 
+db.urls.setMaxOld(100)
+
 const Urls = urlRenderer(db)
 const Sources = sourceRenderer(db)
 
@@ -12,7 +14,7 @@ db.onChange((changes) => {
     if (['hide', 'hiddenChapters', 'urls'].some(changes.hasOwnProperty.bind(changes))) {
         Urls.render()
     }
-    if (Object.keys(changes).some((change) => change.includes('sources'))) {
+    if (Object.keys(changes).some((change) => change.includes('sources')) || Object.prototype.hasOwnProperty.call(changes, 'maxOld')) {
         Sources.render()
     }
 })

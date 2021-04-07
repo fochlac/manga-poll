@@ -1,32 +1,40 @@
-#!/usr/bin/env node
+#!/usr/bin/node
 
 import express from 'express'
 import { createServer } from 'http'
 import compression from 'compression'
 import { resolve } from 'path'
-import bodyParser from 'body-parser'
 import cors from 'cors'
 import { sourceController } from './source-controller'
 import { urlController } from './url-controller'
+import { init } from './scheduler'
+import { subscriptionsController } from './subscriptions-controller'
 
 const app = express()
 const server = createServer(app)
-const indexPath = resolve('./index.html')
 
-app.use(cors(), compression(), bodyParser.json(), (req, _res, next) => {
-    console.log(4, `${req.method} call to ${req.originalUrl}`)
-    next()
-})
+app.use(
+    cors(), 
+    compression(), 
+    express.json(), 
+    express.static(resolve(__dirname, '../../dist/webapp')),
+    (req, _res, next) => {
+        console.log(4, `${req.method} call to ${req.originalUrl}`)
+        next()
+    }
+)
 
 sourceController(app)
 urlController(app)
+subscriptionsController(app)
 
 app.get('*', (_req, res) => {
-    res.sendFile(indexPath)
+    res.status(404).send('Not Found... :(')
 })
 
 const port = !isNaN(Number(process.env.PORT)) ? Number(process.env.PORT) : 43214
 
 server.listen(port, 'localhost', () => {
-    console.log(0, `listening to http://localhost:${port}/`)
+    console.log(`listening to http://localhost:${port}/`)
+    init()
 })

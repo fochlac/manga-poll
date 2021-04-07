@@ -1,4 +1,4 @@
-import { Source } from '../common/api'
+import { API } from '../common/api'
 import { db } from './storage'
 
 let currentSource = null
@@ -6,6 +6,8 @@ let currentSource = null
 const bookmark = document.getElementById('bookmark')
 const bookmarkTrack = document.getElementById('bookmark-track')
 const bookmarkTitle = document.getElementById('bookmark-title')
+
+const { Source } = API('https://manga.fochlac.com')
 
 bookmarkTrack.addEventListener('click', () => {
     bookmark.style.display = 'none'
@@ -66,10 +68,12 @@ function test () {
         }, {})
     const title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0]
 
+    console.log({ id, title, url: document?.location?.origin ? `${document.location.origin}/wp-admin/admin-ajax.php` : null })
     chrome.runtime.sendMessage({ id, title, url: document?.location?.origin ? `${document.location.origin}/wp-admin/admin-ajax.php` : null })
 }
 
 chrome.runtime.onMessage.addListener(async (request) => {
+    console.log(request)
     if (request.id && request.title && request.url) {
         const sources = await db.sources.read()
 

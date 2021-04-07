@@ -1,0 +1,235 @@
+#sources,
+#urls {
+  list-style: none;
+  padding: 0;
+  overflow: auto;
+  overflow-x: hidden;
+  margin: 0;
+  width: 100%;
+}
+#sources {
+  display: none;
+  margin-top: 8px;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.date {
+  margin-left: 8px;
+}
+h5 {
+  padding-left: 16px;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  position: relative;
+  font-size: 1rem;
+}
+h5 span.action {
+  font-size: 0.75rem;
+  letter-spacing: 0.1px;
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: auto;
+  flex-grow: 1;
+  margin: 0 8px 8px;
+  width: calc(100% - 16px);
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  max-height: 100vh;
+  height: 100vh;
+  margin: 0 auto;
+  width: 820px;
+  max-width: 100vw;
+  padding: 0 10px;
+  background-color: white;
+  box-sizing: border-box;
+}
+.action {
+  cursor: pointer;
+  color: cornflowerblue;
+}
+.hide:hover,
+.action:hover {
+  color: royalblue;
+}
+.hide {
+  cursor: pointer;
+  margin-left: 8px;
+  color: cornflowerblue;
+}
+.old .hide {
+  display: none;
+}
+.old {
+  opacity: 0.5;
+}
+html {
+  font-family: system-ui;
+  color: #000c21;
+  background: #1e5be41f;
+  display: flex;
+}
+.date-wrapper {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  justify-content: flex-end;
+}
+.date {
+  cursor: default;
+}
+.import {
+  display: none;    
+  justify-content: flex-end;
+  margin-top: auto;
+  margin-bottom: 6px;
+  border-top: solid 1px lightslategrey;
+  padding-top: 2px;
+  font-size: 15px;
+}
+.import .action {
+  margin-right: 8px;
+}
+#addSection {
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: solid 1px lightslategrey;
+  display: none;
+  margin: 0 8px 8px;
+  flex-direction: column;
+}
+.old-chapters {
+  border-bottom: solid 1px lightgray;
+  color: gray;
+  margin-top: 4px;
+}
+.source .data .title {
+  font-weight: 700;
+  font-size: 13px;
+  margin-right: 4px;
+}
+.source .data {
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 8px;
+}
+.source .manga-id {
+    font-size: 0.8rem;
+}
+.source .delete {
+  margin-right: 4px;
+}
+.source b {
+  font-weight: 500;
+}
+.action.load-more {
+  text-align: center;
+  margin-top: 4px;
+  font-size: 0.6rem;
+}
+
+label > input {
+  display: block;
+}
+.add-bookmark {
+  display: flex;
+  width: 100%;
+}
+#bookmark {
+  width: 100%;
+  box-sizing: border-box;
+}
+#bookmark-button {
+  margin-left: 4px;
+  white-space: nowrap;
+}
+.bookmark-label {
+  font-size: 0.9rem;
+  display: block;
+  margin-right: 8px;
+  overflow: hidden;
+  width: 100%;
+  font-style: italic;
+}
+
+.error {
+    background: lightpink;
+    border: solid 1px red;
+    border-radius: 2px;
+}
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 28px;
+  height: 16px;
+  margin-left: auto;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #c3cbd2;
+  -webkit-transition: .2s;
+  transition: .2s;
+  border-radius: 17px;
+}
+
+.slider:before {
+  border-radius: 50%;
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  -webkit-transition: .2s;
+  transition: .2s;
+}
+
+input:checked + .slider {
+  background-color: #6495ed;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #6495ed;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(12px);
+  -ms-transform: translateX(12px);
+  transform: translateX(12px);
+}
+
+h6 {
+  font-size: 0.8rem;
+  margin: 8px 0;
+  border-bottom: solid 1px lightslategrey;
+}
+
+.enable-notifications {
+  display: flex;
+  align-items: center;
+}

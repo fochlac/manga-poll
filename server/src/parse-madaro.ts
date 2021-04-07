@@ -1,7 +1,7 @@
 import cheerio from 'cheerio'
 import { getUrls } from './url-controller'
 
-const warned = {}
+const warned: Record<string, number> = {}
 
 const dateMonthFirst = /^[^\d]*(1[012]|0\d|\d)[^\d](3[0,1]|[012]\d|\d)[^\d](\d{2}|\d{4})[^\d]*$/
 const dateDayFirst = /^[^\d]*(3[0,1]|[012]\d|\d)[^\d](1[012]|0\d|\d)[^\d](\d{2}|\d{4})[^\d]*$/
@@ -33,16 +33,16 @@ function parseDates (urlList) {
     const type = getDateType(urlList)
 
     return urlList.map((url) => {
-        let created = new Date()
-        created.setHours(0, 0, 0, 0)
-        created = created.getTime()
+        const baseDate = new Date()
+        baseDate.setHours(0, 0, 0, 0)
+        let created = baseDate.getTime()
         const { date } = url
 
         if (type === 'monthWritten' && typeof date === 'string' && date.trim().length && new Date(date.trim()).toJSON()) {
             created = new Date(date.trim()).getTime()
         }
         else if (typeof date === 'string' && date.length && type === 'dateDayFirst') {
-            const [_full, day, month, year] = date.trim().match(dateDayFirst) || []
+            const [_full, day, month, year]: string[] = date.trim().match(dateDayFirst) || []
             if (month && day && year) {
                 const date = new Date()
                 date.setFullYear(Number(year.length === 2 ? `20${year}` : year), Number(month) - 1, Number(day))
@@ -51,7 +51,7 @@ function parseDates (urlList) {
             }
         }
         else if (typeof date === 'string' && date.length && type === 'dateMonthFirst') {
-            const [_full, month, day, year] = date.trim().match(dateMonthFirst) || []
+            const [_full, month, day, year]: string[] = date.trim().match(dateMonthFirst) || []
             if (month && day && year) {
                 const date = new Date()
                 date.setFullYear(Number(year.length === 2 ? `20${year}` : year), Number(month) - 1, Number(day))
@@ -79,7 +79,7 @@ export function parseMadaro (source, body) {
 
     const newUrls = urlList.filter(({ url }) => {
         const isValid = /^https?:\/\/.*\/[^/]*hapter[^/\d]*(\d*)[^\d/]*[^/]*\//.test(url)
-        if (!warned[url] >= 3) {
+        if (warned[url] < 3) {
             console.log(`Invalid url found for ${source.title}: ${url}`)
             warned[url] = typeof warned[url] === 'number' ? warned[url] + 1 : 0
         }

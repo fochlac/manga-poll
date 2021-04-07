@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manga Poll</title>
+    <link rel="stylesheet" href="index.css" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
+    <meta name="msapplication-TileColor" content="#da532c" />
+    <meta name="theme-color" content="#ffffff" />
+  </head>
+  <body>
+    <h5>
+      <span id="popupTitle"> Chapters </span>
+      <div style="position: absolute; right: 0px; top: 0px">
+        <span class="action" id="hide">Hide All</span>
+        <span class="action" id="add">Bookmarks</span>
+      </div>
+    </h5>
+    <div id="addSection">
+      <label for="bookmark" class="bookmark-label">
+        You can add a bookmark by pasting the url of the manga you want to
+        track.
+      </label>
+      <div class="add-bookmark">
+        <input type="text" id="bookmark" />
+        <button id="bookmark-button">Submit</button>
+      </div>
+      <div id="notifications">
+        <h6>Notifications</h6>
+        <div class="enable-notifications">
+          <span>
+            Enable notifications
+          </span>
+          <label class="switch">
+            <input type="checkbox" id="notification-toggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="list">
+      <ul id="urls"></ul>
+      <ul id="sources"></ul>
+    </div>
+    <div class="import">
+      <label for="import" class="action">
+        Import Bookmarks
+        <input
+          type="file"
+          id="import"
+          accept="application/json"
+          style="position: absolute; display: none"
+        />
+      </label>
+      <span id="export" class="action">Download Bookmarks</span>
+    </div>
+  </body>
+  <script src="index.js"></script>
+</html>
