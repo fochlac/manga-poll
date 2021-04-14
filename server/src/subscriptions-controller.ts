@@ -1,7 +1,8 @@
 import * as admin from 'firebase-admin'
+import { join, resolve } from 'path'
 
 admin.initializeApp({
-  credential: admin.credential.cert('../firebase-credentials.json')
+  credential: admin.credential.cert(resolve(join(__dirname, '../firebase-credentials.json')))
 })
 
 const timeouts = {}

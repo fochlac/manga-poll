@@ -27,11 +27,11 @@ catch (e) {
 let writeUrlsTimeout = null
 
 export function addUrl (source, isNew = false) {
-    return ({ url, created, type }) => {
+    return ({ url, created }) => {
         const entry = {
             url,
             id: nanoid(),
-            created: type === 'unparseable' && !isNew ? Date.now() : created,
+            created: !isNew ? Date.now() : created,
             title: source.title,
             sourceId: source.id
         }

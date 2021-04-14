@@ -62,8 +62,7 @@ function parseDates (urlList) {
 
         return {
             ...url,
-            created,
-            type: typeof date === 'string' && date.length && type || 'unparsable'
+            created
         }
     })
 }

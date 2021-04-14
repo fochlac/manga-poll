@@ -21,8 +21,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.subscriptionsController = exports.sendTopicMessage = void 0;
 const admin = __importStar(require("firebase-admin"));
+const path_1 = require("path");
 admin.initializeApp({
-    credential: admin.credential.cert('../firebase-credentials.json')
+    credential: admin.credential.cert(path_1.resolve(path_1.join(__dirname, '../firebase-credentials.json')))
 });
 const timeouts = {};
 function sendTopicMessage(topic) {
