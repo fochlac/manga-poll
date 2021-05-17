@@ -8,15 +8,26 @@ export function urlRenderer (db) {
         db.urls.hideAll(Date.now())
     })
 
+    async function hide (id) {
+        const { newUrls } = await db.urls.read()
+        if (newUrls.length <= 1 && (!newUrls[0] || newUrls[0].id === id)) {
+            db.urls.hideAll(Date.now())
+        }
+        else {
+            db.urls.hide(id)
+        }
+    }
+
     urls.addEventListener('click', async (event) => {
         const closestHide = event.target.closest('.row .hide')
+
         if (closestHide && closestHide.dataset['id'] && urls.contains(closestHide)) {
-            db.urls.hide(closestHide.dataset['id'])
+            await hide(closestHide.dataset['id'])
         }
         const closestLink = event.target.closest('.row.new .link')
         if (closestLink && closestLink.dataset['id'] && urls.contains(closestLink)) {
             event.preventDefault()
-            await db.urls.hide(closestLink.dataset['id'])
+            await hide(closestLink.dataset['id'])
             window.open(closestLink.href, '_blank')
         }
         const closestMore = event.target.closest('.action.load-more')

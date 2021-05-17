@@ -9,11 +9,12 @@ export function createDB (storage) {
     const { read, write } = storage
 
     async function readSources () {
-        const registry = await read(NAMESPACES.SYNC, { 'sources': '["sources-1"]' })
-        return parse(registry, ['sources-1']).reduce((sources, key) => {
-            return Promise.all([sources, read(NAMESPACES.SYNC, { [key]: '[]' })])
-                .then(([sources, source]) => sources.concat(parse(source[key], [])))
-        }, Promise.resolve([]))
+        const { registry } = await read(NAMESPACES.SYNC, { registry: '["sources-1"]' })
+        return parse(registry, ['sources-1'])
+            .reduce((sources, key) => {
+                return Promise.all([sources, read(NAMESPACES.SYNC, { [key]: '[]' })])
+                    .then(([sources, source]) => sources.concat(parse(source[key], [])))
+            }, Promise.resolve([]))
     }
 
     function writeSources (sources) {
@@ -105,7 +106,7 @@ export function createDB (storage) {
     }
 
     async function init () {
-        const { hide } = await read(NAMESPACES.SYNC, 'hide')
+        const { hide } = await read(NAMESPACES.SYNC, { hide: false })
         if (!hide) {
             const today = new Date()
             today.setHours(0, 0, 0, 0)

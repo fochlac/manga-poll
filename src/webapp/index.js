@@ -9,6 +9,7 @@ import { requestPermission, getMessagingToken } from './sw-helper'
 import { addBookmarkListener } from './bookmark'
 import { API } from '../common/api'
 import { createSchedule } from './schedule'
+import { updateProgress } from './progress-bar'
 
 const { Urls } = API('')
 
@@ -66,7 +67,8 @@ async function fetchUrls () {
 const interval = createSchedule({
     callback: fetchUrls,
     interval: 5 * 60 * 1000,
-    isActive: true
+    isActive: true,
+    updater: updateProgress
 })
 
 document.addEventListener('visibilitychange', () => {

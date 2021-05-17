@@ -1,14 +1,17 @@
-export const createSchedule = ({ isActive = false, interval = 0, callback = Function.prototype } = {}) => {
+export const createSchedule = ({ isActive = false, interval = 0, callback = Function.prototype, updater } = {}) => {
     let nextPing = 0
+    let lastPing = 0
     const callCallback = () => {
         if (nextPing && nextPing <= Date.now()) {
             callback()
+            lastPing = nextPing
             nextPing = nextPing + interval > Date.now() ? nextPing + interval : Date.now() + interval
         }
+        typeof updater === 'function' && updater(lastPing, nextPing)
     }
 
     if (isActive && interval) {
-        nextPing = 1
+        nextPing = Date.now() - 1
         callCallback()
     }
 
@@ -28,12 +31,14 @@ export const createSchedule = ({ isActive = false, interval = 0, callback = Func
         },
         start () {
             callback()
+            lastPing = Date.now()
             nextPing = Date.now() + interval
             timer = setInterval(callCallback, 100)
         },
         stop () {
             clearInterval(timer)
             nextPing = 0
+            lastPing = 0
         }
     }
 }

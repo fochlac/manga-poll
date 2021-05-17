@@ -2,7 +2,7 @@ import 'regenerator-runtime/runtime.js'
 import { API } from '../common/api'
 import { db } from './storage'
 
-const { Urls } = API('http://localhost:43214')
+const { Urls } = API('http://manga.fochlac.com')
 
 const ALARMS = {
     URLS: 'urls'
