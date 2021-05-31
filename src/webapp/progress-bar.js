@@ -1,4 +1,9 @@
 const progress = document.querySelector('#scheduler > .scheduler-bar')
+const refresh = document.querySelector('#refresh')
+
+export const resisterProgressHandler = (updateNow) => {
+    refresh.addEventListener('click', updateNow)
+}
 
 export const updateProgress = (lastPing, nextPing) => {
     const diff = nextPing - lastPing

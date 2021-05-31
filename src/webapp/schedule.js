@@ -35,6 +35,12 @@ export const createSchedule = ({ isActive = false, interval = 0, callback = Func
             nextPing = Date.now() + interval
             timer = setInterval(callCallback, 100)
         },
+        triggerInstantly () {
+            callback()
+            lastPing = Date.now()
+            nextPing = Date.now() + interval
+            typeof updater === 'function' && updater(lastPing, nextPing)
+        },
         stop () {
             clearInterval(timer)
             nextPing = 0

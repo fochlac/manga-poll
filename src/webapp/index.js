@@ -5,13 +5,20 @@ import { addImportHandlers } from '../common/import'
 import { db } from './storage'
 import { urlRenderer } from '../common/urls'
 import { sourceRenderer } from '../common/sources'
-import { requestPermission, getMessagingToken } from './sw-helper'
 import { addBookmarkListener } from './bookmark'
 import { API } from '../common/api'
 import { createSchedule } from './schedule'
-import { updateProgress } from './progress-bar'
+import { resisterProgressHandler, updateProgress } from './progress-bar'
+import { registerNotificationHandlers } from './notification-settings'
+import { getMessagingToken } from './sw-helper'
 
-const { Urls } = API('')
+const { Urls, Subscription } = API('')
+
+async function fetchUrls () {
+    const sources = await db.sources.read()
+    Urls.read(sources.map((source) => source.id))
+        .then(db.urls.import)
+}
 
 firebase.initializeApp({
     apiKey: 'AIzaSyBe2mv85Y9-oQJhDFeqzCLrTaetRp_Cm50',
@@ -29,12 +36,18 @@ db.urls.setMaxOld(100)
 const urls = urlRenderer(db)
 const sources = sourceRenderer(db)
 
-db.onChange((changes) => {
+db.onChange(async (changes) => {
     if (['hide', 'hiddenChapters', 'urls'].some(changes.hasOwnProperty.bind(changes))) {
         urls.render()
     }
     if (Object.keys(changes).some((change) => change.includes('sources'))) {
         sources.render()
+        const settings = await db.settings.local.read()
+
+        if (settings.notifications) {
+            const sources = await db.sources.read()
+            Subscription.subscribe(sources.map((source) => source.id), await getMessagingToken())
+        }
     }
     if (Object.prototype.hasOwnProperty.call(changes, 'maxOld')) {
         fetchUrls()
@@ -42,33 +55,24 @@ db.onChange((changes) => {
     }
 })
 
-addImportHandlers(db)
-addBookmarkListener()
-
-urls.render()
-sources.render()
-
-if (Notification.permission !== 'granted') {
-    requestPermission()
-}
-
-getMessagingToken()
-
-const messaging = firebase.messaging()
-
-messaging.onMessage(fetchUrls)
-
-async function fetchUrls () {
-    const sources = await db.sources.read()
-    Urls.read(sources.map((source) => source.id))
-        .then(db.urls.import)
-}
-
 const interval = createSchedule({
     callback: fetchUrls,
     interval: 5 * 60 * 1000,
     isActive: true,
     updater: updateProgress
+})
+
+addImportHandlers(db)
+addBookmarkListener()
+registerNotificationHandlers()
+resisterProgressHandler(() => interval.triggerInstantly())
+
+urls.render()
+sources.render()
+
+firebase.messaging().onMessage((message) => {
+    fetchUrls()
+    console.log('message', message)
 })
 
 document.addEventListener('visibilitychange', () => {

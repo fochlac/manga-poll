@@ -17,8 +17,22 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging()
 
+let notification
 messaging.onBackgroundMessage(async (payload) => {
     const sources = await db.sources.read()
-    Urls.read(sources.map((source) => source.id))
+    await Urls.read(sources.map((source) => source.id))
         .then(db.urls.import)
+
+    const { newUrls } = await db.urls.read()
+    if (notification) {
+        notification.close()
+    }
+    if (newUrls.length > 0) {
+        await self.registration.getNotifications().then((notifications) => {
+            notifications.forEach((notification) => notification.close())
+        })
+        self.registration.showNotification(`${newUrls.length} new Chapters available!`, {
+            requireInteraction: true
+        })
+    }
 })

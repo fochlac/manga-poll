@@ -22,6 +22,17 @@ app.use(cors_1.default(), compression_1.default(), express_1.default.json(), exp
 source_controller_1.sourceController(app);
 url_controller_1.urlController(app);
 subscriptions_controller_1.subscriptionsController(app);
+app.get('/api/triggerFetch', async (req, res) => {
+    try {
+        console.log('Fetching all chapters...');
+        await subscriptions_controller_1.sendTopicMessage('Oc9_PDc8g3');
+        console.log('Done.');
+        res.status(200).send(`<html><body><h2>Success</h2></body></html>`);
+    }
+    catch (e) {
+        res.status(400).send(`<html><body><h2>Error: ${e.message}</h2></body></html>`);
+    }
+});
 app.get('*', (_req, res) => {
     res.status(404).send('Not Found... :(');
 });

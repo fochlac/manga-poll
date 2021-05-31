@@ -32,11 +32,27 @@ export const API = (baseUrl = '') => {
             .then((data) => data.payload || [])
     }
 
-    function addSubscription (source, key) {
+    function addSubscriptions (topics = [], key) {
         return fetch(`${baseUrl}/api/subscriptions`, {
             method: 'post',
             body: JSON.stringify({
-                topic: source.id,
+                topics,
+                key: key
+            }),
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then((res) => res.json())
+            .catch((error) => ({ valid: false, error }))
+    }
+
+    function deleteSubscriptions (topics = [], key) {
+        return fetch(`${baseUrl}/api/subscriptions`, {
+            method: 'delete',
+            body: JSON.stringify({
+                topics,
                 key: key
             }),
             headers: {
@@ -57,7 +73,8 @@ export const API = (baseUrl = '') => {
             fromUrl: addSourceFromUrl
         },
         Subscription: {
-            subscribe: addSubscription
+            subscribe: addSubscriptions,
+            unsubscribe: deleteSubscriptions
         }
     }
 }

@@ -29,6 +29,7 @@ const timeouts = {};
 function sendTopicMessage(topic) {
     clearTimeout(timeouts[topic]);
     timeouts[topic] = setTimeout(() => {
+        console.log('sendTopicMessage', topic);
         admin.messaging().send({
             data: {
                 type: 'UPDATE_CHAPTER',

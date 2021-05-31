@@ -9,7 +9,7 @@ const node_fetch_1 = __importDefault(require("node-fetch"));
 const parse_madaro_1 = require("./parse-madaro");
 const url_controller_1 = require("./url-controller");
 const source_controller_1 = require("./source-controller");
-// import { sendTopicMessage } from './subscriptions-controller'
+const subscriptions_controller_1 = require("./subscriptions-controller");
 async function fetchUrls(source, isNew = false) {
     const formData = new form_data_1.default();
     formData.append('action', 'manga_get_chapters');
@@ -17,7 +17,7 @@ async function fetchUrls(source, isNew = false) {
     const body = await node_fetch_1.default(source.url, { method: 'post', body: formData }).then((res) => res.text());
     const urls = parse_madaro_1.parseMadaro(source, body);
     if (urls.length) {
-        // sendTopicMessage(source.id)
+        subscriptions_controller_1.sendTopicMessage(source.id);
         console.log(`${urls.length} new urls for ${source.title}`);
     }
     urls.forEach(url_controller_1.addUrl(source, isNew));

@@ -128,6 +128,15 @@ export function createDB (storage) {
         return hide
     }
 
+    async function writeLocalSettings (settings) {
+        return write(NAMESPACES.LOCAL, { localSettings: JSON.stringify(settings) })
+    }
+
+    async function getLocalSettings () {
+        const { localSettings } = await read(NAMESPACES.LOCAL, { localSettings: '{}' })
+        return parse(localSettings, {})
+    }
+
     init()
 
     return {
@@ -136,6 +145,12 @@ export function createDB (storage) {
             import: writeSources,
             add: addSource,
             delete: deleteSource
+        },
+        settings: {
+            local: {
+                read: getLocalSettings,
+                set: writeLocalSettings
+            }
         },
         isDirty,
         urls: {
