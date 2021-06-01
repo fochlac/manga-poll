@@ -4,7 +4,7 @@
   "description": "",
   "main": "popup.js",
   "scripts": {
-    "build": "webpack -p",
+    "build": "webpack && npm run build --prefix server",
     "watch": "webpack -w"
   },
   "author": "",

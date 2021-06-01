@@ -2,7 +2,7 @@ import 'regenerator-runtime/runtime.js'
 import { API } from '../common/api'
 import { db } from './storage'
 
-const { Urls } = API('http://manga.fochlac.com')
+const { Urls } = API('https://manga.fochlac.com')
 
 const ALARMS = {
     URLS: 'urls'
@@ -44,5 +44,11 @@ db.onChange(async (changes) => {
     }
     if (Object.keys(changes).some((change) => change.includes('sources')) || Object.prototype.hasOwnProperty.call(changes, 'maxOld')) {
         await fetchUrls()
+    }
+})
+
+self.addEventListener('message', (event) => {
+    if (event.data === 'FETCH_CHAPTERS') {
+        fetchUrls()
     }
 })

@@ -27,7 +27,16 @@ export const API = (baseUrl = '') => {
     }
 
     function readUrls (sources = [], limit = '', date = '') {
-        return fetch(`${baseUrl}/api/urls?sources=${sources.join(',')}&date=${date}&limit=${limit}`)
+        return fetch(
+            `${baseUrl}/api/urls?sources=${sources.join(',')}&date=${date}&limit=${limit}`,
+            {
+                method: 'get',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }
+        )
             .then((res) => res.json())
             .then((data) => data.payload || [])
     }
