@@ -50,7 +50,7 @@ export function urlRenderer (db) {
     function createUrlRenderer (isOld) {
         return (chapter) => {
             const date = new Date(chapter.created)
-            const result = String(chapter.url).match(/\/[^/]*hapter[^/\d]*(\d*)[^\d/]*[^/]*\//) || []
+            const result = String(chapter.url).match(/^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/) || []
             const timeString = `${pad(date.getHours())}:${pad(date.getMinutes())}`
             const dateString = `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${String(date.getFullYear()).slice(-2)}`
             const fullDate = date.toISOString().split('T')[0] === new Date().toISOString().split('T')[0] ? timeString : dateString
@@ -58,7 +58,7 @@ export function urlRenderer (db) {
             return `
                 <li class="row${isOld ? ' old' : ' new'}">
                     <a class="link" href="${chapter.url}" target="_blank" rel="noopener" data-id="${chapter.id}">
-                        ${chapter.title} - Chapter ${result[1]}
+                        ${chapter.title} - Chapter ${result[2]}
                     </a>
                     <span class="date-wrapper">
                         <span class="date" title="${`${dateString} ${timeString}`}">${fullDate}</span>

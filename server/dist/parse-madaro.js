@@ -73,12 +73,15 @@ function parseMadaro(source, body) {
         };
     });
     const newUrls = urlList.filter(({ url }) => {
-        const isValid = /^https?:\/\/.*\/[^/]*hapter[^/\d]*(\d*)[^\d/]*[^/]*\//.test(url);
-        if (warned[url] < 3) {
+        const isValid = /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url);
+        const key = url_controller_1.getUrlKey(url, source.id);
+        const stored = url_controller_1.getUrls()[key];
+        if (!isValid && warned[url] < 3) {
             console.log(`Invalid url found for ${source.title}: ${url}`);
             warned[url] = typeof warned[url] === 'number' ? warned[url] + 1 : 0;
         }
-        return isValid && !url_controller_1.getUrls()[url];
+        url_controller_1.updateUrl(source, url);
+        return isValid && !stored;
     });
     return parseDates(newUrls);
 }

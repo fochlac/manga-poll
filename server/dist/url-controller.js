@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.urlController = exports.getUrls = exports.addUrl = void 0;
+exports.urlController = exports.getUrls = exports.addUrl = exports.updateUrl = exports.getUrlKey = void 0;
 const fs_1 = __importDefault(require("fs"));
 const nanoid_1 = require("nanoid");
 const path_1 = require("path");
@@ -17,16 +17,35 @@ catch (e) {
     console.log(e);
 }
 let writeUrlsTimeout = null;
+function getUrlKey(url, sourceId) {
+    const result = String(url).match(/^https?:\/\/([^/]*)\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/) || [];
+    const chapter = result[3];
+    const host = result[1];
+    return `${host}--${sourceId}--${chapter}`;
+}
+exports.getUrlKey = getUrlKey;
+function updateUrl(source, newUrl) {
+    const key = getUrlKey(newUrl, source.id);
+    if (urls[key] && urls[key].url !== newUrl) {
+        urls[key].url = newUrl;
+        clearTimeout(writeUrlsTimeout);
+        writeUrlsTimeout = setTimeout(() => {
+            fs_1.default.writeFile(urlsPath, JSON.stringify(urls, null, 2), () => null);
+        }, 100);
+    }
+    return urls[key];
+}
+exports.updateUrl = updateUrl;
 function addUrl(source, isNew = false) {
     return ({ url, created }) => {
         const entry = {
             url,
-            id: nanoid(),
+            id: getUrlKey(url, source.id),
             created: !isNew ? Date.now() : created,
             title: source.title,
             sourceId: source.id
         };
-        urls[url] = entry;
+        urls[getUrlKey(url, source.id)] = entry;
         clearTimeout(writeUrlsTimeout);
         writeUrlsTimeout = setTimeout(() => {
             fs_1.default.writeFile(urlsPath, JSON.stringify(urls, null, 2), () => null);

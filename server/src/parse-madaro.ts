@@ -1,5 +1,5 @@
 import cheerio from 'cheerio'
-import { getUrls } from './url-controller'
+import { getUrlKey, getUrls, updateUrl } from './url-controller'
 
 const warned: Record<string, number> = {}
 
@@ -77,13 +77,16 @@ export function parseMadaro (source, body) {
     })
 
     const newUrls = urlList.filter(({ url }) => {
-        const isValid = /^https?:\/\/.*\/[^/]*hapter[^/\d]*(\d*)[^\d/]*[^/]*\//.test(url)
-        if (warned[url] < 3) {
+        const isValid = /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)
+        const key = getUrlKey(url, source.id)
+        const stored = getUrls()[key]
+        if (!isValid && warned[url] < 3) {
             console.log(`Invalid url found for ${source.title}: ${url}`)
             warned[url] = typeof warned[url] === 'number' ? warned[url] + 1 : 0
         }
+        updateUrl(source, url)
 
-        return isValid && !getUrls()[url]
+        return isValid && !stored
     })
 
     return parseDates(newUrls)

@@ -15,13 +15,13 @@ async function fetchUrls (source, isNew = false) {
     const urls = parseMadaro(source, body)
     if (urls.length) {
         sendTopicMessage(source.id)
-        console.log(`${urls.length} new urls for ${source.title}`)
+        console.log(`${urls.length} new urls for ${source.title} on "${source.url.split('/')[2]}".`)
     }
     urls.forEach(addUrl(source, isNew))
 }
 
-function fetchAllUrls () {
-    return Promise.all(Object.values(getSources()).map((source) => fetchUrls(source)
+function fetchAllUrls (isNew?: boolean) {
+    return Promise.all(Object.values(getSources()).map((source) => fetchUrls(source, isNew)
         .then(() => ({ hasError: false, source, error: null }))
         .catch((error) => ({ hasError: true, error, source }))
     ))
@@ -41,7 +41,7 @@ export function init () {
     timer = setInterval(() => {
         fetchAllUrls()
     }, 60000 * 15)
-    fetchAllUrls()
+    fetchAllUrls(true)
 }
 
 export const fetchAll = () => fetchAllUrls()

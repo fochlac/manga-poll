@@ -18,12 +18,12 @@ async function fetchUrls(source, isNew = false) {
     const urls = parse_madaro_1.parseMadaro(source, body);
     if (urls.length) {
         subscriptions_controller_1.sendTopicMessage(source.id);
-        console.log(`${urls.length} new urls for ${source.title}`);
+        console.log(`${urls.length} new urls for ${source.title} on "${source.url.split('/')[2]}".`);
     }
     urls.forEach(url_controller_1.addUrl(source, isNew));
 }
-function fetchAllUrls() {
-    return Promise.all(Object.values(source_controller_1.getSources()).map((source) => fetchUrls(source)
+function fetchAllUrls(isNew) {
+    return Promise.all(Object.values(source_controller_1.getSources()).map((source) => fetchUrls(source, isNew)
         .then(() => ({ hasError: false, source, error: null }))
         .catch((error) => ({ hasError: true, error, source }))))
         .then((results) => {
@@ -41,7 +41,7 @@ function init() {
     timer = setInterval(() => {
         fetchAllUrls();
     }, 60000 * 15);
-    fetchAllUrls();
+    fetchAllUrls(true);
 }
 exports.init = init;
 exports.fetchAll = () => fetchAllUrls();

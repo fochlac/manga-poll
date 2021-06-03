@@ -26,16 +26,36 @@ catch (e) {
 
 let writeUrlsTimeout = null
 
+export function getUrlKey (url, sourceId) {
+    const result = String(url).match(/^https?:\/\/([^/]*)\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/) || []
+    const chapter = result[3]
+    const host = result[1]
+
+    return `${host}--${sourceId}--${chapter}`
+}
+
+export function updateUrl (source, newUrl) {
+    const key = getUrlKey(newUrl, source.id)
+    if (urls[key] && urls[key].url !== newUrl) {
+        urls[key].url = newUrl
+        clearTimeout(writeUrlsTimeout)
+        writeUrlsTimeout = setTimeout(() => {
+            fs.writeFile(urlsPath, JSON.stringify(urls, null, 2), () => null)
+        }, 100)
+    }
+    return urls[key]
+}
+
 export function addUrl (source, isNew = false) {
     return ({ url, created }) => {
         const entry = {
             url,
-            id: nanoid(),
+            id: getUrlKey(url, source.id),
             created: !isNew ? Date.now() : created,
             title: source.title,
             sourceId: source.id
         }
-        urls[url] = entry
+        urls[getUrlKey(url, source.id)] = entry
         clearTimeout(writeUrlsTimeout)
         writeUrlsTimeout = setTimeout(() => {
             fs.writeFile(urlsPath, JSON.stringify(urls, null, 2), () => null)
