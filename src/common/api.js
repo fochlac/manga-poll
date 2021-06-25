@@ -28,9 +28,14 @@ export const API = (baseUrl = '') => {
 
     function readUrls (sources = [], limit = '', date = '') {
         return fetch(
-            `${baseUrl}/api/urls?sources=${sources.join(',')}&date=${date}&limit=${limit}`,
+            `${baseUrl}/api/urls/fetch`,
             {
-                method: 'get',
+                method: 'post',
+                body: JSON.stringify({
+                    sources,
+                    date,
+                    limit
+                }),
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json'

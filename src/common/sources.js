@@ -1,10 +1,4 @@
 export function sourceRenderer (db) {
-    const hideAll = document.getElementById('hide')
-    const addSection = document.getElementById('addSection')
-    const importSection = document.querySelector('div.import')
-    const popupTitle = document.getElementById('popupTitle')
-    const bookmarks = document.getElementById('add')
-    const urls = document.getElementById('urls')
     const sources = document.getElementById('sources')
 
     sources.addEventListener('click', (event) => {
@@ -12,27 +6,6 @@ export function sourceRenderer (db) {
         if (closest && closest.dataset['id'] && sources.contains(closest)) {
             db.sources.delete(closest.dataset['id'])
             closest.classList.remove('action')
-        }
-    })
-
-    bookmarks.addEventListener('click', () => {
-        if (sources.style.display !== 'block') {
-            sources.style.display = 'block'
-            importSection.style.display = 'flex'
-            addSection.style.display = 'flex'
-            urls.style.display = 'none'
-            hideAll.style.display = 'none'
-            popupTitle.innerText = 'Bookmarks'
-            bookmarks.innerText = 'Chapters'
-        }
-        else {
-            sources.style.display = 'none'
-            importSection.style.display = 'none'
-            addSection.style.display = 'none'
-            urls.style.display = ''
-            bookmarks.innerText = 'Bookmarks'
-            hideAll.style.display = ''
-            popupTitle.innerText = 'Chapters'
         }
     })
 

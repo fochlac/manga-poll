@@ -5,9 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.urlController = exports.getUrls = exports.addUrl = exports.updateUrl = exports.getUrlKey = void 0;
 const fs_1 = __importDefault(require("fs"));
-const nanoid_1 = require("nanoid");
 const path_1 = require("path");
-const nanoid = nanoid_1.customAlphabet(nanoid_1.urlAlphabet, 10);
 const urlsPath = path_1.resolve(__dirname, '../db/urls.json');
 let urls = {};
 try {
@@ -59,16 +57,16 @@ function getUrls() {
 }
 exports.getUrls = getUrls;
 function urlController(app) {
-    app.get('/api/urls', (req, res) => {
+    app.post('/api/urls/fetch', (req, res) => {
         var _a, _b, _c;
         let payload = Object.values(urls);
-        if (typeof ((_a = req === null || req === void 0 ? void 0 : req.query) === null || _a === void 0 ? void 0 : _a.sources) === 'string' && req.query.sources.length > 0) {
-            const sourceFilter = req.query.sources.split(',');
+        if (Array.isArray((_a = req === null || req === void 0 ? void 0 : req.body) === null || _a === void 0 ? void 0 : _a.sources) && req.body.sources.length > 0) {
+            const sourceFilter = req.body.sources;
             payload = payload.filter((url) => sourceFilter.includes(url.sourceId));
         }
-        if (!isNaN(Number((_b = req === null || req === void 0 ? void 0 : req.query) === null || _b === void 0 ? void 0 : _b.date)) && Number(req.query.date) > 0) {
-            const limit = ((_c = req === null || req === void 0 ? void 0 : req.query) === null || _c === void 0 ? void 0 : _c.limit) && !isNaN(Number(req.query.limit)) && Number(req.query.limit) || 25;
-            const date = Number(req.query.date);
+        if (!isNaN(Number((_b = req === null || req === void 0 ? void 0 : req.body) === null || _b === void 0 ? void 0 : _b.date)) && Number(req.body.date) > 0) {
+            const limit = ((_c = req === null || req === void 0 ? void 0 : req.body) === null || _c === void 0 ? void 0 : _c.limit) && !isNaN(Number(req.body.limit)) && Number(req.body.limit) || 25;
+            const date = Number(req.body.date);
             let old = 0;
             payload = payload
                 .sort((url1, url2) => url2.created - url1.created)

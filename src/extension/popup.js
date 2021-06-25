@@ -6,6 +6,7 @@ import { urlRenderer } from '../common/urls'
 import { sourceRenderer } from '../common/sources'
 import { updateProgress } from '../common/progress-bar'
 import { createSchedule } from '../common/schedule'
+import { registerMenuListeners } from '../common/menu'
 
 db.urls.setMaxOld(100)
 
@@ -31,6 +32,7 @@ createSchedule({
 })
 
 addImportHandlers(db)
+registerMenuListeners(db)
 
 Urls.render()
 Sources.render()

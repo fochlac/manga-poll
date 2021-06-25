@@ -2,11 +2,6 @@ import { pad } from './utils'
 
 export function urlRenderer (db) {
     const urls = document.getElementById('urls')
-    const hideAll = document.getElementById('hide')
-
-    hideAll.addEventListener('click', () => {
-        db.urls.hideAll(Date.now())
-    })
 
     async function hide (id) {
         const { newUrls } = await db.urls.read()
@@ -35,6 +30,14 @@ export function urlRenderer (db) {
             const maxOld = await db.urls.getMaxOld()
             await db.urls.setMaxOld(maxOld + 100)
         }
+        const hideAll = event.target.closest('.hide-all')
+        if (hideAll && urls.contains(hideAll)) {
+            await db.urls.hideAll(Date.now())
+        }
+        const top = event.target.closest('.top')
+        if (top && urls.contains(top)) {
+            urls.scrollTo({ top: 0, behavior: 'smooth' })
+        }
     })
 
     let maxScroll = 0
@@ -45,7 +48,17 @@ export function urlRenderer (db) {
             const maxOld = await db.urls.getMaxOld()
             db.urls.setMaxOld(maxOld + 100)
         }
+        checkTopButton()
     })
+
+    function checkTopButton () {
+        if (urls.scrollTop > 0 && urls.getBoundingClientRect().top === urls.querySelector('.old-chapters').getBoundingClientRect().top) {
+            urls.querySelector('.old-chapters .top').style.display = 'inline'
+        }
+        else {
+            urls.querySelector('.old-chapters .top').style.display = 'none'
+        }
+    }
 
     function createUrlRenderer (isOld) {
         return (chapter) => {
@@ -75,12 +88,15 @@ export function urlRenderer (db) {
         const oldRows = oldUrls.map(createUrlRenderer(true))
 
         if (newRows.length || oldRows.length) {
-            urls.innerHTML = newRows
-                .concat('<li class="old-chapters">Old Chapters</li>')
+            urls.innerHTML = []
+                .concat(newRows.length ? '<li class="new-chapters">New Chapters <span class="action hide-all">Hide all</span></li>' : [])
+                .concat(newRows)
+                .concat('<li class="old-chapters">Old Chapters <span class="action top">Top &#8593;</span></li>')
                 .concat(oldRows.slice(0, maxOld))
                 .concat(oldRows.length >= maxOld ? ['<li class="action load-more">Load up to 100 more old chapters...</li>'] : [])
                 .join('\n')
             document.title = newRows.length ? `(${newRows.length}) Manga Poll` : 'Manga Poll'
+            checkTopButton()
         }
         else {
             urls.innerHTML = '<li class="row">No Chapters available.</li>'

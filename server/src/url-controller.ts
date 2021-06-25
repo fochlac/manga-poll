@@ -1,8 +1,5 @@
 import fs from 'fs'
-import { customAlphabet, urlAlphabet } from 'nanoid'
 import { resolve } from 'path'
-
-const nanoid = customAlphabet(urlAlphabet, 10)
 
 const urlsPath = resolve(__dirname, '../db/urls.json')
 
@@ -69,16 +66,16 @@ export function getUrls () {
 }
 
 export function urlController (app) {
-    app.get('/api/urls', (req, res) => {
+    app.post('/api/urls/fetch', (req, res) => {
         let payload = Object.values(urls)
 
-        if (typeof req?.query?.sources === 'string' && req.query.sources.length > 0) {
-            const sourceFilter = req.query.sources.split(',')
+        if (Array.isArray(req?.body?.sources) && req.body.sources.length > 0) {
+            const sourceFilter = req.body.sources
             payload = payload.filter((url) => sourceFilter.includes(url.sourceId))
         }
-        if (!isNaN(Number(req?.query?.date)) && Number(req.query.date) > 0) {
-            const limit = req?.query?.limit && !isNaN(Number(req.query.limit)) && Number(req.query.limit) || 25
-            const date = Number(req.query.date)
+        if (!isNaN(Number(req?.body?.date)) && Number(req.body.date) > 0) {
+            const limit = req?.body?.limit && !isNaN(Number(req.body.limit)) && Number(req.body.limit) || 25
+            const date = Number(req.body.date)
             let old = 0
             payload = payload
                 .sort((url1, url2) => url2.created - url1.created)

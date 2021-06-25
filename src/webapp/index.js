@@ -11,12 +11,15 @@ import { createSchedule } from '../common/schedule'
 import { resisterProgressHandler, updateProgress } from '../common/progress-bar'
 import { registerNotificationHandlers } from './notification-settings'
 import { getMessagingToken } from './sw-helper'
+import { registerMenuListeners } from '../common/menu'
 
 const { Urls, Subscription } = API('')
 
 async function fetchUrls () {
+    const maxOld = await db.urls.getMaxOld()
+    const hide = await db.urls.getHide()
     const sources = await db.sources.read()
-    Urls.read(sources.map((source) => source.id))
+    Urls.read(sources.map((source) => source.id), maxOld, hide)
         .then(db.urls.import)
 }
 
@@ -64,6 +67,7 @@ const interval = createSchedule({
 
 addImportHandlers(db)
 addBookmarkListener()
+registerMenuListeners()
 registerNotificationHandlers()
 resisterProgressHandler(() => interval.triggerInstantly())
 

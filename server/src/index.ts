@@ -9,6 +9,7 @@ import { sourceController } from './source-controller'
 import { urlController } from './url-controller'
 import { init } from './scheduler'
 import { sendTopicMessage, subscriptionsController } from './subscriptions-controller'
+import { linksController } from './link-controller'
 
 const app = express()
 const server = createServer(app)
@@ -27,6 +28,7 @@ app.use(
 sourceController(app)
 urlController(app)
 subscriptionsController(app)
+linksController(app)
 
 
 app.get('/api/triggerFetch', async (req, res) => {
