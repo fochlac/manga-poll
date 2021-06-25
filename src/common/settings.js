@@ -7,16 +7,22 @@ export function getLinkHelpers (db, Api) {
         if (changeset.length) {
             const link = await db.link.read()
             const local = await db.link.local()
-            const changes = changeset.reduce((changes, key) => {
-                if (
-                    Array.isArray(link[key])
-                        ? link[key].every((val) => local[key].includes(val))
-                        : JSON.stringify(link[key]) !== JSON.stringify(local[key])
-                ) {
-                    changes[key] = local[key]
-                }
-                return changes
-            }, {})
+            const changes = {}
+            if (changeset.includes('hide') && String(link.hide) !== String(local.hide)) {
+                changes.hide = local.hide
+            }
+            if (
+                changeset.includes('hiddenChapters') &&
+                JSON.stringify(link.hiddenChapters) !== JSON.stringify(local.hiddenChapters)
+            ) {
+                changes.hiddenChapters = local.hiddenChapters
+            }
+            if (changeset.includes('sources') && (
+                link.sources?.length !== local.sources.length ||
+                link.sources.some((source) => source && !local.sources.includes(source.id))
+            )) {
+                changes.sources = local.sources
+            }
 
             if (Object.keys(changes).length) {
                 Api.Link.update(link.key, changes)
