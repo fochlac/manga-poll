@@ -75,7 +75,7 @@ export async function addSettingsHandlers (db, api) {
             linkInput3.focus()
             linkInput3.setSelectionRange(number.length - 10, number.length - 10)
         }
-        else if (number.length > 5) {
+        else if (number.length >= 5) {
             linkInput2.focus()
             linkInput2.setSelectionRange(number.length - 5, number.length - 5)
         }
@@ -83,7 +83,7 @@ export async function addSettingsHandlers (db, api) {
     linkInput2.addEventListener('keyup', () => {
         const number = linkInput2.value.replaceAll(/[^\d]*/g, '').slice(0, 10)
         linkInput2.value = number.slice(0, 5)
-        if (number.length > 5) {
+        if (number.length >= 5) {
             linkInput3.value = number.slice(5, 10)
             linkInput3.focus()
             linkInput3.setSelectionRange(number.length - 5, number.length - 5)
