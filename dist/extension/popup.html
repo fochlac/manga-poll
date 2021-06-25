@@ -22,7 +22,7 @@
     <h5>
       <span id="popupTitle">Chapters</span>
       <div style="position: absolute; right: 10px; top: 0px">
-        <span class="action" id="chapters" style="display: none;">Chapters</span>
+        <span class="action" id="chapters" style="display: none">Chapters</span>
         <span class="action" id="add">Bookmarks</span>
         <span class="action" id="settings">Settings</span>
       </div>
@@ -31,49 +31,68 @@
       <ul id="urls"></ul>
       <ul id="sources"></ul>
       <div class="settings">
-        <div id="notifications">
+        <!-- <div id="notifications">
           <h6>Notifications</h6>
           <div class="switch-case">
-            <span class="switch-label">
-              Enable notifications
-            </span>
+            <span class="switch-label"> Enable notifications </span>
             <label class="switch">
-              <input type="checkbox" id="notification-toggle">
+              <input type="checkbox" id="notification-toggle" />
               <span class="slider"></span>
             </label>
-          </div>
-        </div>
+          </div> 
+        </div>-->
         <div class="linking">
           <div>
-            <h6>Synchronization</h6>
-            <div class="switch-case">
-              <span class="switch-label">
-                Enable Synchronization
-              </span>
+            <!-- <h6>Synchronization</h6>
+            <div class="switch-case" id="link-toggle-wrapper">
+              <span class="switch-label"> Enable Synchronization </span>
               <label class="switch">
-                <input type="checkbox" id="notification-toggle">
+                <input type="checkbox" id="link-toggle" />
                 <span class="slider"></span>
               </label>
-            </div>
+            </div> -->
             <div class="link-id-block">
-              <p>Link-Number</p>
+              <h6>Link-Number</h6>
+              <label class="label">
+                You can use this number to synchronize with other clients.
+              </label>
               <p id="link-id" class="link-id unlinked">Unlinked</p>
-              <label class="label">You can use this number to synchronize with other clients.</label>
             </div>
-            <h6>Link to Account</h6>
-            <div class="link-section">
-              <div class="add-link">
-                <label for="link-number" class="label">
-                  Enter an existing link-number
-                </label>
-                <input type="text" id="link-number" />
-                <button id="link-button">Submit</button>
+            <div id="link-section">
+              <h6>Link to Account</h6>
+              <div class="link-section">
+                <div class="add-link">
+                  <label for="link-number" class="label">
+                    Enter an existing link-number
+                  </label>
+                  <div class="input-wrapper">
+                    <input type="text" id="link-number-1" />-
+                    <input type="text" id="link-number-2" />-
+                    <input type="text" id="link-number-3" />
+                  </div>
+                  <button id="link-button">Submit</button>
+                </div>
+                <div class="new-link">
+                  <label for="new-link-button" class="label">
+                    or generate a new link-number.
+                  </label>
+                  <button id="new-link-button">Generate</button>
+                </div>
               </div>
-              <div class="new-link">
-                <label for="link-number" class="label">
-                  or generate a new link-number.
-                </label>
-                <button id="new-link-button">Generate</button>
+            </div>
+            <div id="unlink-section" style="display: none">
+              <h6>Unlink</h6>
+              <div class="unlink-section">
+                <div class="unlink">
+                  <label for="new-link-button" class="label">
+                    If you click "Remove Linking" the connection to the linked
+                    account will be removed. The locally stored state will
+                    remain, but your changes will no longer be synced to other
+                    locations and you will no longer recieve updates from the
+                    account.
+                  </label>
+                  <button id="unlink-button">Remove Linking</button>
+                </div>
               </div>
             </div>
           </div>

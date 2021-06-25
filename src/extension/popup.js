@@ -7,9 +7,14 @@ import { sourceRenderer } from '../common/sources'
 import { updateProgress } from '../common/progress-bar'
 import { createSchedule } from '../common/schedule'
 import { registerMenuListeners } from '../common/menu'
+import { addSettingsHandlers, getLinkHelpers } from '../common/settings'
+import { API } from '../common/api'
+
+const api = API('https://manga.fochlac.com')
 
 db.urls.setMaxOld(100)
 
+const Links = getLinkHelpers(db, api)
 const Urls = urlRenderer(db)
 const Sources = sourceRenderer(db)
 
@@ -20,6 +25,7 @@ db.onChange((changes) => {
     if (Object.keys(changes).some((change) => change.includes('sources')) || Object.prototype.hasOwnProperty.call(changes, 'maxOld')) {
         Sources.render()
     }
+    Links.pushLinkUpdate(changes)
 })
 
 navigator.serviceWorker.controller.postMessage('FETCH_CHAPTERS')
@@ -32,6 +38,7 @@ createSchedule({
 })
 
 addImportHandlers(db)
+addSettingsHandlers(db, api)
 registerMenuListeners(db)
 
 Urls.render()

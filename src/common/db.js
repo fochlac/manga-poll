@@ -123,6 +123,24 @@ export function createDB (storage) {
         return maxOld
     }
 
+    async function setLink (link) {
+        await write(NAMESPACES.SYNC, { link })
+    }
+
+    async function getLink () {
+        const { link } = await read(NAMESPACES.SYNC, ['link'])
+        return link
+    }
+
+    async function setEnabled (linkEnabled) {
+        await write(NAMESPACES.SYNC, { linkEnabled })
+    }
+
+    async function getEnabled () {
+        const { linkEnabled } = await read(NAMESPACES.SYNC, ['linkEnabled'])
+        return linkEnabled
+    }
+
     async function getHide () {
         const { hide } = await read(NAMESPACES.SYNC, { hide: 0 })
         return hide
@@ -135,6 +153,28 @@ export function createDB (storage) {
     async function getLocalSettings () {
         const { localSettings } = await read(NAMESPACES.LOCAL, { localSettings: '{}' })
         return parse(localSettings, {})
+    }
+
+    async function getLinkData () {
+        const sources = await readSources()
+        const { hiddenChapters: hiddenChaptersString, hide } = await read(NAMESPACES.SYNC, { hiddenChapters: '{}', hide: 0 })
+        const hiddenChapters = parse(hiddenChaptersString, {})
+
+        return {
+            sources: sources.map((source) => source.id),
+            hiddenChapters,
+            hide: Number(hide)
+        }
+    }
+
+    async function setLinkData ({sources, hiddenChapters, hide}) {
+        await Promise.all([
+            writeSources(sources),
+            write(NAMESPACES.SYNC, {
+                hiddenChapters: JSON.stringify(hiddenChapters),
+                hide
+            })
+        ])
     }
 
     init()
@@ -162,6 +202,14 @@ export function createDB (storage) {
             getMaxOld,
             getHide
         },
-        onChange: storage.addListener
+        onChange: storage.addListener,
+        link: {
+            set: setLink,
+            read: getLink,
+            local: getLinkData,
+            setLocal: setLinkData,
+            getEnabled,
+            setEnabled
+        }
     }
 }

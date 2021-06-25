@@ -108,11 +108,11 @@ html {
   cursor: default;
 }
 #addSection .import {
-    display: flex;
-    justify-content: flex-end;
+  display: flex;
+  justify-content: flex-end;
 }
 #addSection .import .action {
-    margin-right: 8px;
+  margin-right: 8px;
 }
 #addSection {
   justify-content: space-between;
@@ -180,8 +180,6 @@ html {
   transition: width 0.1s linear;
 }
 
-
-
 /* The switch - the box around the slider */
 .switch {
   position: relative;
@@ -206,8 +204,8 @@ html {
   right: 0;
   bottom: 0;
   background-color: #c3cbd2;
-  -webkit-transition: .2s;
-  transition: .2s;
+  -webkit-transition: 0.2s;
+  transition: 0.2s;
   border-radius: 17px;
 }
 
@@ -220,8 +218,8 @@ html {
   left: 2px;
   bottom: 2px;
   background-color: white;
-  -webkit-transition: .2s;
-  transition: .2s;
+  -webkit-transition: 0.2s;
+  transition: 0.2s;
 }
 
 input:checked + .slider {
@@ -279,11 +277,15 @@ h6 {
   overflow: hidden;
   width: 100%;
   font-style: italic;
+  text-align: justify;
+  padding: 0 4px;
+  box-sizing: border-box;
 }
 
+.unlink-section,
 .link-section {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
 }
 
 .new-link,
@@ -314,5 +316,28 @@ h6 {
 }
 
 .link-section .label {
-  text-align: center;    
+  text-align: center;
+}
+
+.unlink {
+  display: flex;
+  flex-direction: column;
+}
+
+#unlink-button {
+  margin: 8px auto 0;
+  width: 200px;
+  font-size: 0.9rem;
+  padding: 3px;
+}
+
+.input-wrapper {
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.input-wrapper input {
+  width: 25%;
+  text-align: center;
 }

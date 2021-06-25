@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { customAlphabet } from 'nanoid'
 import { resolve } from 'path'
+import { getSources } from './source-controller'
 
 const idGen = customAlphabet("0123456789", 10)
 const pwGen = customAlphabet("0123456789", 5)
@@ -52,11 +53,12 @@ function fromKey(key) {
 
 function createPayload(link: Link) {
     const { hiddenChapters, hide, sources, lastModified, id, pw } = link
+    const sourceMap = getSources()
     return {
         key: toKey(id, pw),
         hiddenChapters,
         hide,
-        sources,
+        sources: sources.map((id) => sourceMap[id]),
         lastModified
     }
 }
@@ -141,13 +143,18 @@ export function linksController(app) {
         try {
             const id = checkKey(req.params.key)
 
+            let changes = 0
             updateFields.forEach((key) => {
                 if (req.body[key]) {
+                    changes++
                     links[id][key] = req.body[key]
                 }
             })
-
-            write()
+            
+            if (changes > 0) {
+                links[id].lastModified = Date.now()
+                write()
+            }
 
             res.status(200).json({ 
                 valid: true, 
@@ -155,21 +162,26 @@ export function linksController(app) {
             })
         }
         catch (e) {
-            handleKeyError(e)
+            handleKeyError(res)
         }
     })
 
     app.get('/api/links/:key', (req, res) => {
         try {
             const id = checkKey(req.params.key)
-
-            res.status(200).json({ 
-                valid: true, 
-                payload: createPayload(links[id])
-            })
+            const changedSince = req.query.changedSince
+            if (changedSince && Number(changedSince) >= links[id].lastModified) {
+                res.status(304).send({ valid: true, payload: null })
+            }
+            else {
+                res.status(200).json({ 
+                    valid: true, 
+                    payload: createPayload(links[id])
+                })
+            }
         }
         catch (e) {
-            handleKeyError(e)
+            handleKeyError(res)
         }
     })
 }

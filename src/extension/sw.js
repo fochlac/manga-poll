@@ -1,19 +1,24 @@
 import 'regenerator-runtime/runtime.js'
 import { API } from '../common/api'
+import { getLinkHelpers } from '../common/settings'
 import { db } from './storage'
 
-const { Urls } = API('https://manga.fochlac.com')
+const Api = API('https://manga.fochlac.com')
 
 const ALARMS = {
     URLS: 'urls'
 }
 
+const Links = getLinkHelpers(db, Api)
 async function fetchUrls () {
     const maxOld = await db.urls.getMaxOld()
     const hide = await db.urls.getHide()
     const sources = await db.sources.read()
-    Urls.read(sources.map((source) => source.id), maxOld, hide)
-        .then(db.urls.import)
+    await Promise.all([
+        Links.fetchLinkUpdate(),
+        Api.Urls.read(sources.map((source) => source.id), maxOld, hide)
+            .then(db.urls.import)
+    ])
 }
 
 chrome.alarms.create(ALARMS.URLS, { periodInMinutes: 15 })

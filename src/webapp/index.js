@@ -12,15 +12,20 @@ import { resisterProgressHandler, updateProgress } from '../common/progress-bar'
 import { registerNotificationHandlers } from './notification-settings'
 import { getMessagingToken } from './sw-helper'
 import { registerMenuListeners } from '../common/menu'
+import { addSettingsHandlers, getLinkHelpers } from '../common/settings'
 
-const { Urls, Subscription } = API('')
+const Api = API('')
+
+const Links = getLinkHelpers(db, Api)
 
 async function fetchUrls () {
     const maxOld = await db.urls.getMaxOld()
     const hide = await db.urls.getHide()
     const sources = await db.sources.read()
-    Urls.read(sources.map((source) => source.id), maxOld, hide)
+    Api.Urls.read(sources.map((source) => source.id), maxOld, hide)
         .then(db.urls.import)
+
+    Links.fetchLinkUpdate()
 }
 
 firebase.initializeApp({
@@ -49,13 +54,14 @@ db.onChange(async (changes) => {
 
         if (settings.notifications) {
             const sources = await db.sources.read()
-            Subscription.subscribe(sources.map((source) => source.id), await getMessagingToken())
+            Api.Subscription.subscribe(sources.map((source) => source.id), await getMessagingToken())
         }
     }
     if (Object.prototype.hasOwnProperty.call(changes, 'maxOld')) {
         fetchUrls()
         urls.render()
     }
+    Links.pushLinkUpdate(changes)
 })
 
 const interval = createSchedule({
@@ -66,6 +72,7 @@ const interval = createSchedule({
 })
 
 addImportHandlers(db)
+addSettingsHandlers(db, Api)
 addBookmarkListener()
 registerMenuListeners()
 registerNotificationHandlers()

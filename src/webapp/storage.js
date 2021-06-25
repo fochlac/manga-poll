@@ -4,7 +4,7 @@ import { createDB } from '../common/db'
 let onChange = Function.prototype
 
 function read (_namespace, keyMap) {
-    const values = Object.keys(keyMap)
+    const values = (Array.isArray(keyMap) ? keyMap : Object.keys(keyMap))
         .map(async (key) => ({[key]: await localForage.getItem(key) || keyMap[key]}))
 
     return Promise.all(values)

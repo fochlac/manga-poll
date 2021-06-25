@@ -29,9 +29,7 @@ function getDateType (urlList) {
     return Object.keys(types).reduce((type1, type2) => types[type1] > types[type2] ? type1 : type2, 'unparsable')
 }
 
-function parseDates (urlList) {
-    const type = getDateType(urlList)
-
+function parseDates (urlList, type) {
     return urlList.map((url) => {
         const baseDate = new Date()
         baseDate.setHours(0, 0, 0, 0)
@@ -89,6 +87,7 @@ export function parseMadaro (source, body) {
         return isValid && !stored
     })
 
-    return parseDates(newUrls)
+    const type = getDateType(urlList)
+    return parseDates(newUrls, type)
 }
 

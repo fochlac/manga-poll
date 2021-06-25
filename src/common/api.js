@@ -78,6 +78,44 @@ export const API = (baseUrl = '') => {
             .catch((error) => ({ valid: false, error }))
     }
 
+    function readLink (key, changedSince) {
+        return fetch(`${baseUrl}/api/links/${key}${changedSince ? `?changedSince=${changedSince}` : ''}`, {
+            method: 'get',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then((res) => res.status === 304 ? ({ valid: true, payload: null }) : res.json())
+            .catch((error) => ({ valid: false, error }))
+    }
+
+    function updateLink (key, updateSet) {
+        return fetch(`${baseUrl}/api/links/${key}`, {
+            method: 'put',
+            body: JSON.stringify(updateSet),
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then((res) => res.json())
+            .catch((error) => ({ valid: false, error }))
+    }
+
+    function createLink (initSet) {
+        return fetch(`${baseUrl}/api/links`, {
+            method: 'post',
+            body: JSON.stringify(initSet),
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then((res) => res.json())
+            .catch((error) => ({ valid: false, error }))
+    }
+
     return {
         Urls: {
             read: readUrls
@@ -89,6 +127,11 @@ export const API = (baseUrl = '') => {
         Subscription: {
             subscribe: addSubscriptions,
             unsubscribe: deleteSubscriptions
+        },
+        Link: {
+            insert: createLink,
+            update: updateLink,
+            read: readLink
         }
     }
 }
