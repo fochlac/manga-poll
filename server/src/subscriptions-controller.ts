@@ -11,13 +11,13 @@ export function sendTopicMessage(topic) {
 
     timeouts[topic] = setTimeout(() => {
         console.log('sendTopicMessage', topic)
-        admin.messaging().send({
+        const payload = {
             data: {
                 type: 'UPDATE_CHAPTER',
                 sourceId: topic
-            },
-            topic
-        })
+            }
+        }
+        admin.messaging().sendToTopic(topic, payload, { priority: 'high' })
     }, 100)
 }
 

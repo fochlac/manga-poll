@@ -132,15 +132,6 @@ export function createDB (storage) {
         return link
     }
 
-    async function setEnabled (linkEnabled) {
-        await write(NAMESPACES.SYNC, { linkEnabled })
-    }
-
-    async function getEnabled () {
-        const { linkEnabled } = await read(NAMESPACES.SYNC, ['linkEnabled'])
-        return linkEnabled
-    }
-
     async function getHide () {
         const { hide } = await read(NAMESPACES.SYNC, { hide: 0 })
         return hide
@@ -207,9 +198,7 @@ export function createDB (storage) {
             set: setLink,
             read: getLink,
             local: getLinkData,
-            setLocal: setLinkData,
-            getEnabled,
-            setEnabled
+            setLocal: setLinkData
         }
     }
 }

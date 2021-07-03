@@ -59,7 +59,6 @@ export async function addSettingsHandlers (db, api) {
     const unlinkSection = document.getElementById('unlink-section')
     const unlinkButton = document.getElementById('unlink-button')
     const linkButton = document.getElementById('link-button')
-    // const linkingToggle = document.getElementById('link-toggle')
     const linkInput1 = document.getElementById('link-number-1')
     const linkInput2 = document.getElementById('link-number-2')
     const linkInput3 = document.getElementById('link-number-3')
@@ -96,18 +95,15 @@ export async function addSettingsHandlers (db, api) {
         }
     })
 
-    function writeStateToDom (link, enabled) {
+    function writeStateToDom (link) {
         linkingSection.style.display = link ? 'none' : ''
         unlinkSection.style.display = link ? '' : 'none'
-        // linkingToggle.disabled = !link
-        // linkingToggle.checked = enabled
         linkNumberText.innerText = link ? `${link.key.slice(0, 5)}-${link.key.slice(5, 10)}-${link.key.slice(10)}` : 'Unlinked'
         linkNumberText.style.color = link ? '#000c21' : '#c3cbd2'
     }
 
     const link = await db.link.read()
-    const enabled = await db.link.getEnabled()
-    writeStateToDom(link, enabled)
+    writeStateToDom(link)
 
     createLink.addEventListener('click', async () => {
         const link = await db.link.read()
@@ -117,7 +113,6 @@ export async function addSettingsHandlers (db, api) {
             if (newLinkResult?.valid) {
                 const link = newLinkResult.payload
                 await db.link.set(link)
-                await db.link.setEnabled(true)
                 writeStateToDom(link, true)
             }
         }
@@ -126,7 +121,6 @@ export async function addSettingsHandlers (db, api) {
         const link = await db.link.read()
         if (link) {
             await db.link.set(null)
-            await db.link.setEnabled(false)
             writeStateToDom(undefined, true)
         }
     })
@@ -138,7 +132,6 @@ export async function addSettingsHandlers (db, api) {
             if (linkResult?.valid) {
                 const link = linkResult.payload
                 await db.link.set(link)
-                await db.link.setEnabled(true)
                 await db.link.setLocal(link)
                 writeStateToDom(link, true)
                 linkInput1.value = ''
@@ -147,8 +140,4 @@ export async function addSettingsHandlers (db, api) {
             }
         }
     })
-
-    // linkingToggle.addEventListener('change', async (e) => {
-    //     db.link.setEnabled(e.target.checked)
-    // })
 }

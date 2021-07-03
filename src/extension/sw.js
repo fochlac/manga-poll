@@ -11,17 +11,16 @@ const ALARMS = {
 
 const Links = getLinkHelpers(db, Api)
 async function fetchUrls () {
+    await Links.fetchLinkUpdate()
     const maxOld = await db.urls.getMaxOld()
     const hide = await db.urls.getHide()
     const sources = await db.sources.read()
-    await Promise.all([
-        Links.fetchLinkUpdate(),
-        Api.Urls.read(sources.map((source) => source.id), maxOld, hide)
-            .then(db.urls.import)
-    ])
+    await Api.Urls.read(sources.map((source) => source.id), maxOld, hide)
+        .then(db.urls.import)
+    refreshBadge()
 }
 
-chrome.alarms.create(ALARMS.URLS, { periodInMinutes: 15 })
+chrome.alarms.create(ALARMS.URLS, { periodInMinutes: 5 })
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name === ALARMS.URLS) {

@@ -40,7 +40,7 @@ export function init () {
     clearInterval(timer)
     timer = setInterval(() => {
         fetchAllUrls()
-    }, 60000 * 15)
+    }, 60000 * 5)
     fetchAllUrls(true)
 }
 

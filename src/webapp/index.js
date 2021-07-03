@@ -2,31 +2,21 @@ import 'regenerator-runtime/runtime.js'
 import firebase from 'firebase/app'
 import 'firebase/messaging'
 import { addImportHandlers } from '../common/import'
-import { db } from './storage'
 import { urlRenderer } from '../common/urls'
 import { sourceRenderer } from '../common/sources'
 import { addBookmarkListener } from './bookmark'
-import { API } from '../common/api'
 import { createSchedule } from '../common/schedule'
 import { resisterProgressHandler, updateProgress } from '../common/progress-bar'
 import { registerNotificationHandlers } from './notification-settings'
 import { getMessagingToken } from './sw-helper'
 import { registerMenuListeners } from '../common/menu'
+import { db } from './storage'
+import { API } from '../common/api'
 import { addSettingsHandlers, getLinkHelpers } from '../common/settings'
+import { fetchUrls } from './fetch'
 
 const Api = API('')
-
 const Links = getLinkHelpers(db, Api)
-
-async function fetchUrls () {
-    const maxOld = await db.urls.getMaxOld()
-    const hide = await db.urls.getHide()
-    const sources = await db.sources.read()
-    Api.Urls.read(sources.map((source) => source.id), maxOld, hide)
-        .then(db.urls.import)
-
-    Links.fetchLinkUpdate()
-}
 
 firebase.initializeApp({
     apiKey: 'AIzaSyBe2mv85Y9-oQJhDFeqzCLrTaetRp_Cm50',
@@ -80,11 +70,6 @@ resisterProgressHandler(() => interval.triggerInstantly())
 
 urls.render()
 sources.render()
-
-firebase.messaging().onMessage((message) => {
-    fetchUrls()
-    console.log('message', message)
-})
 
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
