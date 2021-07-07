@@ -15,6 +15,6 @@ export async function fetchUrls () {
     const maxOld = await db.urls.getMaxOld()
     const hide = await db.urls.getHide()
     const sources = await db.sources.read()
-    Api.Urls.read(sources.map((source) => source.id), maxOld, hide)
+    await Api.Urls.read(sources.map((source) => source.id), maxOld, hide)
         .then(db.urls.import)
 }

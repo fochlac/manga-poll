@@ -76,7 +76,7 @@ document.addEventListener('visibilitychange', () => {
         interval.setInterval(5 * 60 * 1000)
     }
     else {
-        interval.setInterval(60 * 60 * 1000)
+        interval.setInterval(15 * 60 * 1000)
     }
 })
 
