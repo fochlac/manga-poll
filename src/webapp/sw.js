@@ -33,8 +33,8 @@ async function handleMessage () {
 
     const isFocused = await hasVisibleClients()
 
-    if (newUrls.length > 0 && !isFocused) {
-        self.registration.showNotification(`${newUrls.length} new Chapters available!`, {
+    if (!isFocused) {
+        return self.registration.showNotification(`${newUrls.length} new Chapters available!`, {
             body: 'Click to open the reader.',
             icon: '/android-chrome-144x144.png',
             requireInteraction: true,
@@ -46,7 +46,15 @@ async function handleMessage () {
 self.addEventListener('push', (e) => {
     const payload = e?.data?.json()
     if (payload?.data?.type === 'UPDATE_CHAPTER') {
-        e.waitUntil(handleMessage())
+        const notificationPromise = handleMessage()
+        e.waitUntil(notificationPromise)
+        notificationPromise
+            .then(() => db.urls.read())
+            .then(({newUrls}) => {
+                if (newUrls.length <= 0) {
+                    self.registration.getNotifications().then((nl) => nl.forEach((n) => n.close()))
+                }
+            })
     }
 })
 
