@@ -70,6 +70,11 @@ resisterProgressHandler(() => interval.triggerInstantly())
 
 urls.render()
 sources.render()
+window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        navigator.serviceWorker.controller.postMessage('FOCUS')
+    }
+})
 
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {

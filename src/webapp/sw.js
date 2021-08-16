@@ -1,9 +1,11 @@
-/* global clients */
+/* global clients, __SWVERSION__ */
 import 'regenerator-runtime/runtime.js'
 import firebase from 'firebase/app'
 import 'firebase/messaging'
 import { db } from './storage'
 import { fetchUrls } from './fetch'
+
+const version = __SWVERSION__ || 0
 
 firebase.initializeApp({
     apiKey: 'AIzaSyBe2mv85Y9-oQJhDFeqzCLrTaetRp_Cm50',
@@ -76,3 +78,38 @@ self.addEventListener('notificationclick', (e) => {
 })
 
 self.addEventListener('install', () => self.skipWaiting())
+
+self.addEventListener('message', (event) => {
+    if (event.data === 'FOCUS') {
+        event.waitUntil(self.registration.getNotifications().then((nl) => nl.forEach((n) => n.close())))
+    }
+})
+
+function handleFetch (event) {
+    if (
+        event.request.url.includes('localhost') ||
+        event.request.url.includes('/api/') ||
+      // Ensure that chrome-extension:// requests don't trigger the default route.
+      event.request.url.indexOf('http') !== 0 ||
+      event.request.method.toLowerCase() !== 'get'
+    ) {
+        return
+    }
+    const req = event.request
+
+    event.respondWith(
+        fetch(req.clone())
+            .then((res) => {
+                return caches
+                    .open(version)
+                    .then((cache) => cache.put(req.clone(), res.clone()))
+                    .then(() => res)
+            })
+            .catch((err) => {
+                console.warn(err)
+                return caches.open(version).then((cache) => cache.match(req))
+            })
+    )
+}
+
+self.addEventListener('fetch', handleFetch)

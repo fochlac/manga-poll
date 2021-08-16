@@ -4,9 +4,12 @@ export function urlRenderer (db) {
     const urls = document.getElementById('urls')
 
     async function hide (id) {
-        const { newUrls } = await db.urls.read()
+        const { newUrls, oldUrls } = await db.urls.read()
         if (newUrls.length <= 1 && (!newUrls[0] || newUrls[0].id === id)) {
-            db.urls.hideAll(Date.now())
+            const latestChapterDate = oldUrls.concat(newUrls)
+                .reduce((lcd, url) => url.created > lcd ? url.created : lcd, 0)
+
+            db.urls.hideAll(latestChapterDate + 1)
         }
         else {
             db.urls.hide(id)

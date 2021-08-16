@@ -8,6 +8,7 @@ export function registerMenuListeners () {
     const sources = document.getElementById('sources')
     const settings = document.getElementById('settings')
     const settingsSection = document.querySelector('.settings')
+    const progress = document.querySelector('#progress')
 
     const openChapters = () => {
         sources.style.display = 'none'
@@ -15,6 +16,7 @@ export function registerMenuListeners () {
         addSection.style.display = 'none'
         settingsSection.style.display = 'none'
         urls.style.display = ''
+        progress.style.display = ''
         chapters.style.display = 'none'
         settings.style.display = ''
         bookmarks.style.display = ''
@@ -28,6 +30,7 @@ export function registerMenuListeners () {
         importSection.style.display = 'flex'
         addSection.style.display = 'flex'
         settingsSection.style.display = 'none'
+        progress.style.display = 'none'
         urls.style.display = 'none'
         popupTitle.innerText = 'Bookmarks'
         bookmarks.style.display = 'none'
@@ -39,6 +42,7 @@ export function registerMenuListeners () {
         sources.style.display = 'none'
         importSection.style.display = 'none'
         addSection.style.display = 'none'
+        progress.style.display = 'none'
         settingsSection.style.display = ''
         urls.style.display = 'none'
         popupTitle.innerText = 'Settings'

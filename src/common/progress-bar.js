@@ -1,15 +1,24 @@
-const progress = document.querySelector('#scheduler > .scheduler-bar')
-const refresh = document.querySelector('#refresh')
+const progress = document.querySelector('#progress')
+
+let locked = false
 
 export const resisterProgressHandler = (updateNow) => {
-    refresh.addEventListener('click', updateNow)
+    progress.addEventListener('click', () => {
+        updateNow()
+        progress.innerHTML = '(refreshed!)'
+        locked = true
+        setTimeout(() => {
+            locked = false
+        }, 1500)
+    })
 }
 
-export const updateProgress = (lastPing, nextPing) => {
-    const diff = nextPing - lastPing
-    const remaining = Date.now() - lastPing
+export const updateProgress = (_lastPing, nextPing) => {
+    if (!locked) {
+        const remaining = nextPing - Date.now()
 
-    const percentage = Math.round(remaining / diff * 1000) / 10
+        const seconds = Math.max(Math.round(remaining / 1000), 0)
 
-    progress.style.width = `${percentage}%`
+        progress.innerHTML = `(next refresh: ${seconds}s)`
+    }
 }

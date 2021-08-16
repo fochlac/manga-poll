@@ -40,7 +40,12 @@ const config = {
                 ]
             }
         ]
-    }
+    },
+    plugins: [
+        new webpack.DefinePlugin({
+        __SWVERSION__: `"version_${Date.now()}"`,
+        })
+    ]
 }
 
 module.exports = config
