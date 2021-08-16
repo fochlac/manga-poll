@@ -56,7 +56,7 @@ db.onChange(async (changes) => {
 
 const interval = createSchedule({
     callback: fetchUrls,
-    interval: 5 * 60 * 1000,
+    interval: 60 * 1000,
     isActive: true,
     updater: updateProgress
 })
