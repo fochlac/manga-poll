@@ -32,7 +32,7 @@ navigator.serviceWorker.controller.postMessage('FETCH_CHAPTERS')
 
 const interval = createSchedule({
     callback: () => navigator.serviceWorker.controller.postMessage('FETCH_CHAPTERS'),
-    interval: 30 * 1000,
+    interval: 60 * 1000,
     isActive: true,
     updater: updateProgress
 })

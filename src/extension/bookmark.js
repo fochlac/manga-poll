@@ -29,46 +29,75 @@ export function testBookmark () {
 }
 
 function test () {
-    function parse (string, fallback) {
-        try {
-            return JSON.parse(string)
+    function decodeHTMLEntities (str) {
+        if (str && typeof str === 'string') {
+            const element = document.createElement('div')
+            str = str.replace(/<script[^>]*>([\S\s]*?)<\/script>/gmi, '')
+            str = str.replace(/<\/?\w(?:[^"'>]|"[^"]*"|'[^']*')*>/gmi, '')
+            element.innerHTML = str
+            return element.textContent
         }
-        catch (e) {
-            return fallback
+        return str
+    }
+
+    function testMadaro () {
+        function parse (string, fallback) {
+            try {
+                return JSON.parse(string)
+            }
+            catch (e) {
+                return fallback
+            }
+        }
+
+        const ids = [
+            window?.manga?.manga_id,
+            document.querySelector('.rating-post-id')?.value,
+            document.querySelector('.wp-manga-action-button')?.dataset?.['post'],
+            document.querySelector('.chapter-selection')?.dataset?.['manga'],
+            document.getElementById('manga-chapters-holder')?.dataset?.['id'],
+            document.getElementById('manga-reading-nav-head')?.dataset?.['id'],
+            document.getElementById('manga-reading-nav-foot')?.dataset?.['id']
+        ]
+            .filter((title) => title)
+            .reduce((map, id) => {
+                map[id] = typeof map[id] === 'number' ? map[id] + 1 : 1
+                return map
+            }, {})
+        const id = Object.keys(ids).sort((id1, id2) => ids[id1] - ids[id2])[0]
+
+        const header = document.querySelector('.post-title h1')
+        const titles = [
+            Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
+                .map((script) => parse(script.innerText)?.headline).find((h) => h),
+            document.getElementById('chapter-heading')?.innerText?.split(' - ')[0],
+            header && Array.from(header.childNodes).reduce((title, node) => title + (node.nodeType === 3 ? node.textContent : ''), ''),
+            document.querySelector('.rate-title')?.title
+        ]
+            .filter((title) => title)
+            .reduce((map, title) => {
+                const clean = decodeHTMLEntities(title).trim()
+                map[clean] = typeof map[clean] === 'number' ? map[clean] + 1 : 1
+                return map
+            }, {})
+        const title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0]
+
+        return {
+            id,
+            title,
+            url: document?.location?.origin ? `${document.location.origin}/wp-admin/admin-ajax.php` : null
         }
     }
 
-    const ids = [
-        window?.manga?.manga_id,
-        document.querySelector('.rating-post-id')?.value,
-        document.querySelector('.wp-manga-action-button')?.dataset?.['post'],
-        document.querySelector('.chapter-selection')?.dataset?.['manga'],
-        document.getElementById('manga-chapters-holder')?.dataset?.['id'],
-        document.getElementById('manga-reading-nav-head')?.dataset?.['id'],
-        document.getElementById('manga-reading-nav-foot')?.dataset?.['id']
-    ]
-        .filter((title) => title)
-        .reduce((map, id) => {
-            map[id] = typeof map[id] === 'number' ? map[id] + 1 : 1
-            return map
-        }, {})
-    const id = Object.keys(ids).sort((id1, id2) => ids[id1] - ids[id2])[0]
+    let result
 
-    const titles = [
-        Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
-            .map((script) => parse(script.innerText)?.headline).find((h) => h),
-        document.getElementById('chapter-heading')?.innerText?.split(' - ')[0],
-        document.querySelector('.post-title h1')?.innerText,
-        document.querySelector('.rate-title')?.title
-    ]
-        .filter((title) => title)
-        .reduce((map, title) => {
-            map[title] = typeof map[title] === 'number' ? map[title] + 1 : 1
-            return map
-        }, {})
-    const title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0]
+    if (!result) {
+        result = testMadaro()
+    }
 
-    chrome.runtime.sendMessage({ id, title, url: document?.location?.origin ? `${document.location.origin}/wp-admin/admin-ajax.php` : null })
+    if (result) {
+        chrome.runtime.sendMessage(result)
+    }
 }
 
 chrome.runtime.onMessage.addListener(async (request) => {

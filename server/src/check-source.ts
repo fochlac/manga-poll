@@ -13,6 +13,16 @@ function parse(string, fallback = undefined) {
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g
 const urlRegex = /["']?ajax_url["']?:\s?["']?(https?:\/\/[^/]*\/wp-admin\/admin-ajax.php)/
 
+function decodeHTMLEntities (str) {
+    if (str && typeof str === 'string') {
+        const element = document.createElement('div')
+        str = str.replace(/<script[^>]*>([\S\s]*?)<\/script>/gmi, '')
+        str = str.replace(/<\/?\w(?:[^"'>]|"[^"]*"|'[^']*')*>/gmi, '')
+        element.innerHTML = str
+        return element.textContent
+    }
+    return str
+}
 
 function extractRawSource (sourcehtml: string, rawUrl: string) {
     const $ = cheerio.load(sourcehtml)
@@ -38,12 +48,13 @@ function extractRawSource (sourcehtml: string, rawUrl: string) {
         Array.from($('script[type="application/ld+json"]'))
             .map((script) => parse($(script).text())?.headline).find((h) => h),
         $('#chapter-heading').text().split(' - ')[0],
-        $('.post-title h1').text(),
+        $('.post-title h1').contents().filter((index, el) => el.nodeType === 3).text(),
         $('.rate-title').attr('title')
     ]
         .filter((title) => !!title && String(title).length)
         .reduce((map, title) => {
-            map[String(title).trim()] = typeof map[title] === 'number' ? map[String(title).trim()] + 1 : 1
+            const clean = decodeHTMLEntities(title).trim()
+            map[clean] = typeof map[clean] === 'number' ? map[clean] + 1 : 1
             return map
         }, {})
     const title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0]

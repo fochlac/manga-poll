@@ -98,17 +98,20 @@ function handleFetch (event) {
     const req = event.request
 
     event.respondWith(
-        fetch(req.clone())
+        caches
+            .open(version)
+            .then((cache) => cache.match(req))
             .then((res) => {
-                return caches
-                    .open(version)
-                    .then((cache) => cache.put(req.clone(), res.clone()))
-                    .then(() => res)
+                if (res) {
+                    return res
+                }
+                return Promise.all([fetch(req.clone()), caches.open(version)])
+                    .then(([res, cache]) => {
+                        cache.put(req.clone(), res.clone())
+                        return res
+                    })
             })
-            .catch((err) => {
-                console.warn(err)
-                return caches.open(version).then((cache) => cache.match(req))
-            })
+            .catch((err) => console.warn(err))
     )
 }
 
