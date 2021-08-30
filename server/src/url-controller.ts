@@ -67,11 +67,11 @@ export function getUrls () {
 
 export function urlController (app) {
     app.post('/api/urls/fetch', (req, res) => {
-        let payload = Object.values(urls)
+        let payload = []
 
         if (Array.isArray(req?.body?.sources) && req.body.sources.length > 0) {
             const sourceFilter = req.body.sources
-            payload = payload.filter((url) => sourceFilter.includes(url.sourceId))
+            payload = Object.values(urls).filter((url) => sourceFilter.includes(url.sourceId))
         }
         if (!isNaN(Number(req?.body?.date)) && Number(req.body.date) > 0) {
             const limit = req?.body?.limit && !isNaN(Number(req.body.limit)) && Number(req.body.limit) || 25
