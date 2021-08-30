@@ -15,11 +15,10 @@ const urlRegex = /["']?ajax_url["']?:\s?["']?(https?:\/\/[^/]*\/wp-admin\/admin-
 
 function decodeHTMLEntities (str) {
     if (str && typeof str === 'string') {
-        const element = document.createElement('div')
         str = str.replace(/<script[^>]*>([\S\s]*?)<\/script>/gmi, '')
         str = str.replace(/<\/?\w(?:[^"'>]|"[^"]*"|'[^']*')*>/gmi, '')
-        element.innerHTML = str
-        return element.textContent
+        const $ = cheerio.load(`<div>${str}</div>`)
+        return $('div').text()
     }
     return str
 }

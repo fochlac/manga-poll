@@ -4,7 +4,7 @@ import { addImportHandlers } from '../common/import'
 import { db } from './storage'
 import { urlRenderer } from '../common/urls'
 import { sourceRenderer } from '../common/sources'
-import { resisterProgressHandler, updateProgress } from '../common/progress-bar'
+import { markRefreshed, resisterProgressHandler, updateProgress } from '../common/progress-bar'
 import { createSchedule } from '../common/schedule'
 import { registerMenuListeners } from '../common/menu'
 import { addSettingsHandlers, getLinkHelpers } from '../common/settings'
@@ -29,9 +29,13 @@ db.onChange((changes) => {
 })
 
 navigator.serviceWorker.controller.postMessage('FETCH_CHAPTERS')
+markRefreshed()
 
 const interval = createSchedule({
-    callback: () => navigator.serviceWorker.controller.postMessage('FETCH_CHAPTERS'),
+    callback: () => {
+        navigator.serviceWorker.controller.postMessage('FETCH_CHAPTERS')
+        markRefreshed()
+    },
     interval: 60 * 1000,
     isActive: true,
     updater: updateProgress

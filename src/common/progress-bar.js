@@ -5,12 +5,16 @@ let locked = false
 export const resisterProgressHandler = (updateNow) => {
     progress.addEventListener('click', () => {
         updateNow()
-        progress.innerHTML = '(refreshed!)'
-        locked = true
-        setTimeout(() => {
-            locked = false
-        }, 1500)
+        markRefreshed()
     })
+}
+
+export const markRefreshed = () => {
+    progress.innerHTML = '(refreshed!)'
+    locked = true
+    setTimeout(() => {
+        locked = false
+    }, 1500)
 }
 
 export const updateProgress = (_lastPing, nextPing) => {

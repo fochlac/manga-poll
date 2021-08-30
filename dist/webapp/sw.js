@@ -12099,7 +12099,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 
 
-var version = "version_1629098014803" || 0;
+var version = "version_1630337118229" || 0;
 firebase_app__WEBPACK_IMPORTED_MODULE_1__.default.initializeApp({
   apiKey: 'AIzaSyBe2mv85Y9-oQJhDFeqzCLrTaetRp_Cm50',
   authDomain: 'manga-poll.firebaseapp.com',

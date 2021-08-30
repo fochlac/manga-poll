@@ -18,11 +18,10 @@ const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g;
 const urlRegex = /["']?ajax_url["']?:\s?["']?(https?:\/\/[^/]*\/wp-admin\/admin-ajax.php)/;
 function decodeHTMLEntities(str) {
     if (str && typeof str === 'string') {
-        const element = document.createElement('div');
         str = str.replace(/<script[^>]*>([\S\s]*?)<\/script>/gmi, '');
         str = str.replace(/<\/?\w(?:[^"'>]|"[^"]*"|'[^']*')*>/gmi, '');
-        element.innerHTML = str;
-        return element.textContent;
+        const $ = cheerio_1.default.load(`<div>${str}</div>`);
+        return $('div').text();
     }
     return str;
 }

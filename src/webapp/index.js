@@ -6,7 +6,7 @@ import { urlRenderer } from '../common/urls'
 import { sourceRenderer } from '../common/sources'
 import { addBookmarkListener } from './bookmark'
 import { createSchedule } from '../common/schedule'
-import { resisterProgressHandler, updateProgress } from '../common/progress-bar'
+import { markRefreshed, resisterProgressHandler, updateProgress } from '../common/progress-bar'
 import { registerNotificationHandlers } from './notification-settings'
 import { getMessagingToken } from './sw-helper'
 import { registerMenuListeners } from '../common/menu'
@@ -34,6 +34,16 @@ db.urls.setMaxOld(100)
 const urls = urlRenderer(db)
 const sources = sourceRenderer(db)
 
+const interval = createSchedule({
+    callback: async () => {
+        await fetchUrls()
+        markRefreshed()
+    },
+    interval: 60 * 1000,
+    isActive: true,
+    updater: updateProgress
+})
+
 db.onChange(async (changes) => {
     if (['hide', 'hiddenChapters', 'urls'].some(changes.hasOwnProperty.bind(changes))) {
         urls.render()
@@ -48,17 +58,10 @@ db.onChange(async (changes) => {
         }
     }
     if (Object.prototype.hasOwnProperty.call(changes, 'maxOld')) {
-        fetchUrls()
+        interval.triggerInstantly()
         urls.render()
     }
     Links.pushLinkUpdate(changes)
-})
-
-const interval = createSchedule({
-    callback: fetchUrls,
-    interval: 60 * 1000,
-    isActive: true,
-    updater: updateProgress
 })
 
 addImportHandlers(db)
@@ -78,7 +81,7 @@ window.addEventListener('visibilitychange', () => {
 
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-        interval.setInterval(5 * 60 * 1000)
+        interval.setInterval(60 * 1000)
     }
     else {
         interval.setInterval(15 * 60 * 1000)
