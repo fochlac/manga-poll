@@ -46,7 +46,7 @@ const interval = createSchedule({
 })
 
 db.onChange(async (changes) => {
-    if (['hide', 'hiddenChapters', 'urls'].some(changes.hasOwnProperty.bind(changes))) {
+    if (['hide', 'hiddenChapters', 'urls'].some(Object.prototype.hasOwnProperty.bind(changes))) {
         urls.render()
     }
     if (Object.keys(changes).some((change) => change.includes('sources'))) {
@@ -57,6 +57,7 @@ db.onChange(async (changes) => {
             const sources = await db.sources.read()
             Api.Subscription.subscribe(sources.map((source) => source.id), await getMessagingToken())
         }
+        interval.triggerInstantly()
     }
     if (Object.prototype.hasOwnProperty.call(changes, 'maxOld')) {
         interval.triggerInstantly()
