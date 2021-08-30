@@ -24,6 +24,18 @@
         <span class="action" id="settings">Settings</span>
       </div>
     </h5>
+    <div class="import">
+      <label for="import" class="action">
+        Import Bookmarks
+        <input
+          type="file"
+          id="import"
+          accept="application/json"
+          style="position: absolute; display: none"
+        />
+      </label>
+      <span id="export" class="action">Download Bookmarks</span>
+    </div>
     <div id="addSection">
       <label for="bookmark" class="label">
         You can add a bookmark by pasting the url of the manga you want to
@@ -34,12 +46,19 @@
         <button id="bookmark-button">Submit</button>
       </div>
     </div>
+    
     <div class="list">
       <ul id="urls"></ul>
       <ul id="sources"></ul>
-      <div class="settings" style="display: none;">
+      <div class="settings" style="display: none">
         <div id="link-link-warning">
-          <span>You are already linked to "<span id="warn-current-link"></span>". Do you want to switch to the link-number "<span id="warn-new-link"></span>"?</span>
+          <span
+            >You are already linked to "<span id="warn-current-link"></span>".
+            Do you want to switch to the link-number "<span
+              id="warn-new-link"
+            ></span
+            >"?</span
+          >
           <button id="update-linking">Change Link-Number</button>
         </div>
         <div id="notifications">
@@ -57,16 +76,28 @@
             <div class="link-id-block">
               <h6>Link-Number</h6>
               <label class="label">
-                You can use this number to synchronize with other clients or the extension.
+                You can use this number to synchronize with other clients or the
+                extension.
               </label>
               <p id="link-id" class="link-id unlinked">Unlinked</p>
-              <p id="link-link-text" class="label">Or simply share the following link:</p>
-              <a href='' id="link-link"  target="_blank" rel="noopener" class="label"></a>
+              <p id="link-link-text" class="label">
+                Or simply use the following link:
+              </p>
+              <a
+                href=""
+                id="link-link"
+                target="_blank"
+                rel="noopener"
+                class="label"
+              ></a>
             </div>
             <div id="link-section">
               <h6>Link to Account</h6>
               <div id="link-error">
-                <span>Error while linking &ndash; please make sure you entered the correct number.</span>
+                <span
+                  >Error while linking &ndash; please make sure you entered the
+                  correct number.</span
+                >
               </div>
               <div id="link-progress"><div></div></div>
               <div class="link-section">
@@ -75,8 +106,16 @@
                     Enter an existing link-number
                   </label>
                   <div class="input-wrapper">
-                    <input type="text" id="link-number-1" inputmode="numeric" />-
-                    <input type="text" id="link-number-2" inputmode="numeric" />-
+                    <input
+                      type="text"
+                      id="link-number-1"
+                      inputmode="numeric"
+                    />-
+                    <input
+                      type="text"
+                      id="link-number-2"
+                      inputmode="numeric"
+                    />-
                     <input type="text" id="link-number-3" inputmode="numeric" />
                   </div>
                   <button id="link-button">Submit</button>
@@ -108,17 +147,65 @@
         </div>
       </div>
     </div>
-    <div class="import">
-      <label for="import" class="action">
-        Import Bookmarks
-        <input
-          type="file"
-          id="import"
-          accept="application/json"
-          style="position: absolute; display: none"
-        />
-      </label>
-      <span id="export" class="action">Download Bookmarks</span>
+    <div id="impressum-wrap">
+      <div id="impressum">
+        <div>
+          <h3>Legal Disclosure</h3>
+          <h5>Information in accordance with Section 5 TMG</h5>
+    
+          <h6>Florian Riedel</h6>
+          <h6>Nonnenstr. 36</h6>
+          <h6>04229 Leipzig</h6>
+          <h6>Contact Information</h6>
+          <h6>Email: info@fochlac.com</h6>
+          <h5>Accountability for content</h5>
+          <p>
+            The contents of our pages have been created with the utmost care.
+            However, we cannot guarantee the contents' accuracy, completeness or
+            topicality. According to statutory provisions, we are furthermore
+            responsible for our own content on these web pages. In this matter,
+            please note that we are not obliged to monitor the transmitted or saved
+            information of third parties, or investigate circumstances pointing to
+            illegal activity.
+          </p>
+          <p>
+            Our obligations to remove or block the use of information under
+            generally applicable laws remain unaffected by this as per §§ 8 to 10 of
+            the Telemedia Act (TMG).
+          </p>
+          <h5>Accountability for links</h5>
+          <p>
+            Responsibility for the content of external links (to web pages of third
+            parties) lies solely with the operators of the linked pages.
+          </p>
+          <p>
+            No violations were evident to us at the time of linking. Should any
+            legal infringement become known to us, we will remove the respective
+            link immediately.
+          </p>
+          <h5>Copyright</h5>
+          <p>
+            Our web pages and their contents are subject to German copyright law.
+            Unless expressly permitted by law, every form of utilizing, reproducing
+            or processing works subject to copyright protection on our web pages
+            requires the prior consent of the respective owner of the rights.
+          </p>
+          <p>
+            Individual reproductions of a work are only allowed for private use. The
+            materials from these pages are copyrighted and any unauthorized use may
+            violate copyright laws.
+          </p>
+          <p>Source: translate-24h.de/impressum-generator-englisch</p>
+        </div>
+      </div>
+    </div>
+    <div id="impressum-bar">
+      <span>
+        Designed and developed by Florian Riedel. Copyright 2020. All rights reserved.
+      </span>
+      <span class="action">
+        Legal Disclosure
+      </span>
     </div>
   </body>
   <script src="index.js"></script>

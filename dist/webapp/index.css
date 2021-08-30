@@ -101,6 +101,7 @@ html {
   border-top: solid 1px lightslategrey;
   padding-top: 2px;
   font-size: 15px;
+  margin: 0 8px 2px;
 }
 .import .action {
   margin-right: 8px;
@@ -413,4 +414,68 @@ h6 {
 .input-wrapper input {
   width: 25%;
   text-align: center;
+}
+
+#impressum {
+  position: fixed;
+  background: white;
+  top: 5vh;
+  left: 5vw;
+  right: 5vw;
+  bottom: 5vh;
+  z-index: 10;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+#impressum > div {
+  overflow: auto;
+  max-height: 100%;
+}
+
+#impressum h6 {
+  border: none;
+  margin-left: 32px;
+}
+
+#impressum h3 {
+  margin-left: 16px;
+  margin-top: 8px;
+}
+
+#impressum h5 {
+  margin-top: 16px;
+}
+#impressum p {
+  margin-left: 16px;
+}
+
+#impressum-wrap {
+  content: '';
+  position: fixed;
+  background: #80808078;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: none;
+}
+
+@media (max-width: 650px) {
+  #impressum-bar > span:first-child {
+    display: none;
+  }
+
+  #impressum-bar > .action {
+    margin-left: auto;
+  }
+}
+
+#impressum-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 8px 3px;
+  font-size: 0.9rem;
+  border-top: solid 1px lightslategrey;
 }

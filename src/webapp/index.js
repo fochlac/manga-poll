@@ -14,6 +14,7 @@ import { db } from './storage'
 import { API } from '../common/api'
 import { addSettingsHandlers, getLinkHelpers } from '../common/settings'
 import { fetchUrls } from './fetch'
+import { addImpressumListeners } from './impressum'
 
 const Api = API('')
 const Links = getLinkHelpers(db, Api)
@@ -70,6 +71,7 @@ addBookmarkListener()
 registerMenuListeners(db, Api)
 registerNotificationHandlers()
 resisterProgressHandler(() => interval.triggerInstantly())
+addImpressumListeners()
 
 urls.render()
 sources.render()
