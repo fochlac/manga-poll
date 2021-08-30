@@ -1,5 +1,9 @@
 const linkFields = ['hide', 'hiddenChapters', 'sources']
 
+function formatKey (key) {
+    return `${key.slice(0, 5)}-${key.slice(5, 10)}-${key.slice(10, 15)}`
+}
+
 export function getLinkHelpers (db, Api) {
     async function pushLinkUpdate (changes) {
         const changeset = linkFields.filter((key) => Object.keys(changes).some((change) => change.includes(key)))
@@ -50,11 +54,108 @@ export function getLinkHelpers (db, Api) {
     }
 }
 
+function isValidLinkKey (key) {
+    if (typeof key !== 'string') {
+        return
+    }
+
+    const cleanKey = key.replaceAll(/[^\d]*/g, '')
+    if (cleanKey.length === 15) {
+        return true
+    }
+}
+
+export function getLinkQuery () {
+    const urlParams = new URLSearchParams(window.location.search)
+
+    if (isValidLinkKey(urlParams.get('link'))) {
+        return urlParams.get('link').replaceAll(/[^\d]*/g, '')
+    }
+}
+
+export async function linkIfUnlinked (db, api) {
+    const key = getLinkQuery()
+
+    if (key) {
+        const currentLink = await db.link.read()
+
+        if (!currentLink || !currentLink.key) {
+            const linkInput1 = document.getElementById('link-number-1')
+            const linkInput2 = document.getElementById('link-number-2')
+            const linkInput3 = document.getElementById('link-number-3')
+
+            linkInput1.value = key.slice(0, 5)
+            linkInput2.value = key.slice(5, 10)
+            linkInput3.value = key.slice(10, 15)
+            const link = await connectToLink(key, api, db)
+
+            if (link && link.key) {
+                const linkNumberText = document.getElementById('link-id')
+                const linkLink = document.getElementById('link-link')
+                const linkLinkText = document.getElementById('link-link-text')
+
+                document.getElementById('link-section').style.display = 'none'
+                document.getElementById('unlink-section').style.display = ''
+                linkLinkText.style.display = ''
+                linkLink.style.display = ''
+                linkLink.innerText = `https://manga.fochlac.com?link=${link.key}`
+                linkLink.href = `https://manga.fochlac.com?link=${link.key}`
+                linkNumberText.innerText = `${link.key.slice(0, 5)}-${link.key.slice(5, 10)}-${link.key.slice(10)}`
+                linkNumberText.style.color = '#000c21'
+            }
+        }
+        else if (formatKey(currentLink.key) !== formatKey(key)) {
+            const linkLinkWarn = document.getElementById('link-link-warning')
+            const warnLinkCurrent = document.getElementById('warn-current-link')
+            const warnLinkNew = document.getElementById('warn-new-link')
+
+            linkLinkWarn.style.display = 'flex'
+            warnLinkCurrent.innerText = formatKey(currentLink.key)
+            warnLinkNew.innerText = formatKey(key)
+        }
+    }
+}
+
+async function connectToLink (key, api, db) {
+    const { Link } = api
+    const linkError = document.getElementById('link-error')
+    const linkProgress = document.getElementById('link-progress')
+    const createLink = document.getElementById('new-link-button')
+    const linkButton = document.getElementById('link-button')
+    linkError.style.display = 'none'
+    linkProgress.style.display = 'block'
+    createLink.disabled = true
+    linkButton.disabled = true
+
+    const linkResult = await Link.read(key)
+    createLink.disabled = false
+    linkButton.disabled = false
+    linkProgress.style.display = 'none'
+    if (linkResult?.valid) {
+        const link = linkResult.payload
+        await db.link.set(link)
+        await db.link.setLocal(link)
+
+        return link
+    }
+    else {
+        linkError.style.display = 'flex'
+    }
+    const linkLinkWarn = document.getElementById('link-link-warning')
+
+    if (linkLinkWarn) {
+        linkLinkWarn.style.display = 'none'
+    }
+}
+
 export async function addSettingsHandlers (db, api) {
     const { Link } = api
 
     const createLink = document.getElementById('new-link-button')
+    const updateLink = document.getElementById('update-linking')
     const linkNumberText = document.getElementById('link-id')
+    const linkLink = document.getElementById('link-link')
+    const linkLinkText = document.getElementById('link-link-text')
     const linkingSection = document.getElementById('link-section')
     const unlinkSection = document.getElementById('unlink-section')
     const unlinkButton = document.getElementById('unlink-button')
@@ -98,14 +199,45 @@ export async function addSettingsHandlers (db, api) {
     function writeStateToDom (link) {
         linkingSection.style.display = link ? 'none' : ''
         unlinkSection.style.display = link ? '' : 'none'
-        linkNumberText.innerText = link ? `${link.key.slice(0, 5)}-${link.key.slice(5, 10)}-${link.key.slice(10)}` : 'Unlinked'
+        if (linkLinkText) {
+            linkLinkText.style.display = link ? '' : 'none'
+            linkLink.style.display = link ? '' : 'none'
+            linkLink.innerText = link ? `https://manga.fochlac.com?link=${link.key}` : ''
+            linkLink.href = link ? `https://manga.fochlac.com?link=${link.key}` : ''
+        }
+        linkNumberText.innerText = link ? formatKey(link.key) : 'Unlinked'
         linkNumberText.style.color = link ? '#000c21' : '#c3cbd2'
     }
 
     const link = await db.link.read()
     writeStateToDom(link)
 
+    if (updateLink) {
+        updateLink.addEventListener('click', async () => {
+            const key = getLinkQuery()
+
+            linkInput1.value = key.slice(0, 5)
+            linkInput2.value = key.slice(5, 10)
+            linkInput3.value = key.slice(10, 15)
+            await db.link.set(null)
+            document.getElementById('link-link-warning').style.display = 'none'
+            writeStateToDom()
+            const result = await connectToLink(key, api, db)
+            if (result) {
+                writeStateToDom(result)
+                linkInput1.value = ''
+                linkInput2.value = ''
+                linkInput3.value = ''
+            }
+        })
+    }
+
     createLink.addEventListener('click', async () => {
+        const linkLinkWarn = document.getElementById('link-error')
+
+        if (linkLinkWarn) {
+            linkLinkWarn.style.display = 'none'
+        }
         const link = await db.link.read()
         if (!link) {
             const linkData = await db.link.local()
@@ -113,7 +245,7 @@ export async function addSettingsHandlers (db, api) {
             if (newLinkResult?.valid) {
                 const link = newLinkResult.payload
                 await db.link.set(link)
-                writeStateToDom(link, true)
+                writeStateToDom(link)
             }
         }
     })
@@ -121,19 +253,16 @@ export async function addSettingsHandlers (db, api) {
         const link = await db.link.read()
         if (link) {
             await db.link.set(null)
-            writeStateToDom(undefined, true)
+            writeStateToDom(undefined)
         }
     })
     linkButton.addEventListener('click', async () => {
         const link = await db.link.read()
         if (!link) {
             const key = `${linkInput1.value}${linkInput2.value}${linkInput3.value}`
-            const linkResult = await Link.read(key)
-            if (linkResult?.valid) {
-                const link = linkResult.payload
-                await db.link.set(link)
-                await db.link.setLocal(link)
-                writeStateToDom(link, true)
+            const result = await connectToLink(key, api, db)
+            if (result) {
+                writeStateToDom(key)
                 linkInput1.value = ''
                 linkInput2.value = ''
                 linkInput3.value = ''

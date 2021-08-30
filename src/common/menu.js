@@ -1,4 +1,6 @@
-export function registerMenuListeners () {
+import { getLinkQuery, linkIfUnlinked } from './settings'
+
+export function registerMenuListeners (db, Api) {
     const importSection = document.querySelector('div.import')
     const popupTitle = document.getElementById('popupTitle')
     const bookmarks = document.getElementById('add')
@@ -23,6 +25,19 @@ export function registerMenuListeners () {
         popupTitle.innerText = 'Chapters'
     }
 
+    const openSettings = () => {
+        sources.style.display = 'none'
+        importSection.style.display = 'none'
+        addSection.style.display = 'none'
+        progress.style.display = 'none'
+        settingsSection.style.display = ''
+        urls.style.display = 'none'
+        popupTitle.innerText = 'Settings'
+        bookmarks.style.display = ''
+        chapters.style.display = ''
+        settings.style.display = 'none'
+    }
+
     chapters.addEventListener('click', openChapters)
 
     bookmarks.addEventListener('click', () => {
@@ -38,18 +53,13 @@ export function registerMenuListeners () {
         settings.style.display = ''
     })
 
-    settings.addEventListener('click', () => {
-        sources.style.display = 'none'
-        importSection.style.display = 'none'
-        addSection.style.display = 'none'
-        progress.style.display = 'none'
-        settingsSection.style.display = ''
-        urls.style.display = 'none'
-        popupTitle.innerText = 'Settings'
-        bookmarks.style.display = ''
-        chapters.style.display = ''
-        settings.style.display = 'none'
-    })
+    settings.addEventListener('click', openSettings)
 
-    openChapters()
+    if (getLinkQuery()) {
+        openSettings()
+        linkIfUnlinked(db, Api)
+    }
+    else {
+        openChapters()
+    }
 }

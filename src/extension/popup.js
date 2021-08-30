@@ -44,7 +44,7 @@ const interval = createSchedule({
 resisterProgressHandler(() => interval.triggerInstantly())
 addImportHandlers(db)
 addSettingsHandlers(db, api)
-registerMenuListeners(db)
+registerMenuListeners(db, api)
 
 Urls.render()
 Sources.render()

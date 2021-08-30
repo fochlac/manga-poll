@@ -67,7 +67,7 @@ db.onChange(async (changes) => {
 addImportHandlers(db)
 addSettingsHandlers(db, Api)
 addBookmarkListener()
-registerMenuListeners()
+registerMenuListeners(db, Api)
 registerNotificationHandlers()
 resisterProgressHandler(() => interval.triggerInstantly())
 

@@ -38,6 +38,10 @@
       <ul id="urls"></ul>
       <ul id="sources"></ul>
       <div class="settings" style="display: none;">
+        <div id="link-link-warning">
+          <span>You are already linked to "<span id="warn-current-link"></span>". Do you want to switch to the link-number "<span id="warn-new-link"></span>"?</span>
+          <button id="update-linking">Change Link-Number</button>
+        </div>
         <div id="notifications">
           <h6>Notifications</h6>
           <div class="switch-case">
@@ -56,9 +60,15 @@
                 You can use this number to synchronize with other clients or the extension.
               </label>
               <p id="link-id" class="link-id unlinked">Unlinked</p>
+              <p id="link-link-text" class="label">Or simply share the following link:</p>
+              <a href='' id="link-link"  target="_blank" rel="noopener" class="label"></a>
             </div>
             <div id="link-section">
               <h6>Link to Account</h6>
+              <div id="link-error">
+                <span>Error while linking &ndash; please make sure you entered the correct number.</span>
+              </div>
+              <div id="link-progress"><div></div></div>
               <div class="link-section">
                 <div class="add-link">
                   <label for="link-number" class="label">
