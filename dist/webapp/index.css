@@ -431,23 +431,43 @@ h6 {
 #impressum > div {
   overflow: auto;
   max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 #impressum h6 {
   border: none;
-  margin-left: 32px;
+  margin: 4px 32px;
 }
 
 #impressum h3 {
-  margin-left: 16px;
-  margin-top: 8px;
+  padding: 8px 16px;
+  position: sticky;
+  top: 0;
+  margin: 0;
+  background: white;
+  z-index: 1;
 }
 
 #impressum h5 {
   margin-top: 16px;
 }
+
 #impressum p {
   margin-left: 16px;
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.bar {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding: 8px 0 0;
 }
 
 #impressum-wrap {
