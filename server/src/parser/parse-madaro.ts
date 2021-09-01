@@ -199,4 +199,5 @@ const madaro = {
     parseCondition: () => false
 }
 
+export const MADARA = TYPE
 registerParser(madaro)

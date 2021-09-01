@@ -6,7 +6,7 @@ import { getUrlKey, getUrls, updateUrl } from '../url-controller'
 const TYPE = 'fanfox'
 const warned: Record<string, number> = {}
 
-export function parseFanfox (source: Source, body) {
+function parseFanfox (source: Source, body) {
     const $ = cheerio.load(body)
     const baseDate = new Date()
     baseDate.setHours(0, 0, 0, 0)

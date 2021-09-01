@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseFanfox = void 0;
 const cheerio_1 = __importDefault(require("cheerio"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const parser_1 = require("../parser");
@@ -39,7 +38,6 @@ function parseFanfox(source, body) {
         return isValid && !stored;
     });
 }
-exports.parseFanfox = parseFanfox;
 async function fetchFanFox(source) {
     const body = await node_fetch_1.default(source.url, { method: 'get' }).then((res) => res.text());
     return parseFanfox(source, body);

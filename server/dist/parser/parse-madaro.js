@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MADARA = void 0;
 const cheerio_1 = __importDefault(require("cheerio"));
 const form_data_1 = __importDefault(require("form-data"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
@@ -177,4 +178,5 @@ const madaro = {
     parseLink: parseMadaroPage,
     parseCondition: () => false
 };
+exports.MADARA = TYPE;
 parser_1.registerParser(madaro);

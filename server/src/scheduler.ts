@@ -2,7 +2,6 @@
 import { addUrl } from './url-controller'
 import { getSources } from './source-controller'
 import { sendTopicMessage } from './subscriptions-controller'
-import { parseFanfox } from './parser/parse-fanfox'
 import { fetchChapterList } from './parser'
 
 async function fetchUrls (source, isNew = false) {

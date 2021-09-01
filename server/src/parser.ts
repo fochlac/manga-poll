@@ -7,6 +7,7 @@ declare global {
     }
 }
 
+const defaultType = 'madara'
 const parserMap = {}
 const linkParserList = []
 let defaultLinkParser
@@ -14,13 +15,13 @@ let defaultLinkParser
 export function registerParser ({ type, fetchFunction, parseLink, parseCondition }: Parser) {
     parserMap[type] = fetchFunction
     linkParserList.push({ parseLink, parseCondition })
-    if (type === 'madaro') {
+    if (type === defaultType) {
         defaultLinkParser = parseLink
     }
 }
 
 export function fetchChapterList (source: Source) {
-    const fetchFunction = parserMap[source.type] || parserMap['madaro']
+    const fetchFunction = parserMap[source.type] || parserMap[defaultType]
     return fetchFunction(source)
 }
 

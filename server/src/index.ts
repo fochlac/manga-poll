@@ -8,8 +8,11 @@ import cors from 'cors'
 import { sourceController } from './source-controller'
 import { urlController } from './url-controller'
 import { init } from './scheduler'
-import { sendTopicMessage, subscriptionsController } from './subscriptions-controller'
+import { subscriptionsController } from './subscriptions-controller'
 import { linksController } from './link-controller'
+
+import './parser/parse-fanfox'
+import './parser/parse-madaro'
 
 const app = express()
 const server = createServer(app)
