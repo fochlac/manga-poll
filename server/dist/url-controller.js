@@ -16,16 +16,16 @@ catch (e) {
 }
 let writeUrlsTimeout = null;
 function getUrlKey(url, sourceId) {
-    const result = String(url).match(/^https?:\/\/([^/]*)\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/) || [];
-    const chapter = result[3];
-    const host = result[1];
+    const { chapter, host } = url;
     return `${host}--${sourceId}--${chapter}`;
 }
 exports.getUrlKey = getUrlKey;
 function updateUrl(source, newUrl) {
     const key = getUrlKey(newUrl, source.id);
-    if (urls[key] && urls[key].url !== newUrl) {
-        urls[key].url = newUrl;
+    if (urls[key] && urls[key].url !== newUrl.url || !urls[key].chapter) {
+        urls[key].url = newUrl.url;
+        urls[key].chapter = newUrl.chapter;
+        urls[key].host = newUrl.host;
         clearTimeout(writeUrlsTimeout);
         writeUrlsTimeout = setTimeout(() => {
             fs_1.default.writeFile(urlsPath, JSON.stringify(urls, null, 2), () => null);
@@ -35,15 +35,17 @@ function updateUrl(source, newUrl) {
 }
 exports.updateUrl = updateUrl;
 function addUrl(source, isNew = false) {
-    return ({ url, created }) => {
+    return (newEntry) => {
         const entry = {
-            url,
-            id: getUrlKey(url, source.id),
-            created: !isNew ? Date.now() : created,
+            url: newEntry.url,
+            id: getUrlKey(newEntry, source.id),
+            created: !isNew ? Date.now() : newEntry.created,
+            chapter: newEntry.chapter,
+            host: newEntry.host,
             title: source.title,
             sourceId: source.id
         };
-        urls[getUrlKey(url, source.id)] = entry;
+        urls[getUrlKey(entry, source.id)] = entry;
         clearTimeout(writeUrlsTimeout);
         writeUrlsTimeout = setTimeout(() => {
             fs_1.default.writeFile(urlsPath, JSON.stringify(urls, null, 2), () => null);

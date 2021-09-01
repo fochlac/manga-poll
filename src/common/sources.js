@@ -18,7 +18,7 @@ export function sourceRenderer (db) {
                 if (!source) {
                     return ''
                 }
-                const url = String(source.url).replace('/wp-admin/admin-ajax.php', '').replace(/https?:\/\//, '')
+                const url = String(source.url).replace(/https?:\/\//, '').split('/')[0]
                 return (
                     `<li class="row source">
                         <div class="data" title="${`${source.title} (${url})`}">

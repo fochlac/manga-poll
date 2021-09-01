@@ -1,21 +1,13 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetchSource = exports.fetchAll = exports.init = void 0;
-const form_data_1 = __importDefault(require("form-data"));
-const node_fetch_1 = __importDefault(require("node-fetch"));
-const parse_madaro_1 = require("./parse-madaro");
 const url_controller_1 = require("./url-controller");
 const source_controller_1 = require("./source-controller");
 const subscriptions_controller_1 = require("./subscriptions-controller");
+const parser_1 = require("./parser");
 async function fetchUrls(source, isNew = false) {
-    const formData = new form_data_1.default();
-    formData.append('action', 'manga_get_chapters');
-    formData.append('manga', source.mangaId);
-    const body = await node_fetch_1.default(source.url, { method: 'post', body: formData }).then((res) => res.text());
-    const urls = parse_madaro_1.parseMadaro(source, body);
+    let urls = [];
+    urls = await parser_1.fetchChapterList(source);
     if (urls.length) {
         subscriptions_controller_1.sendTopicMessage(source.id);
         console.log(`${urls.length} new urls for ${source.title} on "${source.url.split('/')[2]}".`);

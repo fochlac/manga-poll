@@ -17,6 +17,29 @@ bookmarkTrack.addEventListener('click', () => {
     currentSource = null
 })
 
+chrome.runtime.onMessage.addListener(async (request) => {
+    console.log(request)
+    if (request.id && request.title && request.url) {
+        const sources = await db.sources.read()
+
+        if (!sources.some((source) => source.url === request.url && String(source.mangaId) === String(request.id))) {
+            bookmark.style.display = 'flex'
+            bookmarkTitle.innerText = `Do you want to start tracking "${request.title}"?`
+            currentSource = {
+                type: request.type,
+                mangaId: request.id,
+                title: request.title,
+                url: request.url
+            }
+            return
+        }
+    }
+
+    bookmark.style.display = 'none'
+    bookmarkTitle.innerText = ''
+    currentSource = null
+})
+
 export function testBookmark () {
     chrome.tabs.query(
         { active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
@@ -38,6 +61,19 @@ function test () {
             return element.textContent
         }
         return str
+    }
+
+    function testFanFox () {
+        const url = window.location.pathname.match(/^\/manga\/[^/]*\//)?.[0]
+        const name = document.querySelector('.reader-header-title-1 a:first-child')?.innerText ||
+            document.querySelector('.detail-info-right-title-font')?.innerText
+
+        return {
+            type: 'fanfox',
+            id: url ? url.split('/')[2] : null,
+            title: name,
+            url: url ? `${window.location.origin}${url}` : null
+        }
     }
 
     function testMadaro () {
@@ -83,6 +119,7 @@ function test () {
         const title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0]
 
         return {
+            type: 'madaro',
             id,
             title,
             url: document?.location?.origin ? `${document.location.origin}/wp-admin/admin-ajax.php` : null
@@ -91,32 +128,16 @@ function test () {
 
     let result
 
-    if (!result) {
+    if (window.location.host === 'fanfox.net') {
+        result = testFanFox()
+    }
+    else {
         result = testMadaro()
     }
 
+    console.log(result)
     if (result) {
         chrome.runtime.sendMessage(result)
     }
 }
 
-chrome.runtime.onMessage.addListener(async (request) => {
-    if (request.id && request.title && request.url) {
-        const sources = await db.sources.read()
-
-        if (!sources.some((source) => source.url === request.url && String(source.mangaId) === String(request.id))) {
-            bookmark.style.display = 'flex'
-            bookmarkTitle.innerText = `Do you want to start tracking "${request.title}"?`
-            currentSource = {
-                mangaId: request.id,
-                title: request.title,
-                url: request.url
-            }
-            return
-        }
-    }
-
-    bookmark.style.display = 'none'
-    bookmarkTitle.innerText = ''
-    currentSource = null
-})

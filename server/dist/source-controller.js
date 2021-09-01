@@ -22,9 +22,13 @@ function getSources() {
     return sources;
 }
 exports.getSources = getSources;
-async function addSource(title, url, mangaId) {
+async function addSource(title, url, mangaId, type) {
     const entry = {
-        title, url, id: nanoid(), mangaId
+        title,
+        url,
+        id: nanoid(),
+        mangaId,
+        type
     };
     sources[entry.id] = entry;
     fs_1.default.writeFile(sourcesPath, JSON.stringify(sources, null, 2), () => null);
@@ -39,14 +43,14 @@ function removeSource(id) {
     return false;
 }
 async function createSourceIfNeeded(rawSource) {
-    const { title, url, mangaId } = rawSource;
-    if (!title || !url || !mangaId) {
+    const { title, url, mangaId, type } = rawSource;
+    if (!title || !url || !mangaId || !type) {
         throw new Error(`Error creating new source. Basic values are missing:\n${JSON.stringify(rawSource)}`);
     }
     let entry = Object.values(sources).find((source) => source.url === url && String(source.mangaId) === String(mangaId));
     if (!entry) {
         try {
-            entry = await addSource(title, url, mangaId);
+            entry = await addSource(title, url, mangaId, type);
             await scheduler_1.fetchSource(entry, true);
         }
         catch (e) {

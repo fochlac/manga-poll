@@ -1,18 +1,15 @@
-import FormData from 'form-data'
-import fetch from 'node-fetch'
-import { parseMadaro } from './parse-madaro'
+
 import { addUrl } from './url-controller'
 import { getSources } from './source-controller'
 import { sendTopicMessage } from './subscriptions-controller'
+import { parseFanfox } from './parser/parse-fanfox'
+import { fetchChapterList } from './parser'
 
 async function fetchUrls (source, isNew = false) {
-    const formData = new FormData()
-    formData.append('action', 'manga_get_chapters')
-    formData.append('manga', source.mangaId)
+    let urls = []
 
-    const body = await fetch(source.url, { method: 'post', body: formData }).then((res) => res.text())
+    urls = await fetchChapterList(source)
 
-    const urls = parseMadaro(source, body)
     if (urls.length) {
         sendTopicMessage(source.id)
         console.log(`${urls.length} new urls for ${source.title} on "${source.url.split('/')[2]}".`)
