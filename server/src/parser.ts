@@ -29,10 +29,10 @@ export function parseSourceLink (link) {
     const parser = linkParserList.find(({parseCondition}) => parseCondition(link))
 
     if (!parser) {
-        console.log(`Could not find parser for url "${link}".`)
+        console.log(`Could not find parser for url "${link}", using default parser.`)
     }
 
-    return parser && parser.parseLink(link)
+    return parser ? parser.parseLink(link) : defaultLinkParser(link)
 }
 
 export function checkSourceType (type) {
