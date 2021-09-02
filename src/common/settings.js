@@ -1,6 +1,6 @@
 const linkFields = ['hide', 'hiddenChapters', 'sources']
 
-function formatKey (key) {
+function formatKey (key = '') {
     return `${key.slice(0, 5)}-${key.slice(5, 10)}-${key.slice(10, 15)}`
 }
 
@@ -262,7 +262,7 @@ export async function addSettingsHandlers (db, api) {
             const key = `${linkInput1.value}${linkInput2.value}${linkInput3.value}`
             const result = await connectToLink(key, api, db)
             if (result) {
-                writeStateToDom(key)
+                writeStateToDom(result)
                 linkInput1.value = ''
                 linkInput2.value = ''
                 linkInput3.value = ''
