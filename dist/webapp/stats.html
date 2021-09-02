@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manga Poll</title>
+    <link rel="stylesheet" href="index.css" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
+    <meta name="msapplication-TileColor" content="#da532c" />
+    <meta name="theme-color" content="#ffffff" />
+  </head>
+  <style>
+    table {
+        margin: 16px 32px;
+        text-align: left;
+        width: calc(100% - 64px);
+    }
+    td:first-child {
+        width: 60%;
+    }
+    td:nth-child(2) {
+        width: 20%;
+    }
+    td:nth-child(3),th:nth-child(3) {
+        width: 20%;
+        text-align: right;
+    }
+    th {
+        padding-bottom: 4px;
+    }
+  </style>
+  <body>
+      <h3>Stats</h3>
+      <div id="stats">
+        
+      </div>
+  </body>
+  <script>
+      function date(date) {
+          const dateRaw = new Date(date).toISOString().split('T')[0]
+          const [y, m, d] = dateRaw.split('-')
+          return `${d}.${m}.${y}`
+      }
+      fetch('/api/sources/stats')
+        .then(r => r.json())
+        .then(({payload: stats}) => {
+            Object.keys(stats).forEach((host) => {
+                document.querySelector('#stats').innerHTML += `
+                    <div class="host">
+                        <h5>${host}</h5>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Last Update</th>
+                                    <th>Chapters</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    ${Object.values(stats[host].sources).map(({title, latest, count}) => `
+                                        <td>${title}</td>
+                                        <td>${date(latest)}</td>
+                                        <td>${count}</td>
+                                    `).join('</tr><tr>')}
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td><b>${date(stats[host].latest)}</b></td>
+                                    <td><b>${stats[host].count}</b></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `
+            })
+        })
+  </script>  
+</html>

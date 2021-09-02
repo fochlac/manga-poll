@@ -145,11 +145,19 @@ function test () {
             }, {})
         const title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0]
 
+        let url = null
+        if (document?.location?.origin) {
+            url = `${document.location.origin}/wp-admin/admin-ajax.php`
+        }
+        if (url.includes('leviatanscans.com')) {
+            url = document.location.href.split('/').slice(0, 6).join('/') + '/ajax/chapters'
+        }
+
         return {
-            type: 'madaro',
+            type: 'madara',
             id,
             title,
-            url: document?.location?.origin ? `${document.location.origin}/wp-admin/admin-ajax.php` : null
+            url
         }
     }
 

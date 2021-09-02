@@ -5,6 +5,7 @@ import { extractSourceIfPossible } from './check-source'
 import { checkSourceType } from './parser'
 
 import { fetchSource } from './scheduler'
+import { getUrls } from './url-controller'
 
 declare global {
     interface Source {
@@ -58,7 +59,7 @@ async function createSourceIfNeeded (rawSource) {
     if (!title || !url || !mangaId || !type) {
         throw new Error(`Error creating new source. Basic values are missing:\n${JSON.stringify(rawSource)}`)
     }
-    if (!checkSourceType( type)) {
+    if (!checkSourceType(type)) {
         throw new Error(`Error creating new source. Source type "${type}" is not supported.`)
     }
     let entry = Object.values(sources).find((source) => source.url === url && String(source.mangaId) === String(mangaId))
@@ -121,5 +122,27 @@ export function sourceController (app) {
 
     app.get('/api/sources', (req, res) => {
         res.status(200).json({ valid: true, payload: Object.values(sources) })
+    })
+
+    app.get('/api/sources/stats', async (req, res) => {
+        const urls = await getUrls()
+        const stats = Object.values(sources).reduce((stats, source) => {
+            const host = source.url.split('/')[2].split('.').slice(-2).join('.')
+            stats[host] = stats[host] || { latest: 0, sources: {}, count: 0 }
+            const sourceChapters = Object.values(urls).filter((url) => url.sourceId === source.id)
+            const latest = sourceChapters.reduce((latest, url) => latest > Number(url.created) ? latest : Number(url.created), 0)
+
+            stats[host].latest = stats[host].latest >= latest ? stats[host].latest : latest
+            stats[host].count += sourceChapters.length
+            stats[host].sources[source.id] = {
+                title: source.title,
+                latest,
+                count: sourceChapters.length
+            }
+
+            return stats     
+        }, {})
+
+        res.status(200).json({ valid: true, payload: stats })
     })
 }

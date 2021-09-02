@@ -162,18 +162,24 @@ async function parseMadaroPage (rawUrl: string) {
         }, {})
     const title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0]
 
-    const extractedUrl = /(https?:\/\/[^/]*)/.exec(rawUrl)?.[1]
-    const urls = [
-        urlRegex.exec(sourcehtml)?.[1],
-        extractedUrl && `${extractedUrl}/wp-admin/admin-ajax.php`
-    ]
-        .filter((url) => !!url && String(url).length)
-        .reduce((map, url) => {
-            map[String(url).trim()] = typeof map[url] === 'number' ? map[String(url).trim()] + 1 : 1
-            return map
-        }, {})
-
-    const url = Object.keys(urls).sort((url1, url2) => urls[url1] - urls[url2])[0]
+    let url = null
+    if (rawUrl.includes('leviatanscans.com')) {
+        url = rawUrl.split('/').slice(0, 6).join('/') + '/ajax/chapters'
+    }
+    else {
+        const extractedUrl = /(https?:\/\/[^/]*)/.exec(rawUrl)?.[1]
+        const urls = [
+            urlRegex.exec(sourcehtml)?.[1],
+            extractedUrl && `${extractedUrl}/wp-admin/admin-ajax.php`
+        ]
+            .filter((url) => !!url && String(url).length)
+            .reduce((map, url) => {
+                map[String(url).trim()] = typeof map[url] === 'number' ? map[String(url).trim()] + 1 : 1
+                return map
+            }, {})
+    
+        url = Object.keys(urls).sort((url1, url2) => urls[url1] - urls[url2])[0]
+    }
 
     return {
         type: TYPE,

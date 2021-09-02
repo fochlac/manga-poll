@@ -10,6 +10,7 @@ const path_1 = require("path");
 const check_source_1 = require("./check-source");
 const parser_1 = require("./parser");
 const scheduler_1 = require("./scheduler");
+const url_controller_1 = require("./url-controller");
 const nanoid = nanoid_1.customAlphabet(nanoid_1.urlAlphabet, 10);
 const sourcesPath = path_1.resolve(__dirname, '../db/sources.json');
 let sources = {};
@@ -104,6 +105,24 @@ function sourceController(app) {
     });
     app.get('/api/sources', (req, res) => {
         res.status(200).json({ valid: true, payload: Object.values(sources) });
+    });
+    app.get('/api/sources/stats', async (req, res) => {
+        const urls = await url_controller_1.getUrls();
+        const stats = Object.values(sources).reduce((stats, source) => {
+            const host = source.url.split('/')[2].split('.').slice(-2).join('.');
+            stats[host] = stats[host] || { latest: 0, sources: {}, count: 0 };
+            const sourceChapters = Object.values(urls).filter((url) => url.sourceId === source.id);
+            const latest = sourceChapters.reduce((latest, url) => latest > Number(url.created) ? latest : Number(url.created), 0);
+            stats[host].latest = stats[host].latest >= latest ? stats[host].latest : latest;
+            stats[host].count += sourceChapters.length;
+            stats[host].sources[source.id] = {
+                title: source.title,
+                latest,
+                count: sourceChapters.length
+            };
+            return stats;
+        }, {});
+        res.status(200).json({ valid: true, payload: stats });
     });
 }
 exports.sourceController = sourceController;
