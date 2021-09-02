@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseSourceLink = exports.fetchChapterList = exports.registerParser = void 0;
+exports.checkSourceType = exports.parseSourceLink = exports.fetchChapterList = exports.registerParser = void 0;
 const defaultType = 'madara';
 const parserMap = {};
 const linkParserList = [];
@@ -18,8 +18,15 @@ function fetchChapterList(source) {
     return fetchFunction(source);
 }
 exports.fetchChapterList = fetchChapterList;
-function parseSourceLink(body, link) {
-    const parser = linkParserList.find(({ parseCondition }) => parseCondition(link, body));
-    return parser && parser.parseLink(body, link);
+function parseSourceLink(link) {
+    const parser = linkParserList.find(({ parseCondition }) => parseCondition(link));
+    if (!parser) {
+        console.log(`Could not find parser for url "${link}".`);
+    }
+    return parser && parser.parseLink(link);
 }
 exports.parseSourceLink = parseSourceLink;
+function checkSourceType(type) {
+    return !!parserMap[type];
+}
+exports.checkSourceType = checkSourceType;

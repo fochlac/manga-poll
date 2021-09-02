@@ -126,7 +126,8 @@ function decodeHTMLEntities (str) {
     return str
 }
 
-function parseMadaroPage (sourcehtml: string, rawUrl: string) {
+async function parseMadaroPage (rawUrl: string) {
+    const sourcehtml: string = await fetch(rawUrl).then(res => res.text())
     const $ = cheerio.load(sourcehtml)
 
     const ids = [

@@ -42,8 +42,9 @@ async function fetchFanFox(source) {
     const body = await node_fetch_1.default(source.url, { method: 'get' }).then((res) => res.text());
     return parseFanfox(source, body);
 }
-function parseFanfoxPage(sourcehtml, rawUrl) {
+async function parseFanfoxPage(rawUrl) {
     var _a, _b;
+    const sourcehtml = await node_fetch_1.default(rawUrl).then(res => res.text());
     const $ = cheerio_1.default.load(sourcehtml);
     const path = (_a = rawUrl.match(/\/manga\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
     const name = $('.reader-header-title-1 a:first-child').text() || $('.detail-info-right-title-font').text();

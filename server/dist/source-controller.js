@@ -8,6 +8,7 @@ const fs_1 = __importDefault(require("fs"));
 const nanoid_1 = require("nanoid");
 const path_1 = require("path");
 const check_source_1 = require("./check-source");
+const parser_1 = require("./parser");
 const scheduler_1 = require("./scheduler");
 const nanoid = nanoid_1.customAlphabet(nanoid_1.urlAlphabet, 10);
 const sourcesPath = path_1.resolve(__dirname, '../db/sources.json');
@@ -47,6 +48,9 @@ async function createSourceIfNeeded(rawSource) {
     if (!title || !url || !mangaId || !type) {
         throw new Error(`Error creating new source. Basic values are missing:\n${JSON.stringify(rawSource)}`);
     }
+    if (!parser_1.checkSourceType(type)) {
+        throw new Error(`Error creating new source. Source type "${type}" is not supported.`);
+    }
     let entry = Object.values(sources).find((source) => source.url === url && String(source.mangaId) === String(mangaId));
     if (!entry) {
         try {
@@ -78,14 +82,14 @@ function sourceController(app) {
             }
             const rawSource = await check_source_1.extractSourceIfPossible(url);
             if (!rawSource) {
-                throw new Error(`Error parsing raw source ${url}.`);
+                throw new Error(`Error parsing raw source "${url}".`);
             }
             const entry = await createSourceIfNeeded(rawSource);
             if (entry) {
                 res.status(200).json({ valid: true, payload: entry });
             }
             else {
-                throw new Error(`Could not create new source for url ${url}.`);
+                throw new Error(`Could not create new source for url "${url}".`);
             }
         }
         catch (e) {

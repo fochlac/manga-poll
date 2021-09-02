@@ -48,7 +48,9 @@ async function fetchFanFox (source: Source) {
 }
 
 
-function parseFanfoxPage (sourcehtml: string, rawUrl: string) {
+async function parseFanfoxPage (rawUrl: string) {
+    const sourcehtml: string = await fetch(rawUrl).then(res => res.text())
+    
     const $ = cheerio.load(sourcehtml)
 
     const path = rawUrl.match(/\/manga\/[^/]*\//)?.[0]

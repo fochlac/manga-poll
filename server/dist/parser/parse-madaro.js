@@ -115,8 +115,9 @@ function decodeHTMLEntities(str) {
     }
     return str;
 }
-function parseMadaroPage(sourcehtml, rawUrl) {
+async function parseMadaroPage(rawUrl) {
     var _a, _b;
+    const sourcehtml = await node_fetch_1.default(rawUrl).then(res => res.text());
     const $ = cheerio_1.default.load(sourcehtml);
     const ids = [
         ...(sourcehtml.match(idRegex) || []).map((str) => { var _a; return (_a = idRegex.exec(str)) === null || _a === void 0 ? void 0 : _a[1]; }),

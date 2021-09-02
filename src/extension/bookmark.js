@@ -1,4 +1,5 @@
 import { API } from '../common/api'
+import { API_ADDRESS } from './constants'
 import { db } from './storage'
 
 let currentSource = null
@@ -7,7 +8,7 @@ const bookmark = document.getElementById('bookmark')
 const bookmarkTrack = document.getElementById('bookmark-track')
 const bookmarkTitle = document.getElementById('bookmark-title')
 
-const { Source } = API('https://manga.fochlac.com')
+const { Source } = API(API_ADDRESS)
 
 bookmarkTrack.addEventListener('click', () => {
     bookmark.style.display = 'none'
@@ -76,6 +77,32 @@ function test () {
         }
     }
 
+    function testMangadex () {
+        if (/title\/[\d-\w]*\/[\d-\w]*/.test(window.location.pathname)) {
+            const id = window.location.pathname.split('/')?.[2]
+            const name = document.querySelector('.manga-container .title p')?.innerText
+
+            return {
+                type: 'mangadex',
+                id,
+                title: name,
+                url: id ? `https://api.mangadex.org/manga/${id}` : null
+            }
+        }
+        else if (/chapter\/[\d-\w]*\/\d*/.test(window.location.pathname)) {
+            const link = document.querySelector('a.text-primary[href*="/title/"]')
+            const name = link?.innerText
+            const id = link?.href.split('/')?.[4]
+
+            return {
+                type: 'mangadex',
+                id,
+                title: name,
+                url: id ? `https://api.mangadex.org/manga/${id}` : null
+            }
+        }
+    }
+
     function testMadaro () {
         function parse (string, fallback) {
             try {
@@ -131,11 +158,13 @@ function test () {
     if (window.location.host === 'fanfox.net') {
         result = testFanFox()
     }
+    else if (window.location.host === 'mangadex.org') {
+        result = testMangadex()
+    }
     else {
         result = testMadaro()
     }
 
-    console.log(result)
     if (result) {
         chrome.runtime.sendMessage(result)
     }

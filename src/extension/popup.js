@@ -9,8 +9,9 @@ import { createSchedule } from '../common/schedule'
 import { registerMenuListeners } from '../common/menu'
 import { addSettingsHandlers, getLinkHelpers } from '../common/settings'
 import { API } from '../common/api'
+import { API_ADDRESS } from './constants'
 
-const api = API('https://manga.fochlac.com')
+const api = API(API_ADDRESS)
 
 db.urls.setMaxOld(100)
 

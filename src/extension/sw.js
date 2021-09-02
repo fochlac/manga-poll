@@ -1,9 +1,10 @@
 import 'regenerator-runtime/runtime.js'
 import { API } from '../common/api'
 import { getLinkHelpers } from '../common/settings'
+import { API_ADDRESS } from './constants'
 import { db } from './storage'
 
-const Api = API('https://manga.fochlac.com')
+const Api = API(API_ADDRESS)
 
 const ALARMS = {
     URLS: 'urls'

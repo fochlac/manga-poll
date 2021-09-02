@@ -2,6 +2,7 @@ import fs from 'fs'
 import { customAlphabet, urlAlphabet } from 'nanoid'
 import { resolve } from 'path'
 import { extractSourceIfPossible } from './check-source'
+import { checkSourceType } from './parser'
 
 import { fetchSource } from './scheduler'
 
@@ -57,6 +58,9 @@ async function createSourceIfNeeded (rawSource) {
     if (!title || !url || !mangaId || !type) {
         throw new Error(`Error creating new source. Basic values are missing:\n${JSON.stringify(rawSource)}`)
     }
+    if (!checkSourceType( type)) {
+        throw new Error(`Error creating new source. Source type "${type}" is not supported.`)
+    }
     let entry = Object.values(sources).find((source) => source.url === url && String(source.mangaId) === String(mangaId))
     if (!entry) {
         try {
@@ -92,7 +96,7 @@ export function sourceController (app) {
             
             const rawSource = await extractSourceIfPossible(url)
             if (!rawSource) {
-                throw new Error(`Error parsing raw source ${url}.`)
+                throw new Error(`Error parsing raw source "${url}".`)
             }
             const entry = await createSourceIfNeeded(rawSource)
     
@@ -100,7 +104,7 @@ export function sourceController (app) {
                 res.status(200).json({ valid: true, payload: entry })
             }
             else {
-                throw new Error(`Could not create new source for url ${url}.`)
+                throw new Error(`Could not create new source for url "${url}".`)
             }
         }
         catch(e) {

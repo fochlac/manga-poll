@@ -2,8 +2,8 @@ declare global {
     interface Parser {
         type: string;
         fetchFunction: (source: Source) => Promise<Partial<Url>[]>;
-        parseLink: (body: string, link: string) => Partial<Source>;
-        parseCondition: (body: string, link: string) => boolean;
+        parseLink: (body: string) => Promise<Partial<Source>>;
+        parseCondition: (body: string) => boolean;
     }
 }
 
@@ -25,8 +25,16 @@ export function fetchChapterList (source: Source) {
     return fetchFunction(source)
 }
 
-export function parseSourceLink (body, link) {
-    const parser = linkParserList.find(({parseCondition}) => parseCondition(link, body))
+export function parseSourceLink (link) {
+    const parser = linkParserList.find(({parseCondition}) => parseCondition(link))
 
-    return parser && parser.parseLink(body, link)
+    if (!parser) {
+        console.log(`Could not find parser for url "${link}".`)
+    }
+
+    return parser && parser.parseLink(link)
+}
+
+export function checkSourceType (type) {
+    return !!parserMap[type]
 }
