@@ -10,8 +10,14 @@ export function addBookmarkListener () {
     button.addEventListener('click', () => {
         const url = input.value
         if (url) {
+            input.disabled = true
+            button.disabled = true
+            input.classList.remove('error')
             Source.fromUrl(url)
+                .catch(() => ({ valid: false }))
                 .then(({valid, payload: source}) => {
+                    input.disabled = false
+                    button.disabled = false
                     if (valid) {
                         db.sources.add(source)
                         input.value = ''
