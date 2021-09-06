@@ -370,3 +370,12 @@ h6 {
   width: 25%;
   text-align: center;
 }
+
+#impressum-bar {
+  cursor: default;
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 8px 3px;
+  font-size: 0.8rem;
+  border-top: solid 1px lightslategrey;
+}
