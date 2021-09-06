@@ -17,7 +17,7 @@
   <body>
     <h5>
       <span id="popupTitle">Chapters</span>
-      <span id="progress">(next refresh: 60s)</span>
+      <span id="progress" data-before="(Refresh now!)">(Next refresh: 60s)</span>
       <div style="position: absolute; right: 0px; top: 0px">
         <span class="action" id="chapters" style="display: none">Chapters</span>
         <span class="action" id="add">Bookmarks</span>
@@ -48,6 +48,33 @@
     </div>
 
     <div class="list">
+      <div id="intro">
+        <h5>How to get started</h5>
+        <p>
+          The easiest way to track a manga is by using the 
+          <a href="https://chrome.google.com/webstore/detail/fdmboijadaabmpkdfikffbgpmibholfo/">chrome extension</a>,
+          but you can do without.
+        </p>
+        <div class="intro-row">
+          <div>1.</div>
+          <p>
+            First click the "Bookmark"-link in the top right corner of this page.
+          </p>
+        </div>
+        <div class="intro-row">
+          <div>2.</div>
+          <p>
+            Enter the URL of the manga you want to track into the input field:
+          </p>
+        </div>
+        <img id="intro-bookmark" src="bookmark.PNG" >
+        <div class="intro-row">
+          <div>3.</div>
+          <p>
+            Finally click the "Submit"-button to start tracking the desired manga.
+          </p>
+        </div>
+      </div>
       <ul id="urls"></ul>
       <ul id="sources"></ul>
       <div class="settings" style="display: none">

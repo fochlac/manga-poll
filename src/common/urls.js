@@ -2,6 +2,7 @@ import { pad } from './utils'
 
 export function urlRenderer (db) {
     const urls = document.getElementById('urls')
+    const intro = document.getElementById('intro')
 
     async function hide (id) {
         const { newUrls, oldUrls } = await db.urls.read()
@@ -85,11 +86,17 @@ export function urlRenderer (db) {
 
     async function renderUrls () {
         const maxOld = await db.urls.getMaxOld()
+        const sources = await db.sources.read()
         const { newUrls, oldUrls } = await db.urls.read()
         const newRows = newUrls.map(createUrlRenderer(false))
         const oldRows = oldUrls.map(createUrlRenderer(true))
 
-        if (newRows.length || oldRows.length) {
+        if (!sources.length) {
+            urls.innerHTML = ''
+            intro.style.display = 'flex'
+        }
+        else if (newRows.length || oldRows.length) {
+            intro.style.display = 'none'
             urls.innerHTML = []
                 .concat(newRows.length ? '<li class="new-chapters">New Chapters <span class="action hide-all">Hide all</span></li>' : [])
                 .concat(newRows)
@@ -101,6 +108,7 @@ export function urlRenderer (db) {
             checkTopButton()
         }
         else {
+            intro.style.display = 'none'
             urls.innerHTML = '<li class="row">No Chapters available.</li>'
             document.title = 'Manga Poll'
         }

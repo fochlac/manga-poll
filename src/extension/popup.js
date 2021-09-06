@@ -10,6 +10,7 @@ import { registerMenuListeners } from '../common/menu'
 import { addSettingsHandlers, getLinkHelpers } from '../common/settings'
 import { API } from '../common/api'
 import { API_ADDRESS } from './constants'
+import { initIntro } from './intro'
 
 const api = API(API_ADDRESS)
 
@@ -42,6 +43,7 @@ const interval = createSchedule({
     updater: updateProgress
 })
 
+initIntro()
 resisterProgressHandler(() => interval.triggerInstantly())
 addImportHandlers(db)
 addSettingsHandlers(db, api)

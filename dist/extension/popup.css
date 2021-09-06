@@ -41,18 +41,35 @@
   margin-right: 4px;
   font-weight: 600;
 }
+
 #bookmark .bookmark-actions {
   margin-left: auto;
   white-space: nowrap;
 }
+
 .date {
   margin-left: 8px;
 }
+
 #progress {
   font-size: 0.75rem;
   font-weight: 400;
   cursor: pointer;
+  position: relative;
+  min-width: 80px;
 }
+
+#progress:hover::before {
+  content: attr(data-before);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: white;
+  white-space: nowrap;
+}
+
 h5 {
   padding-left: 16px;
   margin-top: 10px;
@@ -354,7 +371,13 @@ h6 {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: linear-gradient(90deg, #fff 0%, cornflowerblue 20%, cornflowerblue 60%, #fff 80%);
+  background-image: linear-gradient(
+    90deg,
+    #fff 0%,
+    cornflowerblue 20%,
+    cornflowerblue 60%,
+    #fff 80%
+  );
   background-position: 0 0;
   background-repeat: repeat-x;
   animation: movebar 3s linear infinite;
@@ -378,4 +401,29 @@ h6 {
   padding: 2px 8px 3px;
   font-size: 0.8rem;
   border-top: solid 1px lightslategrey;
+}
+
+.intro-row {
+  display: flex;
+  margin-top: 8px;
+  margin-left: 8px;
+}
+
+#intro p {
+  margin: 0 8px;
+}
+
+#intro h5 {
+  padding-left: 8px;
+}
+
+#intro-bookmark {
+  margin: 4px 24px;
+  width: 436px;
+  height: 94px;
+}
+
+#intro {
+  width: 100%;
+  flex-direction: column;
 }

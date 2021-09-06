@@ -10,10 +10,12 @@ export const resisterProgressHandler = (updateNow) => {
 }
 
 export const markRefreshed = () => {
-    progress.innerHTML = '(refreshed!)'
+    progress.innerHTML = '(Refreshed!)'
+    progress.dataset.before = '(Refreshed!)'
     locked = true
     setTimeout(() => {
         locked = false
+        progress.dataset.before = '(Refresh now!)'
     }, 1500)
 }
 
@@ -23,6 +25,6 @@ export const updateProgress = (_lastPing, nextPing) => {
 
         const seconds = Math.max(Math.round(remaining / 1000), 0)
 
-        progress.innerHTML = `(next refresh: ${seconds}s)`
+        progress.innerHTML = `(Next refresh: ${seconds}s)`
     }
 }

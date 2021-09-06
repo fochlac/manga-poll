@@ -30,7 +30,7 @@ export function getLinkHelpers (db, Api) {
 
             if (Object.keys(changes).length && link.key) {
                 Api.Link.update(link.key, changes)
-                    .then((res) => res.valid && db.link.set(res.payload))
+                    .then((res) => res.valid && db.link.set({ key: res.payload.key }))
             }
         }
     }
@@ -43,7 +43,7 @@ export function getLinkHelpers (db, Api) {
                 .then((res) => {
                     if (res.valid && res.payload) {
                         db.link.setLocal(res.payload)
-                        db.link.set(res.payload)
+                        db.link.set({ key: res.payload.key })
                     }
                 })
         }
@@ -133,7 +133,7 @@ async function connectToLink (key, api, db) {
     linkProgress.style.display = 'none'
     if (linkResult?.valid) {
         const link = linkResult.payload
-        await db.link.set(link)
+        await db.link.set({ key: link.key })
         await db.link.setLocal(link)
 
         return link
@@ -244,7 +244,7 @@ export async function addSettingsHandlers (db, api) {
             const newLinkResult = await Link.insert(linkData)
             if (newLinkResult?.valid) {
                 const link = newLinkResult.payload
-                await db.link.set(link)
+                await db.link.set({ key: link.key })
                 writeStateToDom(link)
             }
         }

@@ -18,7 +18,7 @@
     </div>
     <h5>
       <span id="popupTitle">Chapters</span>
-      <span id="progress">(next refresh: 60s)</span>
+      <span id="progress" data-before="(Refresh now!)">(Next refresh: 60s)</span>
       <div style="position: absolute; right: 10px; top: 0px">
         <span class="action" id="chapters" style="display: none">Chapters</span>
         <span class="action" id="add">Bookmarks</span>
@@ -26,6 +26,33 @@
       </div>
     </h5>
     <div class="list">
+      <div id="intro">
+        <h5>How to get started</h5>
+        <div class="intro-row">
+          <div>1.</div>
+          <p>
+            Go to the page of the manga you want to track. 
+            <span style="white-space: nowrap;">
+              (i.e. https://fanfox.net/manga/tower_of_god/)
+            </span>
+          </p>
+        </div>
+        <div class="intro-row">
+          <div>2.</div>
+          <p>
+            Click the button to open this chrome extension. If the page is 
+            supported by this addon and you are not yet tracking this manga you 
+            will see this yellow bar:
+          </p>
+        </div>
+        <img src="" id="intro-bookmark">
+        <div class="intro-row">
+          <div>3.</div>
+          <p>
+            Finally click the bookmark-button to start tracking the desired manga.
+          </p>
+        </div>
+      </div>
       <ul id="urls"></ul>
       <ul id="sources"></ul>
       <div class="settings" style="display: none;">
