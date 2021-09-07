@@ -32,8 +32,10 @@ try {
         }
         if (source.url.includes('wp-admin/admin-ajax.php')) {
             const someChapterUrl = Object.values(urls).find((url) => url.sourceId === source.id)
-            sources[source.id].url = someChapterUrl.url.match(/http.*\/manga\/[^/]*\//)?.[0]
-            hasChanges = true
+            if (someChapterUrl) {
+                sources[source.id].url = someChapterUrl.url.match(/http.*\/manga\/[^/]*\//)?.[0]
+                hasChanges = true
+            }
         }
     })
     if (hasChanges) {
