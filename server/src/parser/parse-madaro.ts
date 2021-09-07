@@ -187,7 +187,7 @@ async function fetchMadaro (source: Source) {
     let body = await fetch(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData }).then((res) => res.text())
 
 
-    if (text.length < 1000) {
+    if (body.length < 1000) {
         console.log(source, `${baseurl}wp-admin/admin-ajax.php`, body)
         body = await fetch(source.url).then((res) => res.text())
     }
