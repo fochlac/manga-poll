@@ -1,3 +1,4 @@
+import { text } from 'body-parser'
 import cheerio from 'cheerio'
 import FormData from 'form-data'
 import fetch from 'node-fetch'
@@ -167,18 +168,7 @@ async function parseMadaroPage (rawUrl: string) {
         url = rawUrl.split('/').slice(0, 6).join('/') + '/ajax/chapters'
     }
     else {
-        const extractedUrl = /(https?:\/\/[^/]*)/.exec(rawUrl)?.[1]
-        const urls = [
-            urlRegex.exec(sourcehtml)?.[1],
-            extractedUrl && `${extractedUrl}/wp-admin/admin-ajax.php`
-        ]
-            .filter((url) => !!url && String(url).length)
-            .reduce((map, url) => {
-                map[String(url).trim()] = typeof map[url] === 'number' ? map[String(url).trim()] + 1 : 1
-                return map
-            }, {})
-    
-        url = Object.keys(urls).sort((url1, url2) => urls[url1] - urls[url2])[0]
+        url = rawUrl.match(/http.*\/manga\/[^/]*\//)?.[0]
     }
 
     return {
@@ -193,8 +183,13 @@ async function fetchMadaro (source: Source) {
     const formData = new FormData()
     formData.append('action', 'manga_get_chapters')
     formData.append('manga', source.mangaId)
+    const baseurl = source.url.match(/https?:\/\/[^/]*\//)?.[0]
+    
+    let body = await fetch(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData }).then((res) => res.text())
 
-    const body = await fetch(source.url, { method: 'post', body: formData }).then((res) => res.text())
+    if (text.length < 1000) {
+        body = await fetch(source.url).then((res) => res.text())
+    }
 
     return parseMadaro(source, body)
 }

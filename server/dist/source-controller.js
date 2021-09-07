@@ -16,6 +16,23 @@ const sourcesPath = path_1.resolve(__dirname, '../db/sources.json');
 let sources = {};
 try {
     sources = JSON.parse(fs_1.default.readFileSync(sourcesPath, { encoding: 'utf-8' }));
+    const urls = url_controller_1.getUrls();
+    let hasChanges = false;
+    Object.values(sources).forEach((source) => {
+        var _a;
+        if (!source.type) {
+            sources[source.id].type = 'madara';
+            hasChanges = true;
+        }
+        if (source.url.includes('wp-admin/admin-ajax.php')) {
+            const someChapterUrl = Object.values(urls).find((url) => url.sourceId === source.id);
+            sources[source.id].url = (_a = someChapterUrl.url.match(/http.*\/manga\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
+            hasChanges = true;
+        }
+    });
+    if (hasChanges) {
+        fs_1.default.writeFile(sourcesPath, JSON.stringify(sources, null, 2), () => null);
+    }
 }
 catch (e) {
     console.log(e);

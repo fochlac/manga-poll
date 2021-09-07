@@ -23,6 +23,22 @@ const sourcesPath = resolve(__dirname, '../db/sources.json')
 let sources: Record<string, Source> = {}
 try {
     sources = JSON.parse(fs.readFileSync(sourcesPath, {encoding: 'utf-8'}))
+    const urls = getUrls()
+    let hasChanges = false
+    Object.values(sources).forEach((source) => {
+        if (!source.type) {
+            sources[source.id].type = 'madara'
+            hasChanges = true
+        }
+        if (source.url.includes('wp-admin/admin-ajax.php')) {
+            const someChapterUrl = Object.values(urls).find((url) => url.sourceId === source.id)
+            sources[source.id].url = someChapterUrl.url.match(/http.*\/manga\/[^/]*\//)?.[0]
+            hasChanges = true
+        }
+    })
+    if (hasChanges) {
+        fs.writeFile(sourcesPath, JSON.stringify(sources, null, 2), () => null)
+    }
 }
 catch (e) {
     console.log(e)

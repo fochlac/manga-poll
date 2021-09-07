@@ -143,14 +143,18 @@ function test () {
                 map[clean] = typeof map[clean] === 'number' ? map[clean] + 1 : 1
                 return map
             }, {})
-        const title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0]
+        let title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0]
 
         let url = null
-        if (document?.location?.origin) {
-            url = `${document.location.origin}/wp-admin/admin-ajax.php`
+        if (document?.location?.href) {
+            url = document.location.href.match(/http.*\/manga\/[^/]*\//)?.[0]
         }
-        if (url.includes('leviatanscans.com')) {
+        if (document.location.href.includes('leviatanscans.com')) {
             url = document.location.href.split('/').slice(0, 6).join('/') + '/ajax/chapters'
+        }
+        if (document.location.href.includes('reaperscans.com')) {
+            url = document.location.href.match(/http.*\/series\/[^/]*\//)?.[0]
+            title = title.split(' – ')[0]
         }
 
         return {

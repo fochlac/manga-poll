@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MADARA = void 0;
+const body_parser_1 = require("body-parser");
 const cheerio_1 = __importDefault(require("cheerio"));
 const form_data_1 = __importDefault(require("form-data"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
@@ -116,7 +117,7 @@ function decodeHTMLEntities(str) {
     return str;
 }
 async function parseMadaroPage(rawUrl) {
-    var _a, _b;
+    var _a;
     const sourcehtml = await node_fetch_1.default(rawUrl).then(res => res.text());
     const $ = cheerio_1.default.load(sourcehtml);
     const ids = [
@@ -153,17 +154,7 @@ async function parseMadaroPage(rawUrl) {
         url = rawUrl.split('/').slice(0, 6).join('/') + '/ajax/chapters';
     }
     else {
-        const extractedUrl = (_a = /(https?:\/\/[^/]*)/.exec(rawUrl)) === null || _a === void 0 ? void 0 : _a[1];
-        const urls = [
-            (_b = urlRegex.exec(sourcehtml)) === null || _b === void 0 ? void 0 : _b[1],
-            extractedUrl && `${extractedUrl}/wp-admin/admin-ajax.php`
-        ]
-            .filter((url) => !!url && String(url).length)
-            .reduce((map, url) => {
-            map[String(url).trim()] = typeof map[url] === 'number' ? map[String(url).trim()] + 1 : 1;
-            return map;
-        }, {});
-        url = Object.keys(urls).sort((url1, url2) => urls[url1] - urls[url2])[0];
+        url = (_a = rawUrl.match(/http.*\/manga\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
     }
     return {
         type: TYPE,
@@ -173,10 +164,15 @@ async function parseMadaroPage(rawUrl) {
     };
 }
 async function fetchMadaro(source) {
+    var _a;
     const formData = new form_data_1.default();
     formData.append('action', 'manga_get_chapters');
     formData.append('manga', source.mangaId);
-    const body = await node_fetch_1.default(source.url, { method: 'post', body: formData }).then((res) => res.text());
+    const baseurl = (_a = source.url.match(/https?:\/\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
+    let body = await node_fetch_1.default(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData }).then((res) => res.text());
+    if (body_parser_1.text.length < 1000) {
+        body = await node_fetch_1.default(source.url).then((res) => res.text());
+    }
     return parseMadaro(source, body);
 }
 const madaro = {
