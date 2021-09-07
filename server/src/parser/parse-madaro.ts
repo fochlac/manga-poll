@@ -86,6 +86,11 @@ function parseMadaro (source: Source, body) {
         }
     })
 
+    
+    if (source.id === 'YDGQrK8QIf') {
+        console.log(urlList)
+    }
+
     const newUrls = urlList.filter((url) => {
         const isValid = /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url.url)
         const key = getUrlKey(url, source.id)
@@ -100,6 +105,10 @@ function parseMadaro (source: Source, body) {
 
         return isValid && !stored
     })
+
+    if (source.id === 'YDGQrK8QIf') {
+        console.log(newUrls)
+    }
 
     const type = getDateType(urlList)
     return parseDates(newUrls, type)
@@ -186,9 +195,11 @@ async function fetchMadaro (source: Source) {
     
     let body = await fetch(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData }).then((res) => res.text())
 
+    if (source.id === 'YDGQrK8QIf') {
+        console.log(body)
+    }
 
     if (body.length < 1000) {
-        console.log(source, `${baseurl}wp-admin/admin-ajax.php`, body)
         body = await fetch(source.url).then((res) => res.text())
     }
 
