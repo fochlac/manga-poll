@@ -9,14 +9,14 @@ async function fetchUrls(source, isNew = false) {
     let urls = [];
     urls = await parser_1.fetchChapterList(source);
     if (urls.length) {
+        let page = source.url;
+        try {
+            page = source.url.split('/')[2].split('.').slice(-2).join('.');
+        }
+        catch (e) { }
+        console.log(`${urls.length} new urls for ${source.title} on "${page}".`);
         subscriptions_controller_1.sendTopicMessage(source.id);
     }
-    let page = source.url;
-    try {
-        page = source.url.split('/')[2].split('.').slice(-2).join('.');
-    }
-    catch (e) { }
-    console.log(`${urls.length} new urls for ${source.title} on "${page}".`);
     urls.forEach(url_controller_1.addUrl(source, isNew));
 }
 function fetchAllUrls(isNew) {

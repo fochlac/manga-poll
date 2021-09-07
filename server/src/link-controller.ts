@@ -14,7 +14,7 @@ declare global {
         pw: string;
         hiddenChapters: Record<string, boolean>;
         hide: number;
-        sources: Source[]|string[];
+        sources: unknown[];
         lastModified: number;
     }
 }
@@ -59,7 +59,9 @@ function createPayload(link: Link) {
         key: toKey(id, pw),
         hiddenChapters,
         hide,
-        sources: sources.map((linksrc) => typeof linksrc === 'string' ? sourceMap[linksrc] : sourceMap[linksrc.id]),
+        sources: sources.map((linksrc) => typeof linksrc === 'string' && sourceMap[linksrc] ||
+             linksrc.hasOwnProperty('id') && sourceMap[(linksrc as Source).id]
+        ),
         lastModified
     }
 }

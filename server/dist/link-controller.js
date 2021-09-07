@@ -47,7 +47,8 @@ function createPayload(link) {
         key: toKey(id, pw),
         hiddenChapters,
         hide,
-        sources: sources.map((id) => sourceMap[id]),
+        sources: sources.map((linksrc) => typeof linksrc === 'string' && sourceMap[linksrc] ||
+            linksrc.hasOwnProperty('id') && sourceMap[linksrc.id]),
         lastModified
     };
 }
