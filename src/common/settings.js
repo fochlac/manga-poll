@@ -19,7 +19,7 @@ export function getLinkHelpers (db, Api) {
                 update.hiddenChapters = local.hiddenChapters
             }
             if (changeset.includes('sources')) {
-                update.sources = await db.sources.read()
+                update.sources = local.sources
             }
 
             if (Object.keys(update).length && link.key) {

@@ -14,7 +14,7 @@ declare global {
         pw: string;
         hiddenChapters: Record<string, boolean>;
         hide: number;
-        sources: string[];
+        sources: Source[]|string[];
         lastModified: number;
     }
 }
@@ -54,11 +54,12 @@ function fromKey(key) {
 function createPayload(link: Link) {
     const { hiddenChapters, hide, sources, lastModified, id, pw } = link
     const sourceMap = getSources()
+
     return {
         key: toKey(id, pw),
         hiddenChapters,
         hide,
-        sources: sources.map((id) => sourceMap[id]),
+        sources: sources.map((linksrc) => typeof linksrc === 'string' ? sourceMap[linksrc] : sourceMap[linksrc.id]),
         lastModified
     }
 }
