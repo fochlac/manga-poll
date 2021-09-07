@@ -147,7 +147,7 @@ function test () {
 
         let url = null
         if (document?.location?.href) {
-            url = document.location.href.match(/http.*\/manga\/[^/]*\//)?.[0]
+            url = document.location.href.match(/https?:\/\/[^/]*\/[^/]*\/[^/]*\//)?.[0]
         }
         if (document.location.href.includes('leviatanscans.com')) {
             url = document.location.href.split('/').slice(0, 6).join('/') + '/ajax/chapters'

@@ -154,7 +154,7 @@ async function parseMadaroPage(rawUrl) {
         url = rawUrl.split('/').slice(0, 6).join('/') + '/ajax/chapters';
     }
     else {
-        url = (_a = rawUrl.match(/http.*\/manga\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
+        url = (_a = rawUrl.match(/https?:\/\/[^/]*\/[^/]*\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
     }
     return {
         type: TYPE,

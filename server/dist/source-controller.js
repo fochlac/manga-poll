@@ -20,14 +20,12 @@ try {
     let hasChanges = false;
     Object.values(sources).forEach((source) => {
         var _a;
-        if (!source.type) {
-            sources[source.id].type = 'madara';
-            hasChanges = true;
-        }
-        if (source.url.includes('wp-admin/admin-ajax.php')) {
+        if (!source.url && source.type === 'madara') {
             const someChapterUrl = Object.values(urls).find((url) => url.sourceId === source.id);
-            sources[source.id].url = (_a = someChapterUrl.url.match(/http.*\/manga\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
-            hasChanges = true;
+            if (someChapterUrl) {
+                sources[source.id].url = (_a = someChapterUrl.url.match(/https?:\/\/[^/]*\/[^/]*\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
+                hasChanges = true;
+            }
         }
     });
     if (hasChanges) {

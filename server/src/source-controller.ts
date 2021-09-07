@@ -26,14 +26,10 @@ try {
     const urls = getUrls()
     let hasChanges = false
     Object.values(sources).forEach((source) => {
-        if (!source.type) {
-            sources[source.id].type = 'madara'
-            hasChanges = true
-        }
-        if (source.url.includes('wp-admin/admin-ajax.php')) {
+        if (!source.url && source.type === 'madara') {
             const someChapterUrl = Object.values(urls).find((url) => url.sourceId === source.id)
             if (someChapterUrl) {
-                sources[source.id].url = someChapterUrl.url.match(/http.*\/manga\/[^/]*\//)?.[0]
+                sources[source.id].url = someChapterUrl.url.match(/https?:\/\/[^/]*\/[^/]*\/[^/]*\//)?.[0]
                 hasChanges = true
             }
         }

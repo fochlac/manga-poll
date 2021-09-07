@@ -168,7 +168,7 @@ async function parseMadaroPage (rawUrl: string) {
         url = rawUrl.split('/').slice(0, 6).join('/') + '/ajax/chapters'
     }
     else {
-        url = rawUrl.match(/http.*\/manga\/[^/]*\//)?.[0]
+        url = rawUrl.match(/https?:\/\/[^/]*\/[^/]*\/[^/]*\//)?.[0]
     }
 
     return {
