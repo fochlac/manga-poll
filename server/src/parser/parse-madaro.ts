@@ -191,14 +191,6 @@ async function fetchMadaro (source: Source) {
         body = await fetch(source.url).then((res) => res.text())
     }
 
-    if (source.id === 'YDGQrK8QIf') {
-        try {
-            console.log(parseMadaro(source, body))
-        }
-        catch(e) {
-            console.log(e)
-        }
-    }
     return parseMadaro(source, body)
 }
 
