@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MADARA = void 0;
-const body_parser_1 = require("body-parser");
 const cheerio_1 = __importDefault(require("cheerio"));
 const form_data_1 = __importDefault(require("form-data"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
@@ -106,7 +105,6 @@ function parse(string, fallback = undefined) {
     }
 }
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g;
-const urlRegex = /["']?ajax_url["']?:\s?["']?(https?:\/\/[^/]*\/wp-admin\/admin-ajax.php)/;
 function decodeHTMLEntities(str) {
     if (str && typeof str === 'string') {
         str = str.replace(/<script[^>]*>([\S\s]*?)<\/script>/gmi, '');
@@ -170,7 +168,7 @@ async function fetchMadaro(source) {
     formData.append('manga', source.mangaId);
     const baseurl = (_a = source.url.match(/https?:\/\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
     let body = await node_fetch_1.default(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData }).then((res) => res.text());
-    if (body_parser_1.text.length < 1000) {
+    if (body.length < 1000) {
         body = await node_fetch_1.default(source.url).then((res) => res.text());
     }
     return parseMadaro(source, body);

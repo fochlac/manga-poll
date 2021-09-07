@@ -44,6 +44,8 @@ async function refreshBadge () {
 }
 
 db.onChange(async (changes) => {
+    await Links.pushLinkUpdate(changes)
+
     if (['hide', 'hiddenChapters', 'urls'].some((key) => Object.prototype.hasOwnProperty.call(changes, key))) {
         refreshBadge()
     }
