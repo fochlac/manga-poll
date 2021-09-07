@@ -46,6 +46,7 @@ const interval = createSchedule({
 })
 
 db.onChange(async (changes) => {
+    await Links.pushLinkUpdate(changes)
     if (['hide', 'hiddenChapters', 'urls'].some(Object.prototype.hasOwnProperty.bind(changes))) {
         urls.render()
     }
@@ -63,7 +64,6 @@ db.onChange(async (changes) => {
         interval.triggerInstantly()
         urls.render()
     }
-    Links.pushLinkUpdate(changes)
 })
 
 addImportHandlers(db)

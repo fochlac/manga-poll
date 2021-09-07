@@ -39,7 +39,7 @@ function parseFanfox(source, body) {
     });
 }
 async function fetchFanFox(source) {
-    const body = await node_fetch_1.default(source.url, { method: 'get' }).then((res) => res.text());
+    const body = await node_fetch_1.default(source.url, { method: 'get', headers: { cookie: 'isAdult=1;' } }).then((res) => res.text());
     return parseFanfox(source, body);
 }
 async function parseFanfoxPage(rawUrl) {
@@ -50,7 +50,7 @@ async function parseFanfoxPage(rawUrl) {
     const name = $('.reader-header-title-1 a:first-child').text() || $('.detail-info-right-title-font').text();
     return {
         type: TYPE,
-        id: path ? path.split('/')[2] : null,
+        mangaId: path ? path.split('/')[2] : null,
         title: name,
         url: (_b = rawUrl.match(/^http.*fanfox.net\/manga\/[^/]*\//)) === null || _b === void 0 ? void 0 : _b[0]
     };

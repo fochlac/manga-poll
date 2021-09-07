@@ -11,25 +11,19 @@ export function getLinkHelpers (db, Api) {
         if (changeset.length) {
             const link = await db.link.read() || {}
             const local = await db.link.local() || {}
-            const changes = {}
-            if (changeset.includes('hide') && String(link.hide) !== String(local.hide)) {
-                changes.hide = local.hide
+            const update = {}
+            if (changeset.includes('hide')) {
+                update.hide = local.hide
             }
-            if (
-                changeset.includes('hiddenChapters') &&
-                JSON.stringify(link.hiddenChapters) !== JSON.stringify(local.hiddenChapters)
-            ) {
-                changes.hiddenChapters = local.hiddenChapters
+            if (changeset.includes('hiddenChapters')) {
+                update.hiddenChapters = local.hiddenChapters
             }
-            if (changeset.includes('sources') && (
-                link.sources?.length !== local.sources.length ||
-                link.sources.some((source) => source && !local.sources.includes(source.id))
-            )) {
-                changes.sources = local.sources
+            if (changeset.includes('sources')) {
+                update.sources = await db.sources.read()
             }
 
-            if (Object.keys(changes).length && link.key) {
-                Api.Link.update(link.key, changes)
+            if (Object.keys(update).length && link.key) {
+                await Api.Link.update(link.key, update)
                     .then((res) => res.valid && db.link.set({ key: res.payload.key }))
             }
         }
@@ -43,7 +37,6 @@ export function getLinkHelpers (db, Api) {
                 .then((res) => {
                     if (res.valid && res.payload) {
                         db.link.setLocal(res.payload)
-                        db.link.set({ key: res.payload.key })
                     }
                 })
         }

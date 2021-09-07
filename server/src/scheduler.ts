@@ -11,13 +11,13 @@ async function fetchUrls (source, isNew = false) {
 
     if (urls.length) {
         sendTopicMessage(source.id)
-        let page = source.url
-        try {
-            page = source.url.split('/')[2].split('.').slice(-2).join('.')
-        }
-        catch(e) {}
-        console.log(`${urls.length} new urls for ${source.title} on "${page}".`)
     }
+    let page = source.url
+    try {
+        page = source.url.split('/')[2].split('.').slice(-2).join('.')
+    }
+    catch(e) {}
+    console.log(`${urls.length} new urls for ${source.title} on "${page}".`)
     urls.forEach(addUrl(source, isNew))
 }
 

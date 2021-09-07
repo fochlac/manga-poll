@@ -159,13 +159,22 @@ export function createDB (storage) {
     }
 
     async function setLinkData ({sources, hiddenChapters, hide}) {
-        await Promise.all([
-            writeSources(sources),
-            write(NAMESPACES.SYNC, {
+        const storedSources = (await readSources()).reduce((ss, source) => ({...ss, [source.id]: true}), {})
+        const hasChangedSources = Object.keys(storedSources).length !== sources.length ||
+            sources.some((source) => !storedSources[source.id])
+        const promises = [Promise.resolve()]
+        if (hasChangedSources) {
+            promises.push(writeSources(sources))
+        }
+        const hidden = await read(NAMESPACES.SYNC, { hiddenChapters: '{}', hide: 0 })
+        if (hidden.hiddenChapters !== JSON.stringify(hiddenChapters) || String(hidden.hide) !== String(hide)) {
+            promises.push(write(NAMESPACES.SYNC, {
                 hiddenChapters: JSON.stringify(hiddenChapters),
                 hide
-            })
-        ])
+            }))
+        }
+
+        await Promise.all(promises)
     }
 
     init()

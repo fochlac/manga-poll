@@ -42,7 +42,7 @@ function parseFanfox (source: Source, body) {
 }
 
 async function fetchFanFox (source: Source) {
-    const body = await fetch(source.url, { method: 'get' }).then((res) => res.text())
+    const body = await fetch(source.url, { method: 'get', headers: {cookie: 'isAdult=1;'} }).then((res) => res.text())
 
     return parseFanfox(source, body)
 }
@@ -58,7 +58,7 @@ async function parseFanfoxPage (rawUrl: string) {
 
     return {
         type: TYPE,
-        id: path ? path.split('/')[2] : null,
+        mangaId: path ? path.split('/')[2] : null,
         title: name,
         url: rawUrl.match(/^http.*fanfox.net\/manga\/[^/]*\//)?.[0]
     }
