@@ -177,6 +177,7 @@ function test () {
         result = testMadaro()
     }
 
+    console.log(result)
     if (result) {
         chrome.runtime.sendMessage(result)
     }

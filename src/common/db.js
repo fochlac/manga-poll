@@ -159,7 +159,7 @@ export function createDB (storage) {
     }
 
     async function setLinkData ({sources, hiddenChapters, hide}) {
-        const storedSources = (await readSources()).reduce((ss, source) => ({...ss, [source.id]: true}), {})
+        const storedSources = (await readSources()).reduce((ss, source) => source ? ({...ss, [source.id]: true}) : ss, {})
         const hasChangedSources = Object.keys(storedSources).length !== sources.length ||
             sources.some((source) => !storedSources[source.id])
         const promises = [Promise.resolve()]

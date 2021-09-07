@@ -25,7 +25,10 @@
     "default_popup": "popup.html"
   },
   "web_accessible_resources": [
-    "images/*"
+    { 
+      "resources": ["images/*"],
+      "extension_ids": ["fdmboijadaabmpkdfikffbgpmibholfo"]
+    }
   ]
 }
 
