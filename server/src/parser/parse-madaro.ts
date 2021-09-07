@@ -115,7 +115,6 @@ function parse(string, fallback = undefined) {
 }
 
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g
-const urlRegex = /["']?ajax_url["']?:\s?["']?(https?:\/\/[^/]*\/wp-admin\/admin-ajax.php)/
 
 function decodeHTMLEntities (str) {
     if (str && typeof str === 'string') {
@@ -187,7 +186,9 @@ async function fetchMadaro (source: Source) {
     
     let body = await fetch(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData }).then((res) => res.text())
 
+
     if (text.length < 1000) {
+        console.log(source, `${baseurl}wp-admin/admin-ajax.php`, body)
         body = await fetch(source.url).then((res) => res.text())
     }
 
