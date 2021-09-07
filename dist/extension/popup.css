@@ -405,7 +405,7 @@ h6 {
 
 .intro-row {
   display: flex;
-  margin-top: 8px;
+  margin-top: 16px;
   margin-left: 8px;
 }
 
@@ -414,7 +414,10 @@ h6 {
 }
 
 #intro h5 {
+  margin-top: 16px;
+  margin-bottom: 0;
   padding-left: 8px;
+  text-align: center;
 }
 
 #intro-bookmark {
