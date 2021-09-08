@@ -538,4 +538,5 @@ h6 {
   flex-direction: column;
   align-items: center;
   cursor: default;
+  display: 'none';
 }
