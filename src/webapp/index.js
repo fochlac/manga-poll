@@ -47,6 +47,9 @@ const interval = createSchedule({
 
 db.onChange(async (changes) => {
     await Links.pushLinkUpdate(changes)
+    if (['hide', 'hiddenChapters'].some(Object.prototype.hasOwnProperty.bind(changes))) {
+        navigator.serviceWorker.controller.postMessage('CLEAR_MESSAGES')
+    }
     if (['hide', 'hiddenChapters', 'urls'].some(Object.prototype.hasOwnProperty.bind(changes))) {
         urls.render()
     }
@@ -78,7 +81,7 @@ urls.render()
 sources.render()
 window.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-        navigator.serviceWorker.controller.postMessage('FOCUS')
+        navigator.serviceWorker.controller.postMessage('CLEAR_MESSAGES')
     }
 })
 

@@ -80,7 +80,7 @@ self.addEventListener('notificationclick', (e) => {
 self.addEventListener('install', () => self.skipWaiting())
 
 self.addEventListener('message', (event) => {
-    if (event.data === 'FOCUS') {
+    if (event.data === 'CLEAR_MESSAGES') {
         event.waitUntil(self.registration.getNotifications().then((nl) => nl.forEach((n) => n.close())))
     }
 })
