@@ -121,7 +121,7 @@
         .then(r => r.json())
         .then(({payload: stats}) => {
             Object.keys(stats)
-                .sort((a, b) => stats[a].latest > stats[b].latest)
+                .sort((a, b) => Number(stats[a].latest) < Number(stats[b].latest))
                 .forEach((host) => {
                     const tableRows = Object.values(stats[host].sources)
                         .sort((a, b) => String(a.title).localeCompare(b.title))
