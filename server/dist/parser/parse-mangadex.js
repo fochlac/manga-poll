@@ -8,24 +8,29 @@ const parser_1 = require("../parser");
 const url_controller_1 = require("../url-controller");
 const TYPE = 'mangadex';
 const warned = {};
+const pageSize = 100;
 async function fetchMangadex(source) {
-    const result = await node_fetch_1.default(`${source.url}/feed?limit=500`, { method: 'get' }).then((res) => res.json());
-    let list = result.results;
-    if (result.total > 500) {
-        for (let offset = 500; offset <= result.total; offset += 500) {
-            const offsetResult = await node_fetch_1.default(`${source.url}?limit=500&offset=${offset}`, { method: 'get' })
+    const result = await node_fetch_1.default(`${source.url}/feed?limit=${pageSize}`, { method: 'get' }).then((res) => res.json());
+    if (!result.data) {
+        console.log('parse-mangadex: error getting feed - empty result:', JSON.stringify(result));
+        return [];
+    }
+    let list = result.data || [];
+    if (result.total > pageSize) {
+        for (let offset = pageSize; offset <= result.total; offset += pageSize) {
+            const offsetResult = await node_fetch_1.default(`${source.url}?limit=${pageSize}&offset=${offset}`, { method: 'get' })
                 .then((res) => res.json());
-            list = list.concat(offsetResult.results);
+            list = list.concat(offsetResult.data);
         }
     }
     const urlList = list
-        .filter((chapter) => { var _a, _b; return ((_a = chapter === null || chapter === void 0 ? void 0 : chapter.data) === null || _a === void 0 ? void 0 : _a.type) === 'chapter' && ((_b = chapter.data.attributes) === null || _b === void 0 ? void 0 : _b.translatedLanguage) === 'en'; })
+        .filter((chapter) => { var _a; return (chapter === null || chapter === void 0 ? void 0 : chapter.type) === 'chapter' && ((_a = chapter.attributes) === null || _a === void 0 ? void 0 : _a.translatedLanguage) === 'en'; })
         .map((chapter) => {
         return {
-            url: `https://mangadex.org/chapter/${chapter.data.id}/1`,
-            chapter: chapter.data.attributes.chapter,
+            url: `https://mangadex.org/chapter/${chapter.id}/1`,
+            chapter: chapter.attributes.chapter,
             host: 'mangadex.org',
-            created: new Date(chapter.data.attributes.publishAt).getTime()
+            created: new Date(chapter.attributes.publishAt).getTime()
         };
     });
     return urlList.filter((url) => {

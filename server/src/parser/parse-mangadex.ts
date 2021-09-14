@@ -6,25 +6,33 @@ import { getUrlKey, getUrls, updateUrl } from '../url-controller'
 const TYPE = 'mangadex'
 const warned: Record<string, number> = {}
 
-async function fetchMangadex (source: Source) {
-    const result = await fetch(`${source.url}/feed?limit=500`, { method: 'get' }).then((res) => res.json())
-    let list = result.results
+const pageSize = 100
 
-    if (result.total > 500) {
-        for (let offset = 500; offset <= result.total; offset += 500) {
-            const offsetResult = await fetch(`${source.url}?limit=500&offset=${offset}`, { method: 'get' })
+async function fetchMangadex(source: Source) {
+    const result = await fetch(`${source.url}/feed?limit=${pageSize}`, { method: 'get' }).then((res) => res.json())
+    if (!result.data) {
+        console.log('parse-mangadex: error getting feed - empty result:', JSON.stringify(result))
+        return []
+    }
+    let list = result.data || []
+
+
+    if (result.total > pageSize) {
+        for (let offset = pageSize; offset <= result.total; offset += pageSize) {
+            const offsetResult = await fetch(`${source.url}?limit=${pageSize}&offset=${offset}`, { method: 'get' })
                 .then((res) => res.json())
-            list = list.concat(offsetResult.results)
+            list = list.concat(offsetResult.data)
         }
     }
+
     const urlList = list
-        .filter((chapter) => chapter?.data?.type === 'chapter' && chapter.data.attributes?.translatedLanguage === 'en')
+        .filter((chapter) => chapter?.type === 'chapter' && chapter.attributes?.translatedLanguage === 'en')
         .map((chapter) => {
             return {
-                url: `https://mangadex.org/chapter/${chapter.data.id}/1`,
-                chapter: chapter.data.attributes.chapter,
+                url: `https://mangadex.org/chapter/${chapter.id}/1`,
+                chapter: chapter.attributes.chapter,
                 host: 'mangadex.org',
-                created: new Date(chapter.data.attributes.publishAt).getTime()
+                created: new Date(chapter.attributes.publishAt).getTime()
             }
         })
 
@@ -46,7 +54,7 @@ async function fetchMangadex (source: Source) {
 }
 
 
-async function parseMangadexPage (rawUrl: string) {
+async function parseMangadexPage(rawUrl: string) {
     if (/title\/[\d-\w]*\/[\d-\w]*/.test(rawUrl)) {
         const id = rawUrl.split('/title/')?.[1]?.split('/')[0]
         if (!id) {
