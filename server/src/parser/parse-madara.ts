@@ -202,9 +202,7 @@ async function fetchMadara(source: Source) {
     let body
     try {
         if (source.url.includes('leviatanscans.com')) {
-            body = await fetch(source.url + '/ajax/chapters', { method: 'post', headers }).then((res) => res.text())
-            console.log(source.url + '/ajax/chapters')
-            fs.writeFileSync(path.resolve('./output-' + source.id + '.html'), body)
+            body = await fetch((source.url + '/ajax/chapters').replace('//', '/'), { method: 'post', headers }).then((res) => res.text())
             return parseMadara(source, body)
         }
         const formData = new FormData()
