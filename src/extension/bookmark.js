@@ -19,7 +19,6 @@ bookmarkTrack.addEventListener('click', () => {
 })
 
 chrome.runtime.onMessage.addListener(async (request) => {
-    console.log(request)
     if (request.id && request.title && request.url) {
         const sources = await db.sources.read()
 
@@ -74,6 +73,19 @@ function test () {
             id: url ? url.split('/')[2] : null,
             title: name,
             url: url ? `${window.location.origin}${url}` : null
+        }
+    }
+
+    function testAsura () {
+        const breadcrumpLink = document.querySelector('ol[itemtype="http://schema.org/BreadcrumbList"] a[itemprop="item"][href*="/comics/"]')
+        const url = breadcrumpLink.href
+        const name = breadcrumpLink.querySelector('span')?.innerText
+
+        return {
+            type: 'asura',
+            id: url?.split('/')[4],
+            title: name,
+            url
         }
     }
 
@@ -170,6 +182,9 @@ function test () {
     if (window.location.host === 'fanfox.net') {
         result = testFanFox()
     }
+    if (window.location.host === 'asurascans.com') {
+        result = testAsura()
+    }
     else if (window.location.host === 'mangadex.org') {
         result = testMangadex()
     }
@@ -177,7 +192,6 @@ function test () {
         result = testMadaro()
     }
 
-    console.log(result)
     if (result) {
         chrome.runtime.sendMessage(result)
     }

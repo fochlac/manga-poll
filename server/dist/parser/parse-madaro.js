@@ -8,7 +8,8 @@ const cheerio_1 = __importDefault(require("cheerio"));
 const form_data_1 = __importDefault(require("form-data"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const parser_1 = require("../parser");
-const url_controller_1 = require("../url-controller");
+const stats_1 = require("../stats");
+const url_storage_1 = require("../url-storage");
 const TYPE = 'madara';
 const warned = {};
 const dateMonthFirst = /^[^\d]*(1[012]|0\d|\d)[^\d](3[0,1]|[012]\d|\d)[^\d](\d{2}|\d{4})[^\d]*$/;
@@ -69,7 +70,7 @@ function parseDates(urlList, type) {
 }
 function parseMadaro(source, body) {
     const $ = cheerio_1.default.load(body);
-    const host = source.url.replace(/https?:\/\//, '').split('/')[0];
+    const host = source.url.split('/')[2].split('.').slice(-2).join('.');
     const urlList = $('li.wp-manga-chapter > a').toArray().map((elem) => {
         const url = $(elem).attr('href');
         const result = String(url).match(/^https?:\/\/([^/]*)\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/) || [];
@@ -80,16 +81,19 @@ function parseMadaro(source, body) {
             date: $(elem).closest('.wp-manga-chapter').find('.chapter-release-date').text()
         };
     });
+    if (!(urlList === null || urlList === void 0 ? void 0 : urlList.length)) {
+        stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`);
+        return [];
+    }
     const newUrls = urlList.filter((url) => {
         const isValid = /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url.url);
-        const key = url_controller_1.getUrlKey(url, source.id);
-        const stored = url_controller_1.getUrls()[key];
-        if (!isValid && (warned[key] || 0) < 3) {
-            console.log(`Invalid url found for ${source.title}: ${JSON.stringify(url)}`);
-            warned[key] = typeof warned[key] === 'number' ? warned[key] + 1 : 0;
+        const key = url_storage_1.getUrlKey(url, source.id);
+        const stored = url_storage_1.getUrls()[key];
+        if (!isValid && !stored) {
+            stats_1.logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`);
         }
         if (isValid && stored) {
-            url_controller_1.updateUrl(source, url);
+            url_storage_1.updateUrl(source, url);
         }
         return isValid && !stored;
     });
@@ -163,15 +167,22 @@ async function parseMadaroPage(rawUrl) {
 }
 async function fetchMadaro(source) {
     var _a;
-    const formData = new form_data_1.default();
-    formData.append('action', 'manga_get_chapters');
-    formData.append('manga', source.mangaId);
-    const baseurl = (_a = source.url.match(/https?:\/\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
-    let body = await node_fetch_1.default(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData }).then((res) => res.text());
-    if (body.length < 1000) {
-        body = await node_fetch_1.default(source.url).then((res) => res.text());
+    try {
+        const formData = new form_data_1.default();
+        formData.append('action', 'manga_get_chapters');
+        formData.append('manga', source.mangaId);
+        const baseurl = (_a = source.url.match(/https?:\/\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
+        let body = await node_fetch_1.default(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData }).then((res) => res.text());
+        if (body.length < 1000) {
+            body = await node_fetch_1.default(source.url).then((res) => res.text());
+        }
+        return parseMadaro(source, body);
     }
-    return parseMadaro(source, body);
+    catch (err) {
+        const host = source.url.split('/')[2].split('.').slice(-2).join('.');
+        stats_1.logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${(err === null || err === void 0 ? void 0 : err.message) || 'Unknown Error.'}`);
+        return [];
+    }
 }
 const madaro = {
     fetchFunction: fetchMadaro,

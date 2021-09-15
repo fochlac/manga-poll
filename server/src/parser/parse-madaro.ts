@@ -1,9 +1,9 @@
-import { text } from 'body-parser'
 import cheerio from 'cheerio'
 import FormData from 'form-data'
 import fetch from 'node-fetch'
 import { registerParser } from '../parser'
-import { getUrlKey, getUrls, updateUrl } from '../url-controller'
+import { logWarning } from '../stats'
+import { getUrlKey, getUrls, updateUrl } from '../url-storage'
 
 const TYPE = 'madara'
 
@@ -13,7 +13,7 @@ const dateMonthFirst = /^[^\d]*(1[012]|0\d|\d)[^\d](3[0,1]|[012]\d|\d)[^\d](\d{2
 const dateDayFirst = /^[^\d]*(3[0,1]|[012]\d|\d)[^\d](1[012]|0\d|\d)[^\d](\d{2}|\d{4})[^\d]*$/
 const monthWritten = /^[^\d]*[A-Za-z]{2,10}.{1,2}(3[0,1]|[012]\d|\d)[^\d]{1,3}\d{2}|\d{4}[^\d]*$/
 
-function getDateType (urlList) {
+function getDateType(urlList) {
     const types = urlList.reduce((types, url) => {
         if (dateMonthFirst.test(url?.date || '') || dateDayFirst.test(url?.date || '')) {
             if (dateMonthFirst.test(url?.date || '')) {
@@ -35,7 +35,7 @@ function getDateType (urlList) {
     return Object.keys(types).reduce((type1, type2) => types[type1] > types[type2] ? type1 : type2, 'unparsable')
 }
 
-function parseDates (urlList, type) {
+function parseDates(urlList, type) {
     return urlList.map((url) => {
         const baseDate = new Date()
         baseDate.setHours(0, 0, 0, 0)
@@ -71,9 +71,9 @@ function parseDates (urlList, type) {
     })
 }
 
-function parseMadaro (source: Source, body) {
+function parseMadaro(source: Source, body) {
     const $ = cheerio.load(body)
-    const host = source.url.replace(/https?:\/\//, '').split('/')[0]
+    const host = source.url.split('/')[2].split('.').slice(-2).join('.')
 
     const urlList = $('li.wp-manga-chapter > a').toArray().map((elem) => {
         const url = $(elem).attr('href')
@@ -86,13 +86,18 @@ function parseMadaro (source: Source, body) {
         }
     })
 
+    if (!urlList?.length) {
+        logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`)
+        return []
+    }
+
     const newUrls = urlList.filter((url) => {
         const isValid = /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url.url)
         const key = getUrlKey(url, source.id)
         const stored = getUrls()[key]
-        if (!isValid && (warned[key] || 0) < 3) {
-            console.log(`Invalid url found for ${source.title}: ${JSON.stringify(url)}`)
-            warned[key] = typeof warned[key] === 'number' ? warned[key] + 1 : 0
+
+        if (!isValid && !stored) {
+            logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`)
         }
         if (isValid && stored) {
             updateUrl(source, url)
@@ -116,7 +121,7 @@ function parse(string, fallback = undefined) {
 
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g
 
-function decodeHTMLEntities (str) {
+function decodeHTMLEntities(str) {
     if (str && typeof str === 'string') {
         str = str.replace(/<script[^>]*>([\S\s]*?)<\/script>/gmi, '')
         str = str.replace(/<\/?\w(?:[^"'>]|"[^"]*"|'[^']*')*>/gmi, '')
@@ -126,7 +131,7 @@ function decodeHTMLEntities (str) {
     return str
 }
 
-async function parseMadaroPage (rawUrl: string) {
+async function parseMadaroPage(rawUrl: string) {
     const sourcehtml: string = await fetch(rawUrl).then(res => res.text())
     const $ = cheerio.load(sourcehtml)
 
@@ -178,20 +183,27 @@ async function parseMadaroPage (rawUrl: string) {
     }
 }
 
-async function fetchMadaro (source: Source) {
-    const formData = new FormData()
-    formData.append('action', 'manga_get_chapters')
-    formData.append('manga', source.mangaId)
-    const baseurl = source.url.match(/https?:\/\/[^/]*\//)?.[0]
-    
-    let body = await fetch(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData }).then((res) => res.text())
+async function fetchMadaro(source: Source) {
+    try {
+        const formData = new FormData()
+        formData.append('action', 'manga_get_chapters')
+        formData.append('manga', source.mangaId)
+        const baseurl = source.url.match(/https?:\/\/[^/]*\//)?.[0]
+
+        let body = await fetch(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData }).then((res) => res.text())
 
 
-    if (body.length < 1000) {
-        body = await fetch(source.url).then((res) => res.text())
+        if (body.length < 1000) {
+            body = await fetch(source.url).then((res) => res.text())
+        }
+
+        return parseMadaro(source, body)
     }
-
-    return parseMadaro(source, body)
+    catch (err) {
+        const host = source.url.split('/')[2].split('.').slice(-2).join('.')
+        logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`)
+        return []
+    }
 }
 
 const madaro = {

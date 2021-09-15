@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetchSource = exports.fetchAll = exports.init = void 0;
-const url_controller_1 = require("./url-controller");
-const source_controller_1 = require("./source-controller");
+const url_storage_1 = require("./url-storage");
 const subscriptions_controller_1 = require("./subscriptions-controller");
 const parser_1 = require("./parser");
+const source_storage_1 = require("./source-storage");
 async function fetchUrls(source, isNew = false) {
     let urls = [];
     urls = await parser_1.fetchChapterList(source);
@@ -17,10 +17,10 @@ async function fetchUrls(source, isNew = false) {
         console.log(`${urls.length} new urls for ${source.title} on "${page}".`);
         subscriptions_controller_1.sendTopicMessage(source.id);
     }
-    urls.forEach(url_controller_1.addUrl(source, isNew));
+    urls.forEach(url_storage_1.addUrl(source, isNew));
 }
 function fetchAllUrls(isNew) {
-    return Promise.all(Object.values(source_controller_1.getSources()).map((source) => fetchUrls(source, isNew)
+    return Promise.all(Object.values(source_storage_1.getSources()).map((source) => fetchUrls(source, isNew)
         .then(() => ({ hasError: false, source, error: null }))
         .catch((error) => ({ hasError: true, error, source }))))
         .then((results) => {

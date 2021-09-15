@@ -5,48 +5,54 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const parser_1 = require("../parser");
-const url_controller_1 = require("../url-controller");
+const stats_1 = require("../stats");
+const url_storage_1 = require("../url-storage");
 const TYPE = 'mangadex';
-const warned = {};
 const pageSize = 100;
 async function fetchMangadex(source) {
-    const result = await node_fetch_1.default(`${source.url}/feed?limit=${pageSize}`, { method: 'get' }).then((res) => res.json());
-    if (!result.data) {
-        console.log('parse-mangadex: error getting feed - empty result:', JSON.stringify(result));
+    const host = source.url.split('/')[2].split('.').slice(-2).join('.');
+    try {
+        const result = await node_fetch_1.default(`${source.url}/feed?limit=${pageSize}`, { method: 'get' }).then((res) => res.json());
+        let list = result.data;
+        if (!(list === null || list === void 0 ? void 0 : list.length)) {
+            stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`);
+            return [];
+        }
+        if (result.total > pageSize) {
+            for (let offset = pageSize; offset <= result.total; offset += pageSize) {
+                const offsetResult = await node_fetch_1.default(`${source.url}?limit=${pageSize}&offset=${offset}`, { method: 'get' })
+                    .then((res) => res.json());
+                list = list.concat(offsetResult.data);
+            }
+        }
+        const urlList = list
+            .filter((chapter) => { var _a; return (chapter === null || chapter === void 0 ? void 0 : chapter.type) === 'chapter' && ((_a = chapter.attributes) === null || _a === void 0 ? void 0 : _a.translatedLanguage) === 'en'; })
+            .map((chapter) => {
+            return {
+                url: `https://mangadex.org/chapter/${chapter.id}/1`,
+                chapter: chapter.attributes.chapter,
+                host,
+                created: new Date(chapter.attributes.publishAt).getTime()
+            };
+        });
+        return urlList.filter((url) => {
+            var _a, _b;
+            const isValid = url.chapter && ((_b = (_a = url.url.split('/')) === null || _a === void 0 ? void 0 : _a[4]) === null || _b === void 0 ? void 0 : _b.length) && !isNaN(Number(url.created));
+            const key = url_storage_1.getUrlKey(url, source.id);
+            const stored = url_storage_1.getUrls()[key];
+            if (!isValid && !stored) {
+                stats_1.logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`);
+            }
+            if (isValid && stored) {
+                url_storage_1.updateUrl(source, url);
+            }
+            return isValid && !stored;
+        });
+    }
+    catch (err) {
+        stats_1.logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${(err === null || err === void 0 ? void 0 : err.message) || 'Unknown Error.'}`);
         return [];
     }
-    let list = result.data || [];
-    if (result.total > pageSize) {
-        for (let offset = pageSize; offset <= result.total; offset += pageSize) {
-            const offsetResult = await node_fetch_1.default(`${source.url}?limit=${pageSize}&offset=${offset}`, { method: 'get' })
-                .then((res) => res.json());
-            list = list.concat(offsetResult.data);
-        }
-    }
-    const urlList = list
-        .filter((chapter) => { var _a; return (chapter === null || chapter === void 0 ? void 0 : chapter.type) === 'chapter' && ((_a = chapter.attributes) === null || _a === void 0 ? void 0 : _a.translatedLanguage) === 'en'; })
-        .map((chapter) => {
-        return {
-            url: `https://mangadex.org/chapter/${chapter.id}/1`,
-            chapter: chapter.attributes.chapter,
-            host: 'mangadex.org',
-            created: new Date(chapter.attributes.publishAt).getTime()
-        };
-    });
-    return urlList.filter((url) => {
-        var _a, _b;
-        const isValid = url.chapter && ((_b = (_a = url.url.split('/')) === null || _a === void 0 ? void 0 : _a[4]) === null || _b === void 0 ? void 0 : _b.length) && !isNaN(Number(url.created));
-        const key = url_controller_1.getUrlKey(url, source.id);
-        const stored = url_controller_1.getUrls()[key];
-        if (!isValid && (warned[key] || 0) < 3) {
-            console.log(`Invalid url found for ${source.title}: ${JSON.stringify(url)}`);
-            warned[key] = typeof warned[key] === 'number' ? warned[key] + 1 : 0;
-        }
-        if (isValid && stored) {
-            url_controller_1.updateUrl(source, url);
-        }
-        return isValid && !stored;
-    });
 }
 async function parseMangadexPage(rawUrl) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;

@@ -17,6 +17,7 @@ const link_controller_1 = require("./link-controller");
 require("./parser/parse-fanfox");
 require("./parser/parse-madaro");
 require("./parser/parse-mangadex");
+require("./parser/parse-asura");
 const app = express_1.default();
 const server = http_1.createServer(app);
 app.use(cors_1.default(), compression_1.default(), express_1.default.json(), express_1.default.static(path_1.resolve(__dirname, '../../dist/webapp')), (req, _res, next) => {

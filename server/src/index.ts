@@ -14,6 +14,7 @@ import { linksController } from './link-controller'
 import './parser/parse-fanfox'
 import './parser/parse-madaro'
 import './parser/parse-mangadex'
+import './parser/parse-asura'
 
 const app = express()
 const server = createServer(app)

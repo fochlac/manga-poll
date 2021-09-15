@@ -7,7 +7,7 @@ exports.linksController = void 0;
 const fs_1 = __importDefault(require("fs"));
 const nanoid_1 = require("nanoid");
 const path_1 = require("path");
-const source_controller_1 = require("./source-controller");
+const source_storage_1 = require("./source-storage");
 const idGen = nanoid_1.customAlphabet("0123456789", 10);
 const pwGen = nanoid_1.customAlphabet("0123456789", 5);
 const linksPath = path_1.resolve(__dirname, '../db/links.json');
@@ -42,7 +42,7 @@ function fromKey(key) {
 }
 function createPayload(link) {
     const { hiddenChapters, hide, sources, lastModified, id, pw } = link;
-    const sourceMap = source_controller_1.getSources();
+    const sourceMap = source_storage_1.getSources();
     return {
         key: toKey(id, pw),
         hiddenChapters,

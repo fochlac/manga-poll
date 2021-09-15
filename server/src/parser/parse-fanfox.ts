@@ -1,16 +1,16 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
 import { registerParser } from '../parser'
-import { getUrlKey, getUrls, updateUrl } from '../url-controller'
+import { logWarning } from '../stats'
+import { getUrlKey, getUrls, updateUrl } from '../url-storage'
 
 const TYPE = 'fanfox'
-const warned: Record<string, number> = {}
 
-function parseFanfox (source: Source, body) {
+function parseFanfox(source: Source, body) {
     const $ = cheerio.load(body)
     const baseDate = new Date()
     baseDate.setHours(0, 0, 0, 0)
-    const host = source.url.replace(/https?:\/\//, '').split('/')[0]
+    const host = source.url.split('/')[2].split('.').slice(-2).join('.')
 
     const urlList = $('#chapterlist .detail-main-list li').toArray().map((elem) => {
         const rawDate = new Date($(elem).find('.title2').text())
@@ -18,20 +18,23 @@ function parseFanfox (source: Source, body) {
 
         return {
             url: url.includes('https://fanfox.net') ? url : `https://fanfox.net${url}`,
-            chapter: $(elem).find('.title3').text().replace(/^.*Ch\./, '').replace(/ - .*/, ''),
+            chapter: $(elem).find('.title3a').text().replace(/^.*Ch\./, '').replace(/ - .*/, ''),
             host,
             created: !isNaN(rawDate.getTime()) ? rawDate.getTime() : baseDate.getTime()
         }
     })
 
+    if (!urlList?.length) {
+        logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`)
+        return []
+    }
     return urlList.filter((url) => {
         const isValid = /^https:\/\/fanfox.net\/manga\/.*\/c([\d.]*)\/1.html$/.test(url.url)
         const key = getUrlKey(url, source.id)
         const stored = getUrls()[key]
 
-        if (!isValid && (warned[key] || 0) < 3) {
-            console.log(`Invalid url found for ${source.title}: ${JSON.stringify(url)}`)
-            warned[key] = typeof warned[key] === 'number' ? warned[key] + 1 : 0
+        if (!isValid && !stored) {
+            logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`)
         }
         if (isValid && stored) {
             updateUrl(source, url)
@@ -41,16 +44,23 @@ function parseFanfox (source: Source, body) {
     })
 }
 
-async function fetchFanFox (source: Source) {
-    const body = await fetch(source.url, { method: 'get', headers: {cookie: 'isAdult=1;'} }).then((res) => res.text())
+async function fetchFanFox(source: Source) {
+    try {
+        const body = await fetch(source.url, { method: 'get', headers: { cookie: 'isAdult=1;' } }).then((res) => res.text())
 
-    return parseFanfox(source, body)
+        return parseFanfox(source, body)
+    }
+    catch (err) {
+        const host = source.url.split('/')[2].split('.').slice(-2).join('.')
+        logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`)
+        return []
+    }
 }
 
 
-async function parseFanfoxPage (rawUrl: string) {
+async function parseFanfoxPage(rawUrl: string) {
     const sourcehtml: string = await fetch(rawUrl).then(res => res.text())
-    
+
     const $ = cheerio.load(sourcehtml)
 
     const path = rawUrl.match(/\/manga\/[^/]*\//)?.[0]

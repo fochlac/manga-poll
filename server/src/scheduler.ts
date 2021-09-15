@@ -1,10 +1,10 @@
 
-import { addUrl } from './url-controller'
-import { getSources } from './source-controller'
+import { addUrl } from './url-storage'
 import { sendTopicMessage } from './subscriptions-controller'
 import { fetchChapterList } from './parser'
+import { getSources } from './source-storage'
 
-async function fetchUrls (source, isNew = false) {
+async function fetchUrls(source, isNew = false) {
     let urls = []
 
     urls = await fetchChapterList(source)
@@ -14,14 +14,14 @@ async function fetchUrls (source, isNew = false) {
         try {
             page = source.url.split('/')[2].split('.').slice(-2).join('.')
         }
-        catch(e) {}
+        catch (e) { }
         console.log(`${urls.length} new urls for ${source.title} on "${page}".`)
         sendTopicMessage(source.id)
     }
     urls.forEach(addUrl(source, isNew))
 }
 
-function fetchAllUrls (isNew?: boolean) {
+function fetchAllUrls(isNew?: boolean) {
     return Promise.all(Object.values(getSources()).map((source) => fetchUrls(source, isNew)
         .then(() => ({ hasError: false, source, error: null }))
         .catch((error) => ({ hasError: true, error, source }))
@@ -37,7 +37,7 @@ function fetchAllUrls (isNew?: boolean) {
 
 let timer
 
-export function init () {
+export function init() {
     clearInterval(timer)
     timer = setInterval(() => {
         fetchAllUrls()

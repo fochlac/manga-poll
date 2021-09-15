@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { customAlphabet } from 'nanoid'
 import { resolve } from 'path'
-import { getSources } from './source-controller'
+import { getSources } from './source-storage'
 
 const idGen = customAlphabet("0123456789", 10)
 const pwGen = customAlphabet("0123456789", 5)
@@ -60,14 +60,14 @@ function createPayload(link: Link) {
         hiddenChapters,
         hide,
         sources: sources.map((linksrc) => typeof linksrc === 'string' && sourceMap[linksrc] ||
-             linksrc.hasOwnProperty('id') && sourceMap[(linksrc as Source).id]
+            linksrc.hasOwnProperty('id') && sourceMap[(linksrc as Source).id]
         ),
         lastModified
     }
 }
 
 const bfp = {}
-function checkKey (key) {
+function checkKey(key) {
     const { id, pw } = fromKey(key)
 
     if (bfp[id] && bfp[id].count >= 3 && Date.now() - bfp[id].lastHit <= 10000) {
@@ -89,7 +89,7 @@ function checkKey (key) {
 }
 
 const invalidQueue = Promise.resolve()
-function handleKeyError (res) {
+function handleKeyError(res) {
     let hasTimedOut = false
     const timeout = setTimeout(() => res.status(429).send({ valid: false }), 100000)
     invalidQueue.catch(() => null).then(() =>
@@ -115,9 +115,9 @@ export function linksController(app) {
         let id = idGen()
         if (links[id]) {
             let count = 0
-            while(links[id] && count < 1000) {
+            while (links[id] && count < 1000) {
                 id = idGen()
-                count ++
+                count++
             }
             if (links[id]) {
                 res.status(500).send({ valid: false })
@@ -135,8 +135,8 @@ export function linksController(app) {
         }
         write()
 
-        res.status(200).json({ 
-            valid: true, 
+        res.status(200).json({
+            valid: true,
             payload: createPayload(links[id])
         })
     })
@@ -153,14 +153,14 @@ export function linksController(app) {
                     links[id][key] = req.body[key]
                 }
             })
-            
+
             if (changes > 0) {
                 links[id].lastModified = Date.now()
                 write()
             }
 
-            res.status(200).json({ 
-                valid: true, 
+            res.status(200).json({
+                valid: true,
                 payload: createPayload(links[id])
             })
         }
@@ -177,8 +177,8 @@ export function linksController(app) {
                 res.status(304).send({ valid: true, payload: null })
             }
             else {
-                res.status(200).json({ 
-                    valid: true, 
+                res.status(200).json({
+                    valid: true,
                     payload: createPayload(links[id])
                 })
             }

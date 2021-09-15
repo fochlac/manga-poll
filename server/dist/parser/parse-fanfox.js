@@ -6,41 +6,51 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cheerio_1 = __importDefault(require("cheerio"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const parser_1 = require("../parser");
-const url_controller_1 = require("../url-controller");
+const stats_1 = require("../stats");
+const url_storage_1 = require("../url-storage");
 const TYPE = 'fanfox';
-const warned = {};
 function parseFanfox(source, body) {
     const $ = cheerio_1.default.load(body);
     const baseDate = new Date();
     baseDate.setHours(0, 0, 0, 0);
-    const host = source.url.replace(/https?:\/\//, '').split('/')[0];
+    const host = source.url.split('/')[2].split('.').slice(-2).join('.');
     const urlList = $('#chapterlist .detail-main-list li').toArray().map((elem) => {
         const rawDate = new Date($(elem).find('.title2').text());
         const url = $(elem).find('a').attr('href');
         return {
             url: url.includes('https://fanfox.net') ? url : `https://fanfox.net${url}`,
-            chapter: $(elem).find('.title3').text().replace(/^.*Ch\./, '').replace(/ - .*/, ''),
+            chapter: $(elem).find('.title3a').text().replace(/^.*Ch\./, '').replace(/ - .*/, ''),
             host,
             created: !isNaN(rawDate.getTime()) ? rawDate.getTime() : baseDate.getTime()
         };
     });
+    if (!(urlList === null || urlList === void 0 ? void 0 : urlList.length)) {
+        stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`);
+        return [];
+    }
     return urlList.filter((url) => {
         const isValid = /^https:\/\/fanfox.net\/manga\/.*\/c([\d.]*)\/1.html$/.test(url.url);
-        const key = url_controller_1.getUrlKey(url, source.id);
-        const stored = url_controller_1.getUrls()[key];
-        if (!isValid && (warned[key] || 0) < 3) {
-            console.log(`Invalid url found for ${source.title}: ${JSON.stringify(url)}`);
-            warned[key] = typeof warned[key] === 'number' ? warned[key] + 1 : 0;
+        const key = url_storage_1.getUrlKey(url, source.id);
+        const stored = url_storage_1.getUrls()[key];
+        if (!isValid && !stored) {
+            stats_1.logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`);
         }
         if (isValid && stored) {
-            url_controller_1.updateUrl(source, url);
+            url_storage_1.updateUrl(source, url);
         }
         return isValid && !stored;
     });
 }
 async function fetchFanFox(source) {
-    const body = await node_fetch_1.default(source.url, { method: 'get', headers: { cookie: 'isAdult=1;' } }).then((res) => res.text());
-    return parseFanfox(source, body);
+    try {
+        const body = await node_fetch_1.default(source.url, { method: 'get', headers: { cookie: 'isAdult=1;' } }).then((res) => res.text());
+        return parseFanfox(source, body);
+    }
+    catch (err) {
+        const host = source.url.split('/')[2].split('.').slice(-2).join('.');
+        stats_1.logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${(err === null || err === void 0 ? void 0 : err.message) || 'Unknown Error.'}`);
+        return [];
+    }
 }
 async function parseFanfoxPage(rawUrl) {
     var _a, _b;
