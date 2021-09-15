@@ -12,7 +12,7 @@ import { subscriptionsController } from './subscriptions-controller'
 import { linksController } from './link-controller'
 
 import './parser/parse-fanfox'
-import './parser/parse-madaro'
+import './parser/parse-madara'
 import './parser/parse-mangadex'
 import './parser/parse-asura'
 

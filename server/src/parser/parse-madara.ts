@@ -84,7 +84,7 @@ function parseDates(urlList, type) {
     })
 }
 
-function parseMadaro(source: Source, body) {
+function parseMadara(source: Source, body) {
     const $ = cheerio.load(body)
     const host = source.url.split('/')[2].split('.').slice(-2).join('.')
 
@@ -144,7 +144,7 @@ function decodeHTMLEntities(str) {
     return str
 }
 
-async function parseMadaroPage(rawUrl: string) {
+async function parseMadaraPage(rawUrl: string) {
     const sourcehtml: string = await fetch(rawUrl, { headers }).then(res => res.text())
     const $ = cheerio.load(sourcehtml)
 
@@ -196,20 +196,27 @@ async function parseMadaroPage(rawUrl: string) {
     }
 }
 
-async function fetchMadaro(source: Source) {
+async function fetchMadara(source: Source) {
     try {
+        if (source.url.includes('leviatanscans.com')) {
+            const body = await fetch(source.url, { method: 'post', headers })
+            return parseMadara(source, body)
+        }
         const formData = new FormData()
         formData.append('action', 'manga_get_chapters')
         formData.append('manga', source.mangaId)
         const baseurl = source.url.match(/https?:\/\/[^/]*\//)?.[0]
-
+        
         let body = await fetch(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData, headers }).then((res) => res.text())
 
+        if (source.id === "MPE_JpkBl9") {
+            console.log(body)
+        }
         if (body.length < 1000) {
             body = await fetch(source.url, { headers }).then((res) => res.text())
         }
 
-        return parseMadaro(source, body)
+        return parseMadara(source, body)
     }
     catch (err) {
         const host = source.url.split('/')[2].split('.').slice(-2).join('.')
@@ -218,12 +225,12 @@ async function fetchMadaro(source: Source) {
     }
 }
 
-const madaro = {
-    fetchFunction: fetchMadaro,
+const madara = {
+    fetchFunction: fetchMadara,
     type: TYPE,
-    parseLink: parseMadaroPage,
+    parseLink: parseMadaraPage,
     parseCondition: () => false
 }
 
 export const MADARA = TYPE
-registerParser(madaro)
+registerParser(madara)
