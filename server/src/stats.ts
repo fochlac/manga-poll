@@ -32,8 +32,6 @@ export async function getStats() {
     const urls = await getUrls()
     const sources = await getSources()
 
-    console.log(warnings)
-
     return Object.values(sources).reduce((stats, source) => {
         const host = source.url.split('/')[2].split('.').slice(-2).join('.')
         stats[host] = stats[host] || { latest: 0, sources: {}, count: 0, warnings: warnings[host] || [], chapterWarnings: [] }
