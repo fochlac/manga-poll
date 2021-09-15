@@ -5,6 +5,7 @@ import { registerParser } from '../parser'
 import { logWarning } from '../stats'
 import { getUrlKey, getUrls, updateUrl } from '../url-storage'
 import fs from 'fs'
+import path from 'path'
 
 const TYPE = 'madara'
 
@@ -202,7 +203,8 @@ async function fetchMadara(source: Source) {
     try {
         if (source.url.includes('leviatanscans.com')) {
             body = await fetch(source.url + '/ajax/chapters', { method: 'post', headers }).then((res) => res.text())
-            fs.writeFileSync('/home/output-' + source.id + '.html', body)
+            console.log(source.url + '/ajax/chapters')
+            fs.writeFileSync(path.resolve('./output-' + source.id + '.html'), body)
             return parseMadara(source, body)
         }
         const formData = new FormData()
