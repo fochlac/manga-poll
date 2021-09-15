@@ -63,7 +63,7 @@ fetch('/api/sources/stats')
                 const tableRows = Object.values(stats[host].sources)
                     .sort((a, b) => String(a.title).localeCompare(b.title))
                     .map(({ title, latest, count, warnings }) => `
-                            <td title="${title}" class="chtitle"  data-warnings='${JSON.stringify(warnings).replace(/'/g, '\\\'')}'>
+                            <td title="${title}" class="chtitle"  data-warnings='${JSON.stringify(warnings).replace(/'/g, '`')}'>
                                 ${title}${warnings.length && iconSevere || ''}
                             </td>
                             <td>${count}</td>
@@ -75,7 +75,7 @@ fetch('/api/sources/stats')
                     : ''
 
                 document.querySelector('#stats').innerHTML += `
-                        <div class="host" data-warnings='${JSON.stringify(stats[host].warnings).replace(/'/g, '\\\'')}'>
+                        <div class="host" data-warnings='${JSON.stringify(stats[host].warnings).replace(/'/g, '`')}'>
                             <table class="title">
                                 <tbody>
                                     <tr>
