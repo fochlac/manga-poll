@@ -162,7 +162,7 @@ function test () {
             url = document.location.href.match(/https?:\/\/[^/]*\/[^/]*\/[^/]*\//)?.[0]
         }
         if (document.location.href.includes('leviatanscans.com')) {
-            url = document.location.href.split('/').slice(0, 6).join('/') + '/ajax/chapters'
+            url = document.location.href.split('/').slice(0, 6).join('/')
         }
         if (document.location.href.includes('reaperscans.com')) {
             url = document.location.href.match(/http.*\/series\/[^/]*\//)?.[0]

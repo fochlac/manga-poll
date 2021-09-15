@@ -182,7 +182,7 @@ async function parseMadaraPage(rawUrl: string) {
 
     let url = null
     if (rawUrl.includes('leviatanscans.com')) {
-        url = rawUrl.split('/').slice(0, 6).join('/') + '/ajax/chapters'
+        url = rawUrl.split('/').slice(0, 6).join('/')
     }
     else {
         url = rawUrl.match(/https?:\/\/[^/]*\/[^/]*\/[^/]*\//)?.[0]
@@ -200,8 +200,7 @@ async function fetchMadara(source: Source) {
     let body
     try {
         if (source.url.includes('leviatanscans.com')) {
-            body = await fetch(source.url, { method: 'post', headers }).then((res) => res.text())
-            console.log('\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n',source.url, '\n>>>>>>>>>>>>>>>>>>>>>>>>>>> \n\n\n', body.replace('\n', ' ').slice(0, 1000))
+            body = await fetch(source.url + '/ajax/chapters', { method: 'post', headers }).then((res) => res.text())
             return parseMadara(source, body)
         }
         const formData = new FormData()
