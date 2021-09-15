@@ -197,9 +197,11 @@ async function parseMadaraPage(rawUrl: string) {
 }
 
 async function fetchMadara(source: Source) {
+    let body
     try {
         if (source.url.includes('leviatanscans.com')) {
-            const body = await fetch(source.url, { method: 'post', headers })
+            body = await fetch(source.url, { method: 'post', headers })
+            console.log(source.url, body)
             return parseMadara(source, body)
         }
         const formData = new FormData()
@@ -207,11 +209,12 @@ async function fetchMadara(source: Source) {
         formData.append('manga', source.mangaId)
         const baseurl = source.url.match(/https?:\/\/[^/]*\//)?.[0]
         
-        let body = await fetch(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData, headers }).then((res) => res.text())
+        body = await fetch(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData, headers }).then((res) => res.text())
 
-        if (source.id === "MPE_JpkBl9") {
-            console.log(body)
+        if (body.includes('Access denied') && body.includes('Cloudflare')) {
+            throw Error('Cloudflare-blockage detected.')
         }
+
         if (body.length < 1000) {
             body = await fetch(source.url, { headers }).then((res) => res.text())
         }
