@@ -54,54 +54,60 @@ document.addEventListener('click', (event) => {
     }
 })
 
-fetch('/api/sources/stats')
-    .then((r) => r.json())
-    .then(({ payload: stats }) => {
-        Object.keys(stats)
-            .sort((a, b) => stats[a].latest === stats[b].latest ? 0 : (Number(stats[a].latest) < Number(stats[b].latest) ? 1 : -1))
-            .forEach((host) => {
-                const tableRows = Object.values(stats[host].sources)
-                    .sort((a, b) => String(a.title).localeCompare(b.title))
-                    .map(({ title, latest, count, warnings }) => `
-                            <td title="${title}" class="chtitle"  data-warnings='${JSON.stringify(warnings).replace(/'/g, '`')}'>
-                                ${title}${warnings.length && iconSevere || ''}
-                            </td>
-                            <td>${count}</td>
-                            <td>${date(latest)}</td>
-                        `)
+function renderStats () {
+    fetch('/api/sources/stats')
+        .then((r) => r.json())
+        .then(({ payload: stats }) => {
+            Object.keys(stats)
+                .sort((a, b) => stats[a].latest === stats[b].latest ? 0 : (Number(stats[a].latest) < Number(stats[b].latest) ? 1 : -1))
+                .forEach((host) => {
+                    const tableRows = Object.values(stats[host].sources)
+                        .sort((a, b) => String(a.title).localeCompare(b.title))
+                        .map(({ title, latest, count, warnings }) => `
+                                <td title="${title}" class="chtitle"  data-warnings='${JSON.stringify(warnings).replace(/'/g, '`')}'>
+                                    ${title}${warnings.length && iconSevere || ''}
+                                </td>
+                                <td>${count}</td>
+                                <td>${date(latest)}</td>
+                            `)
 
-                const warning = stats[host].warnings.length || stats[host].chapterWarnings.length
-                    ? (stats[host].warnings.length ? iconSevere : icon)
-                    : ''
+                    const warning = stats[host].warnings.length || stats[host].chapterWarnings.length
+                        ? (stats[host].warnings.length ? iconSevere : icon)
+                        : ''
 
-                document.querySelector('#stats').innerHTML += `
-                        <div class="host" data-warnings='${JSON.stringify(stats[host].warnings).replace(/'/g, '`')}'>
-                            <table class="title">
-                                <tbody>
-                                    <tr>
-                                        <td><h5><a href="${stats[host].url}">${host}</a>&nbsp;(${Object.keys(stats[host].sources).length}) ${warning}</h5></td>
-                                        <td></td>
-                                        <td><b>${date(stats[host].latest)}</b></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div class="details">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Title</th>
-                                            <th>Chs.</th>
-                                            <th>Updated</th>
-                                        </tr>
-                                    </thead>
+                    document.querySelector('#stats').innerHTML += `
+                            <div class="host" data-warnings='${JSON.stringify(stats[host].warnings).replace(/'/g, '`')}'>
+                                <table class="title">
                                     <tbody>
                                         <tr>
-                                            ${tableRows.join('</tr><tr>')}
+                                            <td><h5><a href="${stats[host].url}">${host}</a>&nbsp;(${Object.keys(stats[host].sources).length}) ${warning}</h5></td>
+                                            <td></td>
+                                            <td><b>${date(stats[host].latest)}</b></td>
                                         </tr>
                                     </tbody>
                                 </table>
+                                <div class="details">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Chs.</th>
+                                                <th>Updated</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                ${tableRows.join('</tr><tr>')}
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
-                    `
-            })
-    })
+                        `
+                })
+        })
+}
+
+renderStats()
+
+setInterval(() => renderStats(), 120000)

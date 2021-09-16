@@ -18,7 +18,7 @@ export function sourceRenderer (db) {
                 if (!source) {
                     return ''
                 }
-                const url = String(source.url).replace(/https?:\/\//, '').split('/')[0]
+                const url = String(source.url).replace(/https?:\/\//, '').split('/')[0].split('.').slice(-2).join('.')
                 return (
                     `<li class="row source">
                         <div class="data" title="${`${source.title} (${url})`}">
