@@ -19,17 +19,33 @@ async function fetchUrls(source, isNew = false) {
     }
     urls.forEach(url_storage_1.addUrl(source, isNew));
 }
-function fetchAllUrls(isNew) {
-    return Promise.all(Object.values(source_storage_1.getSources()).map((source) => fetchUrls(source, isNew)
-        .then(() => ({ hasError: false, source, error: null }))
-        .catch((error) => ({ hasError: true, error, source }))))
-        .then((results) => {
-        results.forEach((result) => {
-            var _a;
-            if (result === null || result === void 0 ? void 0 : result.hasError) {
-                console.log(`Error fetching urls for source ${(_a = result === null || result === void 0 ? void 0 : result.source) === null || _a === void 0 ? void 0 : _a.title}:\n`, result.error);
-            }
+async function fetchAllUrls(isNew) {
+    let results = [];
+    const start = Date.now();
+    const fetchPromiseMap = Object.values(source_storage_1.getSources())
+        .reduce((promiseMap, source) => {
+        const host = source.url.replace(/https?:\/\//, '').split('/')[0];
+        const previousFetch = promiseMap[host] || Promise.resolve();
+        promiseMap[host] = previousFetch.then(() => {
+            const fetchPromise = fetchUrls(source, isNew)
+                .then(() => ({ hasError: false, source, error: null }))
+                .catch((error) => ({ hasError: true, error, source }))
+                .then((result) => {
+                console.log('fetched', source.title);
+                results.push(result);
+            });
+            const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 2500));
+            return Promise.all([fetchPromise, timeout]);
         });
+        return promiseMap;
+    }, {});
+    await Promise.all(Object.values(fetchPromiseMap));
+    console.log('done after', Math.ceil((Date.now() - start) / 1000), 'seconds.');
+    return results.forEach((result) => {
+        var _a;
+        if (result === null || result === void 0 ? void 0 : result.hasError) {
+            console.log(`Error fetching urls for source ${(_a = result === null || result === void 0 ? void 0 : result.source) === null || _a === void 0 ? void 0 : _a.title}:\n`, result.error);
+        }
     });
 }
 let timer;
