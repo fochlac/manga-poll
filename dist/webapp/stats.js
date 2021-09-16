@@ -79,7 +79,7 @@ fetch('/api/sources/stats')
                             <table class="title">
                                 <tbody>
                                     <tr>
-                                        <td><h5><a href="${stats[host].url}">${host}</a> (${Object.keys(stats[host].sources).length}) ${warning}</h5></td>
+                                        <td><h5><a href="${stats[host].url}">${host}</a>&nbsp;(${Object.keys(stats[host].sources).length}) ${warning}</h5></td>
                                         <td></td>
                                         <td><b>${date(stats[host].latest)}</b></td>
                                     </tr>
