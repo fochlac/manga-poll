@@ -15,7 +15,7 @@ async function fetchMangadex(source) {
         const result = await node_fetch_1.default(`${source.url}/feed?limit=${pageSize}`, { method: 'get' }).then((res) => res.json());
         let list = result.data;
         if (!(list === null || list === void 0 ? void 0 : list.length)) {
-            stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`);
+            stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0);
             return [];
         }
         if (result.total > pageSize) {
@@ -50,7 +50,7 @@ async function fetchMangadex(source) {
         });
     }
     catch (err) {
-        stats_1.logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${(err === null || err === void 0 ? void 0 : err.message) || 'Unknown Error.'}`);
+        stats_1.logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${(err === null || err === void 0 ? void 0 : err.message) || 'Unknown Error.'}`, 0);
         return [];
     }
 }

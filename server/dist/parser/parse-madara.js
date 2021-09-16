@@ -95,7 +95,7 @@ function parseMadara(source, body) {
         };
     });
     if (!(urlList === null || urlList === void 0 ? void 0 : urlList.length)) {
-        stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`);
+        stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0);
         return [];
     }
     const newUrls = urlList.filter((url) => {
@@ -201,7 +201,7 @@ async function fetchMadara(source) {
     }
     catch (err) {
         const host = source.url.split('/')[2].split('.').slice(-2).join('.');
-        stats_1.logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${(err === null || err === void 0 ? void 0 : err.message) || 'Unknown Error.'}`);
+        stats_1.logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${(err === null || err === void 0 ? void 0 : err.message) || 'Unknown Error.'}`, 0);
         return [];
     }
 }

@@ -21,7 +21,11 @@ export function registerParser ({ type, fetchFunction, parseLink, parseCondition
 }
 
 export function fetchChapterList (source: Source) {
-    const fetchFunction = parserMap[source.type] || parserMap[defaultType]
+    const type = source.type || defaultType
+    const fetchFunction = parserMap[source.type]
+    if (!fetchFunction) {
+        throw Error(`No fetch function for parser type ${type}.`)
+    }
     return fetchFunction(source)
 }
 

@@ -62,6 +62,14 @@ function test () {
         }
         return str
     }
+    function parse (string, fallback) {
+        try {
+            return JSON.parse(string)
+        }
+        catch (e) {
+            return fallback
+        }
+    }
 
     function testFanFox () {
         const url = window.location.pathname.match(/^\/manga\/[^/]*\//)?.[0]
@@ -115,6 +123,33 @@ function test () {
         }
     }
 
+    function testLeviathan () {
+        const header = document.querySelector('.post-title h1')
+        const titles = [
+            Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
+                .map((script) => parse(script.innerText)?.headline).find((h) => h),
+            document.getElementById('chapter-heading')?.innerText?.split(' - ')[0],
+            header && Array.from(header.childNodes).reduce((title, node) => title + (node.nodeType === 3 ? node.textContent : ''), ''),
+            document.querySelector('.rate-title')?.title
+        ]
+            .filter((title) => title)
+            .reduce((map, title) => {
+                const clean = decodeHTMLEntities(title).trim()
+                map[clean] = typeof map[clean] === 'number' ? map[clean] + 1 : 1
+                return map
+            }, {})
+        const title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0]
+
+        const url = document.location.href.split('/').slice(0, 6).join('/')
+
+        return {
+            type: 'leviathan',
+            id: document.location.href.split('/')[5],
+            title,
+            url
+        }
+    }
+
     function testMadaro () {
         function parse (string, fallback) {
             try {
@@ -161,9 +196,6 @@ function test () {
         if (document?.location?.href) {
             url = document.location.href.match(/https?:\/\/[^/]*\/[^/]*\/[^/]*\//)?.[0]
         }
-        if (document.location.href.includes('leviatanscans.com')) {
-            url = document.location.href.split('/').slice(0, 6).join('/')
-        }
         if (document.location.href.includes('reaperscans.com')) {
             url = document.location.href.match(/http.*\/series\/[^/]*\//)?.[0]
             title = title.split(' – ')[0]
@@ -184,6 +216,9 @@ function test () {
     }
     else if (window.location.host.includes('asurascans.com')) {
         result = testAsura()
+    }
+    else if (window.location.host.includes('leviatanscans.com')) {
+        result = testLeviathan()
     }
     else if (window.location.host === 'mangadex.org') {
         result = testMangadex()

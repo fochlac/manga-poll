@@ -18,6 +18,7 @@ require("./parser/parse-fanfox");
 require("./parser/parse-madara");
 require("./parser/parse-mangadex");
 require("./parser/parse-asura");
+require("./parser/parse-leviathan");
 const app = express_1.default();
 const server = http_1.createServer(app);
 app.use(cors_1.default(), compression_1.default(), express_1.default.json(), express_1.default.static(path_1.resolve(__dirname, '../../dist/webapp')), (req, _res, next) => {

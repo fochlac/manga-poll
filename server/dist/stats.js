@@ -4,12 +4,12 @@ exports.getStats = exports.logWarning = exports.shouldWarn = void 0;
 const source_storage_1 = require("./source-storage");
 const url_storage_1 = require("./url-storage");
 const warnings = {};
-function shouldWarn(key) {
-    return !warnings[key] || warnings[key].filter((warning) => Date.now() - warning.date <= 48 * 3600 * 1000).length < 3;
+function shouldWarn(key, limit) {
+    return !warnings[key] || !limit || warnings[key].filter((warning) => Date.now() - warning.date <= 48 * 3600 * 1000).length < limit;
 }
 exports.shouldWarn = shouldWarn;
-function logWarning(key, message) {
-    if (!shouldWarn(key)) {
+function logWarning(key, message, limit = 3) {
+    if (!shouldWarn(key, limit)) {
         return;
     }
     if (!warnings[key]) {

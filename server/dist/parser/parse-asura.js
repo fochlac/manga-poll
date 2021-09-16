@@ -51,7 +51,7 @@ function parseAsura(source, body) {
         };
     });
     if (!(urlList === null || urlList === void 0 ? void 0 : urlList.length)) {
-        stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`);
+        stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0);
         return [];
     }
     return urlList.filter((url) => {
@@ -74,7 +74,7 @@ async function fetchAsura(source) {
     }
     catch (err) {
         const host = source.url.split('/')[2].split('.').slice(-2).join('.');
-        stats_1.logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${(err === null || err === void 0 ? void 0 : err.message) || 'Unknown Error.'}`);
+        stats_1.logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${(err === null || err === void 0 ? void 0 : err.message) || 'Unknown Error.'}`, 0);
         return [];
     }
 }
@@ -82,11 +82,6 @@ const asura = {
     fetchFunction: fetchAsura,
     type: TYPE,
     parseLink: testAsura,
-    parseCondition: (url) => {
-        if (url.includes('asurascans.com')) {
-            console.log('asura: ', url);
-            return true;
-        }
-    }
+    parseCondition: (url) => url.includes('asurascans.com')
 };
 parser_1.registerParser(asura);

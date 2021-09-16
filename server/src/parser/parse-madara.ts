@@ -4,8 +4,6 @@ import fetch from 'node-fetch'
 import { registerParser } from '../parser'
 import { logWarning } from '../stats'
 import { getUrlKey, getUrls, updateUrl } from '../url-storage'
-import fs from 'fs'
-import path from 'path'
 
 const TYPE = 'madara'
 
