@@ -207,13 +207,15 @@ async function fetchMadara(source: Source) {
         formData.append('action', 'manga_get_chapters')
         formData.append('manga', source.mangaId)
         const baseurl = source.url.match(/https?:\/\/[^/]*\//)?.[0]
-        
         body = await fetch(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData, headers }).then((res) => res.text())
 
         if (body.includes('Access denied') && body.includes('Cloudflare')) {
             throw Error('Cloudflare-blockage detected.')
         }
-
+        if (body.includes('id="cf-bubbles"')) {
+            throw Error('(Temporary) Cloudflare-blockage detected.')
+        }
+        
         if (body.length < 1000) {
             body = await fetch(source.url, { headers }).then((res) => res.text())
         }

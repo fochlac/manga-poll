@@ -194,6 +194,9 @@ async function fetchMadara(source) {
         if (body.includes('Access denied') && body.includes('Cloudflare')) {
             throw Error('Cloudflare-blockage detected.');
         }
+        if (body.includes('id="cf-bubbles"')) {
+            throw Error('(Temporary) Cloudflare-blockage detected.');
+        }
         if (body.length < 1000) {
             body = await node_fetch_1.default(source.url, { headers }).then((res) => res.text());
         }
