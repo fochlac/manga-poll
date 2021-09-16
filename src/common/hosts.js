@@ -5,15 +5,21 @@ export async function renderHostList (_db, api) {
     if (result.valid) {
         const hosts = result.payload
 
+        const hostList = hosts.stable
+            .sort((a, b) => String(a?.name).localeCompare(b?.name))
+            .map((host) => `<a href="${host.url}">${host.name}</a>`).join('<span>, </span>')
         hostContainer.innerHTML = `
             <h6>Supported Pages</h6>
-            <div class="link-list">${hosts.stable.sort((a, b) => a.localeCompare(b)).map((host) => `<a href="${host.url}">${host.name}</a>`).join('<span>, </span>')}</div>
+            <div class="link-list">${hostList}</div>
         `
 
         if (hosts.unstable.length) {
+            const hostList = hosts.unstable
+                .sort((a, b) => String(a?.name).localeCompare(b?.name))
+                .map((host) => `<a href="${host.url}">${host.name}</a>`).join('<span>, </span>')
             hostContainer.innerHTML += `
                 <p>These Pages had some problems recently &ndash; they might or might not work:</p>
-                <div class="link-list">${hosts.unstable.map((host) => `<a href="${host.url}">${host.name}</a>`).join('<span>, </span>')}</div>
+                <div class="link-list">${hostList}</div>
             `
         }
     }
