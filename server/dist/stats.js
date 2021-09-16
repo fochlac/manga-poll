@@ -25,7 +25,6 @@ exports.logWarning = logWarning;
 async function getStats() {
     const urls = await url_storage_1.getUrls();
     const sources = await source_storage_1.getSources();
-    console.log(warnings);
     return Object.values(sources).reduce((stats, source) => {
         const host = source.url.split('/')[2].split('.').slice(-2).join('.');
         stats[host] = stats[host] || { latest: 0, sources: {}, count: 0, warnings: warnings[host] || [], chapterWarnings: [] };

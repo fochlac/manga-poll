@@ -182,7 +182,7 @@ function test () {
     if (window.location.host === 'fanfox.net') {
         result = testFanFox()
     }
-    if (window.location.host === 'asurascans.com') {
+    else if (window.location.host.includes('asurascans.com')) {
         result = testAsura()
     }
     else if (window.location.host === 'mangadex.org') {
@@ -191,6 +191,8 @@ function test () {
     else {
         result = testMadaro()
     }
+
+    console.log(result)
 
     if (result) {
         chrome.runtime.sendMessage(result)

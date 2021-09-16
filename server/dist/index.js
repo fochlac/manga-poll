@@ -15,7 +15,7 @@ const scheduler_1 = require("./scheduler");
 const subscriptions_controller_1 = require("./subscriptions-controller");
 const link_controller_1 = require("./link-controller");
 require("./parser/parse-fanfox");
-require("./parser/parse-madaro");
+require("./parser/parse-madara");
 require("./parser/parse-mangadex");
 require("./parser/parse-asura");
 const app = express_1.default();

@@ -15,7 +15,7 @@ async function fetchMangadex(source: Source) {
         let list = result.data
 
         if (!list?.length) {
-            logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`)
+            logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0)
             return []
         }
 
@@ -54,7 +54,7 @@ async function fetchMangadex(source: Source) {
         })
     }
     catch (err) {
-        logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`)
+        logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0)
         return []
     }
 }

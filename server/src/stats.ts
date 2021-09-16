@@ -8,12 +8,12 @@ interface Warning {
 
 const warnings: Record<string, Warning[]> = {}
 
-export function shouldWarn(key) {
-    return !warnings[key] || warnings[key].filter((warning) => Date.now() - warning.date <= 48 * 3600 * 1000).length < 3
+export function shouldWarn(key, limit) {
+    return !warnings[key] || !limit || warnings[key].filter((warning) => Date.now() - warning.date <= 48 * 3600 * 1000).length < limit
 }
 
-export function logWarning(key, message) {
-    if (!shouldWarn(key)) {
+export function logWarning(key, message, limit = 3) {
+    if (!shouldWarn(key, limit)) {
         return
     }
     if (!warnings[key]) {

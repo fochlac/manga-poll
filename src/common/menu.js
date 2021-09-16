@@ -11,8 +11,13 @@ export function registerMenuListeners (db, Api) {
     const settings = document.getElementById('settings')
     const settingsSection = document.querySelector('.settings')
     const progress = document.querySelector('#progress')
+    const intro = document.getElementById('intro')
 
     const openChapters = () => {
+        db.sources.read()
+            .then((sources) => {
+                intro.style.display = sources.length ? 'none' : 'flex'
+            })
         sources.style.display = 'none'
         importSection.style.display = 'none'
         addSection.style.display = 'none'
@@ -26,6 +31,7 @@ export function registerMenuListeners (db, Api) {
     }
 
     const openSettings = () => {
+        intro.style.display = 'none'
         sources.style.display = 'none'
         importSection.style.display = 'none'
         addSection.style.display = 'none'
@@ -41,6 +47,7 @@ export function registerMenuListeners (db, Api) {
     chapters.addEventListener('click', openChapters)
 
     bookmarks.addEventListener('click', () => {
+        intro.style.display = 'none'
         sources.style.display = 'block'
         importSection.style.display = 'flex'
         addSection.style.display = 'flex'

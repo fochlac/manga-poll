@@ -102,7 +102,7 @@ function parseMadara(source: Source, body) {
     })
 
     if (!urlList?.length) {
-        logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`)
+        logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0)
         return []
     }
 
@@ -224,7 +224,7 @@ async function fetchMadara(source: Source) {
     }
     catch (err) {
         const host = source.url.split('/')[2].split('.').slice(-2).join('.')
-        logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`)
+        logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0)
         return []
     }
 }

@@ -11,7 +11,20 @@ const parser_1 = require("../parser");
 const stats_1 = require("../stats");
 const url_storage_1 = require("../url-storage");
 const TYPE = 'madara';
-const warned = {};
+const headers = {
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    "accept-encoding": "gzip, deflate, br",
+    "accept-language": "en-US,en;q=0.9",
+    "dnt": "1",
+    "sec-ch-ua": '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-fetch-dest": "document",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-site": "none",
+    "sec-fetch-user": "?1",
+    "upgrade-insecure-requests": "1",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
+};
 const dateMonthFirst = /^[^\d]*(1[012]|0\d|\d)[^\d](3[0,1]|[012]\d|\d)[^\d](\d{2}|\d{4})[^\d]*$/;
 const dateDayFirst = /^[^\d]*(3[0,1]|[012]\d|\d)[^\d](1[012]|0\d|\d)[^\d](\d{2}|\d{4})[^\d]*$/;
 const monthWritten = /^[^\d]*[A-Za-z]{2,10}.{1,2}(3[0,1]|[012]\d|\d)[^\d]{1,3}\d{2}|\d{4}[^\d]*$/;
@@ -68,7 +81,7 @@ function parseDates(urlList, type) {
         };
     });
 }
-function parseMadaro(source, body) {
+function parseMadara(source, body) {
     const $ = cheerio_1.default.load(body);
     const host = source.url.split('/')[2].split('.').slice(-2).join('.');
     const urlList = $('li.wp-manga-chapter > a').toArray().map((elem) => {
@@ -118,9 +131,9 @@ function decodeHTMLEntities(str) {
     }
     return str;
 }
-async function parseMadaroPage(rawUrl) {
+async function parseMadaraPage(rawUrl) {
     var _a;
-    const sourcehtml = await node_fetch_1.default(rawUrl).then(res => res.text());
+    const sourcehtml = await node_fetch_1.default(rawUrl, { headers }).then(res => res.text());
     const $ = cheerio_1.default.load(sourcehtml);
     const ids = [
         ...(sourcehtml.match(idRegex) || []).map((str) => { var _a; return (_a = idRegex.exec(str)) === null || _a === void 0 ? void 0 : _a[1]; }),
@@ -153,7 +166,7 @@ async function parseMadaroPage(rawUrl) {
     const title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0];
     let url = null;
     if (rawUrl.includes('leviatanscans.com')) {
-        url = rawUrl.split('/').slice(0, 6).join('/') + '/ajax/chapters';
+        url = rawUrl.split('/').slice(0, 6).join('/');
     }
     else {
         url = (_a = rawUrl.match(/https?:\/\/[^/]*\/[^/]*\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
@@ -165,18 +178,26 @@ async function parseMadaroPage(rawUrl) {
         url
     };
 }
-async function fetchMadaro(source) {
+async function fetchMadara(source) {
     var _a;
+    let body;
     try {
+        if (source.url.includes('leviatanscans.com')) {
+            body = await node_fetch_1.default(source.url.slice(0, 10) + (source.url.slice(10) + '/ajax/chapters').replace(/\/\//g, '/'), { method: 'post', headers }).then((res) => res.text());
+            return parseMadara(source, body);
+        }
         const formData = new form_data_1.default();
         formData.append('action', 'manga_get_chapters');
         formData.append('manga', source.mangaId);
         const baseurl = (_a = source.url.match(/https?:\/\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
-        let body = await node_fetch_1.default(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData }).then((res) => res.text());
-        if (body.length < 1000) {
-            body = await node_fetch_1.default(source.url).then((res) => res.text());
+        body = await node_fetch_1.default(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData, headers }).then((res) => res.text());
+        if (body.includes('Access denied') && body.includes('Cloudflare')) {
+            throw Error('Cloudflare-blockage detected.');
         }
-        return parseMadaro(source, body);
+        if (body.length < 1000) {
+            body = await node_fetch_1.default(source.url, { headers }).then((res) => res.text());
+        }
+        return parseMadara(source, body);
     }
     catch (err) {
         const host = source.url.split('/')[2].split('.').slice(-2).join('.');
@@ -184,11 +205,11 @@ async function fetchMadaro(source) {
         return [];
     }
 }
-const madaro = {
-    fetchFunction: fetchMadaro,
+const madara = {
+    fetchFunction: fetchMadara,
     type: TYPE,
-    parseLink: parseMadaroPage,
+    parseLink: parseMadaraPage,
     parseCondition: () => false
 };
 exports.MADARA = TYPE;
-parser_1.registerParser(madaro);
+parser_1.registerParser(madara);

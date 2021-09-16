@@ -10,7 +10,7 @@ function date (date) {
 }
 
 function time (date) {
-    const dateRaw = new Date(date).toISOString().split('T')[1]
+    const dateRaw = new Date(date).toTimeString()
     const [h, m] = dateRaw.split(':')
     return `${h}:${m}`
 }
