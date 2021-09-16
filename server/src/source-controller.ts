@@ -1,7 +1,7 @@
 import { extractSourceIfPossible } from "./check-source"
 import { checkSourceType } from "./parser"
 import { fetchSource } from "./scheduler"
-import { getStats } from "./stats"
+import { getHosts, getStats, updateHosts } from "./stats"
 import { addSource, getSources, removeSource } from "./source-storage"
 
 async function createSourceIfNeeded(rawSource) {
@@ -18,6 +18,7 @@ async function createSourceIfNeeded(rawSource) {
         try {
             entry = await addSource(title, url, mangaId, type)
             await fetchSource(entry, true)
+            updateHosts()
         }
         catch (e) {
             removeSource(entry.id)
@@ -54,6 +55,7 @@ export function sourceController(app) {
 
             if (entry) {
                 res.status(200).json({ valid: true, payload: entry })
+                updateHosts()
             }
             else {
                 throw new Error(`Could not create new source for url "${url}".`)
@@ -68,6 +70,7 @@ export function sourceController(app) {
     app.delete('/api/sources/:id', (req, res) => {
         const { id } = req.params
         const success = removeSource(id)
+        updateHosts()
         res.status(200).json({ valid: success, payload: id })
     })
 
@@ -79,5 +82,10 @@ export function sourceController(app) {
     app.get('/api/sources/stats', async (req, res) => {
         const stats = await getStats()
         res.status(200).json({ valid: true, payload: stats })
+    })
+
+    app.get('/api/sources/hosts', async (req, res) => {
+        const hosts = await getHosts()
+        res.status(200).json({ valid: true, payload: hosts })
     })
 }

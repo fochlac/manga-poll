@@ -11,6 +11,7 @@ import { addSettingsHandlers } from '../common/settings'
 import { API } from '../common/api'
 import { API_ADDRESS } from './constants'
 import { initIntro } from './intro'
+import { renderHostList } from '../common/hosts'
 
 const api = API(API_ADDRESS)
 
@@ -46,6 +47,7 @@ resisterProgressHandler(() => interval.triggerInstantly())
 addImportHandlers(db)
 addSettingsHandlers(db, api)
 registerMenuListeners(db, api)
+renderHostList(db, api)
 
 Urls.render()
 Sources.render()

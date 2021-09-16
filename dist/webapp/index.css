@@ -309,6 +309,7 @@ h6 {
 .link-section {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 16px;
 }
 
 .new-link,

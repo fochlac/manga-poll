@@ -90,6 +90,18 @@ export const API = (baseUrl = '') => {
             .catch((error) => ({ valid: false, error }))
     }
 
+    function readHosts () {
+        return fetch(`${baseUrl}/api/sources/hosts`, {
+            method: 'get',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then((res) => res.status === 304 ? ({ valid: true, payload: null }) : res.json())
+            .catch((error) => ({ valid: false, error }))
+    }
+
     function updateLink (key, updateSet) {
         return fetch(`${baseUrl}/api/links/${key}`, {
             method: 'put',
@@ -132,6 +144,9 @@ export const API = (baseUrl = '') => {
             insert: createLink,
             update: updateLink,
             read: readLink
+        },
+        Hosts: {
+            read: readHosts
         }
     }
 }

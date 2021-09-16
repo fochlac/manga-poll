@@ -15,6 +15,7 @@ import { API } from '../common/api'
 import { addSettingsHandlers, getLinkHelpers } from '../common/settings'
 import { fetchUrls } from './fetch'
 import { addImpressumListeners } from './impressum'
+import { renderHostList } from '../common/hosts'
 
 const Api = API('')
 const Links = getLinkHelpers(db, Api)
@@ -71,6 +72,7 @@ db.onChange(async (changes) => {
 
 addImportHandlers(db)
 addSettingsHandlers(db, Api)
+renderHostList(db, Api)
 addBookmarkListener()
 registerMenuListeners(db, Api)
 registerNotificationHandlers()

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStats = exports.logWarning = exports.shouldWarn = void 0;
+exports.updateHosts = exports.getHosts = exports.getStats = exports.logWarning = exports.shouldWarn = void 0;
 const source_storage_1 = require("./source-storage");
 const url_storage_1 = require("./url-storage");
 const warnings = {};
@@ -19,6 +19,7 @@ function logWarning(key, message, limit = 3) {
         date: Date.now(),
         message
     });
+    updateHosts();
     console.log(message);
 }
 exports.logWarning = logWarning;
@@ -27,7 +28,8 @@ async function getStats() {
     const sources = await source_storage_1.getSources();
     return Object.values(sources).reduce((stats, source) => {
         const host = source.url.split('/')[2].split('.').slice(-2).join('.');
-        stats[host] = stats[host] || { latest: 0, sources: {}, count: 0, warnings: warnings[host] || [], chapterWarnings: [] };
+        const url = source.url.split('/').slice(0, 3).join('/');
+        stats[host] = stats[host] || { latest: 0, sources: {}, count: 0, warnings: warnings[host] || [], chapterWarnings: [], url };
         const sourceChapters = Object.values(urls).filter((url) => url.sourceId === source.id);
         const latest = sourceChapters.reduce((latest, url) => latest > Number(url.created) ? latest : Number(url.created), 0);
         const chapterWarnings = Object.keys(warnings)
@@ -46,3 +48,22 @@ async function getStats() {
     }, {});
 }
 exports.getStats = getStats;
+let hosts = { stable: [], unstable: [] };
+function getHosts() {
+    return hosts;
+}
+exports.getHosts = getHosts;
+async function updateHosts() {
+    const stats = await getStats();
+    const weekInMs = 7 * 24 * 60 * 60 * 1000;
+    hosts = Object.keys(stats).reduce((hosts, host) => {
+        const recentWarnings = stats[host].warnings.filter((warning) => Date.now() - warning.date < weekInMs);
+        const state = stats[host].count <= 10 || recentWarnings.length
+            ? 'unstable'
+            : 'stable';
+        hosts[state].push({ name: host, url: stats[host].url });
+        return hosts;
+    }, { stable: [], unstable: [] });
+}
+exports.updateHosts = updateHosts;
+updateHosts();

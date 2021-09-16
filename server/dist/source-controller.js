@@ -20,6 +20,7 @@ async function createSourceIfNeeded(rawSource) {
         try {
             entry = await source_storage_1.addSource(title, url, mangaId, type);
             await scheduler_1.fetchSource(entry, true);
+            stats_1.updateHosts();
         }
         catch (e) {
             source_storage_1.removeSource(entry.id);
@@ -51,6 +52,7 @@ function sourceController(app) {
             const entry = await createSourceIfNeeded(rawSource);
             if (entry) {
                 res.status(200).json({ valid: true, payload: entry });
+                stats_1.updateHosts();
             }
             else {
                 throw new Error(`Could not create new source for url "${url}".`);
@@ -64,6 +66,7 @@ function sourceController(app) {
     app.delete('/api/sources/:id', (req, res) => {
         const { id } = req.params;
         const success = source_storage_1.removeSource(id);
+        stats_1.updateHosts();
         res.status(200).json({ valid: success, payload: id });
     });
     app.get('/api/sources', async (req, res) => {
@@ -73,6 +76,10 @@ function sourceController(app) {
     app.get('/api/sources/stats', async (req, res) => {
         const stats = await stats_1.getStats();
         res.status(200).json({ valid: true, payload: stats });
+    });
+    app.get('/api/sources/hosts', async (req, res) => {
+        const hosts = await stats_1.getHosts();
+        res.status(200).json({ valid: true, payload: hosts });
     });
 }
 exports.sourceController = sourceController;
