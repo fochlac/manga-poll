@@ -16,9 +16,12 @@ function time (date) {
 }
 const dialog = document.getElementById('warnings-dialog')
 const warningList = document.getElementById('warnings')
+const dialogBody = document.querySelector('.warnings')
 
-dialog.addEventListener('click', () => {
-    dialog.style.display = 'none'
+dialog.addEventListener('click', (e) => {
+    if (!dialogBody.contains(e.target)) {
+        dialog.style.display = 'none'
+    }
 })
 
 document.addEventListener('click', (event) => {
@@ -30,13 +33,40 @@ document.addEventListener('click', (event) => {
         const warnings = JSON.parse(closestHost.dataset.warnings)
         const html = warnings.reduce((html, warning) => {
             html += `
-                <div class="row">
-                    <div class="date">${date(warning.date)}, ${time(warning.date)}</div>
-                    <div class="message">${warning.message}</div>
-                </div>
+            <div class="row">
+            <div class="date">${date(warning.date)}, ${time(warning.date)}</div>
+            <div class="message">${warning.message}</div>
+            </div>
             `
             return html
         }, '')
+
+        const sourceCount = Number(closestHost.dataset.sources)
+        document.querySelector('#warningsDiagramm').innerHTML = ''
+        const dayMap = warnings.reduce((dayMap, warning) => {
+            const key = date(warning.date)
+            if (!dayMap[key]) {
+                dayMap[key] = []
+            }
+            dayMap[key].push(warning)
+            return dayMap
+        }, {})
+
+        const today = date(Date.now())
+        new Array(14).fill(0)
+            .map((_v, index) => date(Date.now() - 3600000 * 24 * (13 - index)))
+            .forEach((day) => {
+                let fetchIntervallsPerDay = 24 * 60 / 5
+                if (day === today) {
+                    fetchIntervallsPerDay = new Date().getHours() * 60 / 5
+                }
+                const height = Math.round((dayMap[day]?.length || 0) / sourceCount / fetchIntervallsPerDay * 100)
+                document.querySelector('#warningsDiagramm').innerHTML += `
+                    <div class="bar" data-date="${day}" title="${(dayMap[day]?.length || 0)} failed fetches.">
+                        <div class="percentage" style="height: ${height}%" />
+                    </div>
+                `
+            })
 
         warningList.innerHTML = html
         dialog.style.display = 'flex'
@@ -65,7 +95,7 @@ function renderStats () {
                     const tableRows = Object.values(stats[host].sources)
                         .sort((a, b) => String(a.title).localeCompare(b.title))
                         .map(({ title, latest, count, warnings }) => `
-                                <td title="${title}" class="chtitle"  data-warnings='${JSON.stringify(warnings).replace(/'/g, '`')}'>
+                                <td title="${title}" class="chtitle" data-warnings='${JSON.stringify(warnings).replace(/'/g, '`')}'>
                                     ${title}${warnings.length && iconSevere || ''}
                                 </td>
                                 <td>${count}</td>
@@ -77,11 +107,11 @@ function renderStats () {
                         : ''
 
                     document.querySelector('#stats').innerHTML += `
-                            <div class="host" data-warnings='${JSON.stringify(stats[host].warnings).replace(/'/g, '`')}'>
+                            <div class="host" data-sources='${Object.keys(stats[host].sources).length}' data-warnings='${JSON.stringify(stats[host].warnings).replace(/'/g, '`')}'>
                                 <table class="title">
                                     <tbody>
                                         <tr>
-                                            <td><h5><a href="${stats[host].url}">${host}</a>&nbsp;(${Object.keys(stats[host].sources).length}) ${warning}</h5></td>
+                                            <td><h5>${host}&nbsp;(${Object.keys(stats[host].sources).length}) ${warning}</h5></td>
                                             <td></td>
                                             <td><b>${date(stats[host].latest)}</b></td>
                                         </tr>

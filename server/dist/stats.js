@@ -1,9 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateHosts = exports.getHosts = exports.getStats = exports.logWarning = exports.shouldWarn = void 0;
+const fs_1 = require("fs");
+const path_1 = require("path");
 const source_storage_1 = require("./source-storage");
 const url_storage_1 = require("./url-storage");
-const warnings = {};
+let warnings = {};
+const warningsPath = path_1.resolve(__dirname, '../db/warnings.json');
+try {
+    warnings = JSON.parse(fs_1.readFileSync(warningsPath, { encoding: 'utf-8' }));
+}
+catch (e) {
+    console.log(e);
+}
+function write() {
+    fs_1.writeFile(warningsPath, JSON.stringify(warnings, null, 2), () => null);
+}
 function shouldWarn(key, limit) {
     return !warnings[key] || !limit || warnings[key].filter((warning) => Date.now() - warning.date <= 48 * 3600 * 1000).length < limit;
 }
@@ -19,22 +31,48 @@ function logWarning(key, message, limit = 3) {
         date: Date.now(),
         message
     });
+    write();
     updateHosts();
     console.log(message);
 }
 exports.logWarning = logWarning;
+const emptyStats = (url, warnings = []) => ({
+    latest: 0,
+    sources: {},
+    count: 0,
+    warnings,
+    chapterWarnings: [],
+    url,
+    failureRate: {
+        week: 0,
+        day: 0,
+        hour: 0
+    }
+});
+const hourInMs = 60 * 60 * 1000;
+const dayInMs = 24 * hourInMs;
+const weekInMs = 7 * dayInMs;
+const fetchesPerHour = 60 / 5;
+const fetchesPerDay = 24 * fetchesPerHour;
+const fetchesPerWeek = 7 * fetchesPerDay;
 async function getStats() {
     const urls = await url_storage_1.getUrls();
     const sources = await source_storage_1.getSources();
-    return Object.values(sources).reduce((stats, source) => {
+    const stats = Object.values(sources).reduce((stats, source) => {
         const host = source.url.split('/')[2].split('.').slice(-2).join('.');
         const url = source.url.split('/').slice(0, 3).join('/');
-        stats[host] = stats[host] || { latest: 0, sources: {}, count: 0, warnings: warnings[host] || [], chapterWarnings: [], url };
+        stats[host] = stats[host] || emptyStats(url, warnings[host]);
         const sourceChapters = Object.values(urls).filter((url) => url.sourceId === source.id);
         const latest = sourceChapters.reduce((latest, url) => latest > Number(url.created) ? latest : Number(url.created), 0);
         const chapterWarnings = Object.keys(warnings)
             .filter(key => { var _a; return key.includes(url_storage_1.getUrlKey({ host: ((_a = sourceChapters[0]) === null || _a === void 0 ? void 0 : _a.host) || '', chapter: '' }, source.id)); })
             .reduce((chWarnings, warningKey) => chWarnings.concat(warnings[warningKey] || []), []);
+        const weekWarnings = chapterWarnings.filter((warning) => Date.now() - warning.date < weekInMs);
+        const dayWarnings = weekWarnings.filter((warning) => Date.now() - warning.date < dayInMs);
+        const hourWarnings = dayWarnings.filter((warning) => Date.now() - warning.date < hourInMs);
+        const weekFailPercentage = weekWarnings.length / fetchesPerWeek;
+        const dayFailPercentage = dayWarnings.length / fetchesPerDay;
+        const hourFailPercentage = hourWarnings.length / fetchesPerHour;
         stats[host].chapterWarnings = stats[host].chapterWarnings.concat(chapterWarnings);
         stats[host].latest = stats[host].latest >= latest ? stats[host].latest : latest;
         stats[host].count += sourceChapters.length;
@@ -42,10 +80,31 @@ async function getStats() {
             title: source.title,
             latest,
             count: sourceChapters.length,
-            warnings: chapterWarnings
+            warnings: chapterWarnings,
+            failureRate: {
+                week: weekFailPercentage,
+                day: dayFailPercentage,
+                hour: hourFailPercentage
+            }
         };
         return stats;
     }, {});
+    Object.keys(stats).forEach((host) => {
+        var _a;
+        if ((_a = stats[host]) === null || _a === void 0 ? void 0 : _a.length) {
+            const weekWarnings = stats[host].filter((warning) => Date.now() - warning.date < weekInMs);
+            const dayWarnings = weekWarnings.filter((warning) => Date.now() - warning.date < dayInMs);
+            const hourWarnings = dayWarnings.filter((warning) => Date.now() - warning.date < hourInMs);
+            const sources = Object.keys(stats[host].sources).length;
+            const weekFailPercentage = weekWarnings.length / sources / fetchesPerWeek;
+            const dayFailPercentage = dayWarnings.length / sources / fetchesPerDay;
+            const hourFailPercentage = hourWarnings.length / sources / fetchesPerHour;
+            stats[host].failureRate.week = weekFailPercentage;
+            stats[host].failureRate.day = dayFailPercentage;
+            stats[host].failureRate.hour = hourFailPercentage;
+        }
+    });
+    return stats;
 }
 exports.getStats = getStats;
 let hosts = { stable: [], unstable: [] };
@@ -55,13 +114,18 @@ function getHosts() {
 exports.getHosts = getHosts;
 async function updateHosts() {
     const stats = await getStats();
-    const weekInMs = 7 * 24 * 60 * 60 * 1000;
     hosts = Object.keys(stats).reduce((hosts, host) => {
-        const recentWarnings = stats[host].warnings.filter((warning) => Date.now() - warning.date < weekInMs);
-        const state = stats[host].count <= 10 || recentWarnings.length
-            ? 'unstable'
-            : 'stable';
-        hosts[state].push({ name: host, url: stats[host].url });
+        let state = 'stable';
+        if (stats[host].count <= 10 || stats[host].failureRate.week >= 0.1 ||
+            Object.values(stats[host].sources).some((source) => source.failureRate.week >= 0.9)) {
+            state = 'unstable';
+        }
+        const hostInfo = {
+            name: host,
+            url: stats[host].url,
+            failureRate: stats[host].failureRate
+        };
+        hosts[state].push(hostInfo);
         return hosts;
     }, { stable: [], unstable: [] });
 }
