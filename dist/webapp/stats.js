@@ -106,9 +106,15 @@ function renderStats () {
                             </div>
                         `
                 })
+            document.querySelector('#stats').innerHTML += `<div>Updated: ${time(Date.now())}</div>`
         })
 }
 
 renderStats()
 
 setInterval(() => renderStats(), 120000)
+window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        renderStats()
+    }
+})
