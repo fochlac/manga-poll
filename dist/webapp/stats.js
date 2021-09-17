@@ -58,10 +58,10 @@ function renderStats () {
     fetch('/api/sources/stats')
         .then((r) => r.json())
         .then(({ payload: stats }) => {
+            document.querySelector('#stats').innerHTML = ''
             Object.keys(stats)
                 .sort((a, b) => stats[a].latest === stats[b].latest ? 0 : (Number(stats[a].latest) < Number(stats[b].latest) ? 1 : -1))
                 .forEach((host) => {
-                    document.querySelector('#stats').innerHTML = ''
                     const tableRows = Object.values(stats[host].sources)
                         .sort((a, b) => String(a.title).localeCompare(b.title))
                         .map(({ title, latest, count, warnings }) => `
