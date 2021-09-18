@@ -140,11 +140,13 @@ function test () {
             }, {})
         const title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0]
 
-        const url = document.location.href.split('/').slice(0, 6).join('/')
+        const baseUrl = document.location.href.split('/manga/')[0] + '/manga/'
+        const id = document.location.href.replace(baseUrl, '').split('/')[0]
+        const url = `${baseUrl}${id}`
 
         return {
             type: 'leviathan',
-            id: document.location.href.split('/')[5],
+            id,
             title,
             url
         }
@@ -217,7 +219,7 @@ function test () {
     else if (window.location.host.includes('asurascans.com')) {
         result = testAsura()
     }
-    else if (window.location.host.includes('leviatanscans.com')) {
+    else if (window.location.host.includes('leviatanscans.com') || window.location.host.includes('immortalupdates.com')) {
         result = testLeviathan()
     }
     else if (window.location.host === 'mangadex.org') {

@@ -31,7 +31,7 @@ async function fetchAllUrls(isNew) {
                 .then(() => ({ hasError: false, source, error: null }))
                 .catch((error) => ({ hasError: true, error, source }))
                 .then((result) => results.push(result));
-            const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 250));
+            const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 2500));
             return Promise.all([fetchPromise, timeout]);
         });
         return promiseMap;
