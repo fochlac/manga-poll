@@ -110,7 +110,7 @@ function renderStats () {
                         .sort((a, b) => String(a.title).localeCompare(b.title))
                         .map(({ title, latest, count, warnings }) => `
                                 <td title="${title}" class="chtitle" data-warnings='${JSON.stringify(warnings).replace(/'/g, '`')}'>
-                                    ${title}${warnings.length && getIcon('severe')}
+                                    ${title}${warnings.length && getIcon('severe') || ''}
                                 </td>
                                 <td>${count}</td>
                                 <td>${date(latest)}</td>
