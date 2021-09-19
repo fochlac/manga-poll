@@ -44,7 +44,8 @@ function parseAsura(source: Source, body) {
     }
 
     return urlList.filter((url) => {
-        const isValid = /^https:\/\/(www\.)?asurascans.com\/.*/.test(url.url)
+        const isValid = /^https:\/\/(www\.)?asurascans.com\/.*/.test(url.url) &&
+            /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0
         const key = getUrlKey(url, source.id)
         const stored = getUrls()[key]
 

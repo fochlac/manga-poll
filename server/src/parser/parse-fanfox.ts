@@ -29,7 +29,8 @@ function parseFanfox(source: Source, body) {
         return []
     }
     return urlList.filter((url) => {
-        const isValid = /^https:\/\/fanfox.net\/manga\/.*\/c([\d.]*)\/1.html$/.test(url.url)
+        const isValid = /^https:\/\/fanfox.net\/manga\/.*\/c([\d.]*)\/1.html$/.test(url.url) &&
+            /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0
         const key = getUrlKey(url, source.id)
         const stored = getUrls()[key]
 

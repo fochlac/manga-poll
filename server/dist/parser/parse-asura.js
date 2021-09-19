@@ -41,7 +41,8 @@ function parseAsura(source, body) {
         return [];
     }
     return urlList.filter((url) => {
-        const isValid = /^https:\/\/(www\.)?asurascans.com\/.*/.test(url.url);
+        const isValid = /^https:\/\/(www\.)?asurascans.com\/.*/.test(url.url) &&
+            /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0;
         const key = url_storage_1.getUrlKey(url, source.id);
         const stored = url_storage_1.getUrls()[key];
         if (!isValid && !stored) {

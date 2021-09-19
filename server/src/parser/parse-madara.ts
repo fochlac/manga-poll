@@ -90,7 +90,8 @@ function parseMadara(source: Source, body) {
     }
 
     const newUrls = urlList.filter((url) => {
-        const isValid = /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url.url)
+        const isValid = /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url.url) &&
+            /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0
         const key = getUrlKey(url, source.id)
         const stored = getUrls()[key]
 

@@ -39,7 +39,8 @@ async function fetchMangadex(source: Source) {
             })
 
         return urlList.filter((url) => {
-            const isValid = url.chapter && url.url.split('/')?.[4]?.length && !isNaN(Number(url.created))
+            const isValid = url.chapter && url.url.split('/')?.[4]?.length && !isNaN(Number(url.created)) &&
+                /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0
             const key = getUrlKey(url, source.id)
             const stored = getUrls()[key]
 

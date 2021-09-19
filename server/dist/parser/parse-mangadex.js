@@ -37,7 +37,8 @@ async function fetchMangadex(source) {
         });
         return urlList.filter((url) => {
             var _a, _b;
-            const isValid = url.chapter && ((_b = (_a = url.url.split('/')) === null || _a === void 0 ? void 0 : _a[4]) === null || _b === void 0 ? void 0 : _b.length) && !isNaN(Number(url.created));
+            const isValid = url.chapter && ((_b = (_a = url.url.split('/')) === null || _a === void 0 ? void 0 : _a[4]) === null || _b === void 0 ? void 0 : _b.length) && !isNaN(Number(url.created)) &&
+                /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0;
             const key = url_storage_1.getUrlKey(url, source.id);
             const stored = url_storage_1.getUrls()[key];
             if (!isValid && !stored) {
