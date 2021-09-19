@@ -1,7 +1,6 @@
-/* eslint-disable max-len, no-undef, no-nested-ternary */
-const iconPath = '<path d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937 0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154 0l239.94 416.028zM288 354c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"/>'
-const iconSevere = `<svg class="warning severe" viewBox="0 0 576 512">${iconPath}</svg>`
-const icon = `<svg class="warning" viewBox="0 0 576 512">${iconPath}</svg>`
+/* global document, fetch, setInterval, window */
+
+const warningIcon = document.querySelector('svg.warning')
 
 function date (date) {
     const dateRaw = new Date(date).toISOString().split('T')[0]
@@ -19,7 +18,7 @@ const warningList = document.getElementById('warnings')
 const dialogBody = document.querySelector('.warnings')
 
 dialog.addEventListener('click', (e) => {
-    if (!dialogBody.contains(e.target)) {
+    if (!dialogBody.contains(e.target) || e.target.closest('.closebutton')) {
         dialog.style.display = 'none'
     }
 })
@@ -61,8 +60,9 @@ document.addEventListener('click', (event) => {
                     fetchIntervallsPerDay = new Date().getHours() * 60 / 5
                 }
                 const height = Math.round((dayMap[day]?.length || 0) / sourceCount / fetchIntervallsPerDay * 100)
+                const title = `${height}% error rate (${(dayMap[day]?.length || 0)})`
                 document.querySelector('#warningsDiagramm').innerHTML += `
-                    <div class="bar" data-date="${day}" title="${(dayMap[day]?.length || 0)} failed fetches.">
+                    <div class="bar" data-date="${day}" data-title="${title}" >
                         <div class="percentage" style="height: ${height}%" />
                     </div>
                 `
@@ -84,35 +84,59 @@ document.addEventListener('click', (event) => {
     }
 })
 
+function getIcon (classes = []) {
+    const icon = warningIcon.cloneNode(true)
+    classes = Array.isArray(classes) ? classes : [classes]
+    classes.forEach((className) => icon.classList.add(className))
+    return icon.outerHTML
+}
+
 function renderStats () {
     fetch('/api/sources/stats')
         .then((r) => r.json())
         .then(({ payload: stats }) => {
             document.querySelector('#stats').innerHTML = ''
             Object.keys(stats)
-                .sort((a, b) => stats[a].latest === stats[b].latest ? 0 : (Number(stats[a].latest) < Number(stats[b].latest) ? 1 : -1))
+                .sort((a, b) => {
+                    if (stats[a].latest === stats[b].latest) {
+                        return 0
+                    }
+                    return Number(stats[a].latest) < Number(stats[b].latest)
+                        ? 1
+                        : -1
+                })
                 .forEach((host) => {
                     const tableRows = Object.values(stats[host].sources)
                         .sort((a, b) => String(a.title).localeCompare(b.title))
                         .map(({ title, latest, count, warnings }) => `
                                 <td title="${title}" class="chtitle" data-warnings='${JSON.stringify(warnings).replace(/'/g, '`')}'>
-                                    ${title}${warnings.length && iconSevere || ''}
+                                    ${title}${warnings.length && getIcon('severe')}
                                 </td>
                                 <td>${count}</td>
                                 <td>${date(latest)}</td>
                             `)
 
-                    const warning = stats[host].warnings.length || stats[host].chapterWarnings.length
-                        ? (stats[host].warnings.length ? iconSevere : icon)
-                        : ''
+                    let weight = 'light'
+                    if (stats[host].failureRate.day > 0.1) {
+                        weight = 'severe'
+                    }
+                    else if (stats[host].failureRate.day > 0.02) {
+                        weight = ''
+                    }
+                    const warning = stats[host].warnings.length ? getIcon(weight) : ''
 
+                    const title = `${host}&nbsp;(${Object.keys(stats[host].sources).length})`
                     document.querySelector('#stats').innerHTML += `
                             <div class="host" data-sources='${Object.keys(stats[host].sources).length}' data-warnings='${JSON.stringify(stats[host].warnings).replace(/'/g, '`')}'>
                                 <table class="title">
                                     <tbody>
                                         <tr>
-                                            <td><h5>${host}&nbsp;(${Object.keys(stats[host].sources).length}) ${warning}</h5></td>
-                                            <td></td>
+                                            <td>
+                                                <h5>
+                                                    <span class="titletext" title="title">${title}</span>
+                                                    ${warning}
+                                                </h5>
+                                            </td>
                                             <td><b>${date(stats[host].latest)}</b></td>
                                         </tr>
                                     </tbody>
@@ -136,7 +160,7 @@ function renderStats () {
                             </div>
                         `
                 })
-            document.querySelector('#stats').innerHTML += `<div>Updated: ${time(Date.now())}</div>`
+            document.querySelector('#stats').innerHTML += `<div class="updated">Updated: ${time(Date.now())}</div>`
         })
 }
 

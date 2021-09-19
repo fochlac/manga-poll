@@ -109,12 +109,16 @@
       height: 21px;
       width: 21px;
       margin-left: 8px;
+      flex-shrink: 0;
     }
     .warning path {
       fill: #f3c022;
     }
     .warning.severe path {
       fill: #c70000;
+    }
+    .warning.light path {
+      fill: #5a865e;
     }
     .date {
       white-space: nowrap;
@@ -187,36 +191,58 @@
       bottom: -12px;
       position: absolute;
     }
+    #warningsDiagramm .bar:hover:after {
+      content: attr(data-title);
+      font-size: 10px;
+      overflow: hidden;
+      font-weight: 700;
+      top: calc(100% + 4px);
+      position: absolute;
+      z-index: 1000;
+      background: white;
+      border: black solid 1px;
+      text-align: center;
+      padding: 2px;
+    }
     #warningsDiagramm {
       height: 100px;
-      width: calc(100% - 34px);
+      width: calc(100% - 20px);
       margin-bottom: 16px;
       border-left: solid 1px #000c21;
       border-bottom: solid 1px #000c21;
       display: flex;
       flex-direction: row;
-      justify-content: space-evenly;
-      margin-right: 4px;
+      justify-content: space-between;
+      margin-right: 10px;
       position: relative;
-      margin-left: 30px;
+      margin-left: 10px;
       flex-shrink: 0;
+      padding-left: 10px;
     }
     #warningsDiagramm:after,
     #warningsDiagramm:before {
       content: "0%";
-      left: -18px;
+      left: -7px;
       position: absolute;
       font-size: 10px;
       font-weight: 700;
-      bottom: -2px;
+      bottom: 1px;
+      height: 12px;
+      z-index: 10;
+      line-height: 12px;
+      background: white;
     }
     #warningsDiagramm:after {
       content: "100%";
-      left: -30px;
+      left: -12px;
       position: absolute;
       font-size: 10px;
       font-weight: 700;
       top: -2px;
+    }
+    #warnings-dialog-title {
+      display: flex;
+      justify-content: space-between;
     }
     .warnings h5 {
       padding: 0;
@@ -225,17 +251,50 @@
     #warnings {
       overflow: auto;
     }
+    .updated {
+      margin-top: 8px;
+      font-size: 0.85em;
+      text-align: end;
+      padding-right: 11px;
+    }
+    .titletext {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    h5.closebutton {
+      font-size: 20px;
+      line-height: 4px;
+      margin: 1px -9px 0;
+      padding: 10px;
+      cursor: pointer;
+      height: 10px;
+    }
+    h5.closebutton:hover {
+      background: #e2e2e2;
+      border-radius: 50%;
+    }
   </style>
   <body>
     <h3>Stats</h3>
     <div id="stats"></div>
     <div id="warnings-dialog">
       <div class="warnings">
-        <h5>Error Rates</h5>
+        <div id="warnings-dialog-title">
+          <h5>Error Rates</h5>
+          <h5 class="closebutton">x</h5>
+        </div>
         <div id="warningsDiagramm"></div>
         <h5>Error Logs</h5>
         <div id="warnings"></div>
       </div>
+    </div>
+    <div style="display: none">
+      <svg class="warning" viewBox="0 0 576 512">
+        <path
+          d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937 0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154 0l239.94 416.028zM288 354c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"
+        />
+      </svg>
     </div>
   </body>
   <script src="stats.js"></script>
