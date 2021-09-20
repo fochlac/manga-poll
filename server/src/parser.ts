@@ -1,11 +1,13 @@
 import cheerio from 'cheerio'
+import { logWarning } from './stats'
+import { getUrlKey, getUrls, updateUrl } from './url-storage'
 
 declare global {
     interface Parser {
         type: string;
         fetchFunction: (source: Source) => Promise<Partial<Url>[]>;
         parseLink: (body: string) => Promise<Partial<Source>>;
-        parseCondition: (body: string) => boolean;
+        parseCondition: (body: string) => boolean|Promise<boolean>;
     }
 }
 
@@ -14,7 +16,7 @@ const parserMap = {}
 const linkParserList = []
 let defaultLinkParser
 
-export function registerParser ({ type, fetchFunction, parseLink, parseCondition }: Parser) {
+export function registerParser({ type, fetchFunction, parseLink, parseCondition }: Parser) {
     parserMap[type] = fetchFunction
     linkParserList.push({ parseLink, parseCondition })
     if (type === defaultType) {
@@ -22,7 +24,7 @@ export function registerParser ({ type, fetchFunction, parseLink, parseCondition
     }
 }
 
-export function fetchChapterList (source: Source) {
+export function fetchChapterList(source: Source) {
     const type = source.type || defaultType
     const fetchFunction = parserMap[source.type]
     if (!fetchFunction) {
@@ -31,8 +33,14 @@ export function fetchChapterList (source: Source) {
     return fetchFunction(source)
 }
 
-export function parseSourceLink (link) {
-    const parser = linkParserList.find(({parseCondition}) => parseCondition(link))
+export async function parseSourceLink(link) {
+    let parser
+    for (const possibleParser of linkParserList) {
+        if (await possibleParser.parseCondition(link)) {
+            parser = possibleParser
+            break
+        }
+    }
 
     if (!parser) {
         console.log(`Could not find parser for url "${link}", using default parser.`)
@@ -41,7 +49,7 @@ export function parseSourceLink (link) {
     return parser ? parser.parseLink(link) : defaultLinkParser(link)
 }
 
-export function checkSourceType (type) {
+export function checkSourceType(type) {
     return !!parserMap[type]
 }
 
@@ -95,4 +103,47 @@ export function decodeHTMLEntities(str) {
         return $('div').text()
     }
     return str
+}
+
+export function createSource(type: string, mangaId: string, title: string, url: string) {
+    const missingFields = []
+    if (!title) {
+        missingFields.push('title')
+    }
+    if (!url) {
+        missingFields.push('url')
+    }
+    if (!mangaId) {
+        missingFields.push('mangaId')
+    }
+    if (!type) {
+        missingFields.push('type')
+    }
+    if (missingFields.length) {
+        throw Error(`Parsing source failed - following fields are empty ${missingFields.join(', ')}.`)
+    }
+    return {
+        type,
+        mangaId,
+        title,
+        url
+    }
+}
+
+export function createUrlFilter(source, validateUrl?: (url: string) => boolean) {
+    return (url: Url) => {
+        const isValid = url.url && (typeof validateUrl !== 'function' || validateUrl(url.url)) &&
+            /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0
+        const key = getUrlKey(url, source.id)
+        const stored = getUrls()[key]
+
+        if (!isValid && !stored) {
+            logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`)
+        }
+        if (isValid && stored) {
+            updateUrl(source, url)
+        }
+
+        return isValid && !stored
+    }
 }

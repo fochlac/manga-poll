@@ -9,7 +9,6 @@ const form_data_1 = __importDefault(require("form-data"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const parser_1 = require("../parser");
 const stats_1 = require("../stats");
-const url_storage_1 = require("../url-storage");
 const TYPE = 'madara';
 const dateMonthFirst = /^[^\d]*(1[012]|0\d|\d)[^\d](3[0,1]|[012]\d|\d)[^\d](\d{2}|\d{4})[^\d]*$/;
 const dateDayFirst = /^[^\d]*(3[0,1]|[012]\d|\d)[^\d](1[012]|0\d|\d)[^\d](\d{2}|\d{4})[^\d]*$/;
@@ -34,8 +33,9 @@ function getDateType(urlList) {
     }, {});
     return Object.keys(types).reduce((type1, type2) => types[type1] > types[type2] ? type1 : type2, 'unparsable');
 }
-function parseDates(urlList, type) {
-    return urlList.map((url) => {
+function parseDates(urlList) {
+    const type = getDateType(urlList);
+    return (url) => {
         const baseDate = new Date();
         baseDate.setHours(0, 0, 0, 0);
         let created = baseDate.getTime();
@@ -63,9 +63,10 @@ function parseDates(urlList, type) {
         }
         return {
             ...url,
-            created
+            created,
+            date: undefined
         };
-    });
+    };
 }
 function parseMadara(source, body) {
     const $ = cheerio_1.default.load(body);
@@ -84,21 +85,9 @@ function parseMadara(source, body) {
         stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0);
         return [];
     }
-    const newUrls = urlList.filter((url) => {
-        const isValid = /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url.url) &&
-            /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0;
-        const key = url_storage_1.getUrlKey(url, source.id);
-        const stored = url_storage_1.getUrls()[key];
-        if (!isValid && !stored) {
-            stats_1.logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`);
-        }
-        if (isValid && stored) {
-            url_storage_1.updateUrl(source, url);
-        }
-        return isValid && !stored;
-    });
-    const type = getDateType(urlList);
-    return parseDates(newUrls, type);
+    return urlList
+        .map(parseDates(urlList))
+        .filter(parser_1.createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)));
 }
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g;
 async function parseMadaraPage(rawUrl) {
@@ -134,19 +123,8 @@ async function parseMadaraPage(rawUrl) {
         return map;
     }, {});
     const title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0];
-    let url = null;
-    if (rawUrl.includes('leviatanscans.com')) {
-        url = rawUrl.split('/').slice(0, 6).join('/');
-    }
-    else {
-        url = (_a = rawUrl.match(/https?:\/\/[^/]*\/[^/]*\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
-    }
-    return {
-        type: TYPE,
-        mangaId,
-        title,
-        url
-    };
+    let url = (_a = rawUrl.match(/https?:\/\/[^/]*\/[^/]*\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
+    return parser_1.createSource(TYPE, mangaId, title, url);
 }
 async function fetchMadara(source) {
     var _a;

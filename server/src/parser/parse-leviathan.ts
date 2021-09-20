@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse } from '../parser'
+import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, createUrlFilter } from '../parser'
 import { logWarning } from '../stats'
 import { getUrlKey, getUrls, updateUrl } from '../url-storage'
 
@@ -16,10 +16,10 @@ function parseLeviathan(source: Source, body, url) {
         const url = $(elem).attr('href')
         const result = String(url).match(/^https?:\/\/([^/]*)\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/) || []
         const date = $(elem).closest('.wp-manga-chapter').find('.chapter-release-date').text()
-        const created = typeof date === 'string' && date.trim().length && new Date(date.trim()).toJSON() 
+        const created = typeof date === 'string' && date.trim().length && new Date(date.trim()).toJSON()
             ? new Date(date.trim()).getTime()
             : baseDate.getTime()
-        
+
         return {
             host,
             chapter: result[3],
@@ -33,23 +33,7 @@ function parseLeviathan(source: Source, body, url) {
         return []
     }
 
-    const newUrls = urlList.filter((url) => {
-        const isValid = /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url.url) &&
-            /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0
-        const key = getUrlKey(url, source.id)
-        const stored = getUrls()[key]
-
-        if (!isValid && !stored) {
-            logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`)
-        }
-        if (isValid && stored) {
-            updateUrl(source, url)
-        }
-
-        return isValid && !stored
-    })
-
-    return newUrls
+    return urlList.filter(createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)))
 }
 
 
@@ -75,21 +59,15 @@ async function parseLeviathanPage(rawUrl: string) {
 
     const baseUrl = rawUrl.split('/manga/')[0] + '/manga/'
     const mangaId = rawUrl.replace(baseUrl, '').split('/')[0]
-    const url = `${baseUrl}${mangaId}`
 
-    return {
-        type: TYPE,
-        mangaId,
-        title,
-        url
-    }
+    return createSource(TYPE, mangaId, title, `${baseUrl}${mangaId}`)
 }
 
 async function fetchLeviathan(source: Source) {
     let body
     let url
     try {
-        const baseUrl = await fetch(source.url.split('/').slice(0,3).join('/'), { headers }).then((res) => res.url)
+        const baseUrl = await fetch(source.url.split('/').slice(0, 3).join('/'), { headers }).then((res) => res.url)
         url = `${baseUrl}/manga/${source.url.split('/manga/')[1]}/ajax/chapters`
         url = url.slice(0, 10) + url.slice(10).replace(/\/\//g, '/')
         const response = await fetch(url, { method: 'post', headers })

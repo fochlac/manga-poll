@@ -3,8 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.decodeHTMLEntities = exports.parse = exports.headers = exports.getResponseBody = exports.checkSourceType = exports.parseSourceLink = exports.fetchChapterList = exports.registerParser = void 0;
+exports.createUrlFilter = exports.createSource = exports.decodeHTMLEntities = exports.parse = exports.headers = exports.getResponseBody = exports.checkSourceType = exports.parseSourceLink = exports.fetchChapterList = exports.registerParser = void 0;
 const cheerio_1 = __importDefault(require("cheerio"));
+const stats_1 = require("./stats");
+const url_storage_1 = require("./url-storage");
 const defaultType = 'madara';
 const parserMap = {};
 const linkParserList = [];
@@ -26,8 +28,14 @@ function fetchChapterList(source) {
     return fetchFunction(source);
 }
 exports.fetchChapterList = fetchChapterList;
-function parseSourceLink(link) {
-    const parser = linkParserList.find(({ parseCondition }) => parseCondition(link));
+async function parseSourceLink(link) {
+    let parser;
+    for (const possibleParser of linkParserList) {
+        if (await possibleParser.parseCondition(link)) {
+            parser = possibleParser;
+            break;
+        }
+    }
     if (!parser) {
         console.log(`Could not find parser for url "${link}", using default parser.`);
     }
@@ -85,3 +93,44 @@ function decodeHTMLEntities(str) {
     return str;
 }
 exports.decodeHTMLEntities = decodeHTMLEntities;
+function createSource(type, mangaId, title, url) {
+    const missingFields = [];
+    if (!title) {
+        missingFields.push('title');
+    }
+    if (!url) {
+        missingFields.push('url');
+    }
+    if (!mangaId) {
+        missingFields.push('mangaId');
+    }
+    if (!type) {
+        missingFields.push('type');
+    }
+    if (missingFields.length) {
+        throw Error(`Parsing source failed - following fields are empty ${missingFields.join(', ')}.`);
+    }
+    return {
+        type,
+        mangaId,
+        title,
+        url
+    };
+}
+exports.createSource = createSource;
+function createUrlFilter(source, validateUrl) {
+    return (url) => {
+        const isValid = url.url && (typeof validateUrl !== 'function' || validateUrl(url.url)) &&
+            /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0;
+        const key = url_storage_1.getUrlKey(url, source.id);
+        const stored = url_storage_1.getUrls()[key];
+        if (!isValid && !stored) {
+            stats_1.logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`);
+        }
+        if (isValid && stored) {
+            url_storage_1.updateUrl(source, url);
+        }
+        return isValid && !stored;
+    };
+}
+exports.createUrlFilter = createUrlFilter;

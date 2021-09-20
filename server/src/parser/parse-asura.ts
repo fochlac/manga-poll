@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, getResponseBody } from '../parser'
+import { registerParser, headers, getResponseBody, createSource, createUrlFilter } from '../parser'
 import { logWarning } from '../stats'
 import { getUrlKey, getUrls, updateUrl } from '../url-storage'
 
@@ -14,13 +14,9 @@ async function testAsura(rawUrl) {
     const url = breadcrumpLink.attr('href')
     const name = breadcrumpLink.find('span').text()
 
-    return {
-        type: TYPE,
-        mangaId: url?.split('/')[4],
-        title: name,
-        url
-    }
+    return createSource(TYPE, url?.split('/')[4], name, url)
 }
+
 function parseAsura(source: Source, body) {
     const $ = cheerio.load(body)
     const baseDate = new Date()
@@ -43,21 +39,7 @@ function parseAsura(source: Source, body) {
         return []
     }
 
-    return urlList.filter((url) => {
-        const isValid = /^https:\/\/(www\.)?asurascans.com\/.*/.test(url.url) &&
-            /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0
-        const key = getUrlKey(url, source.id)
-        const stored = getUrls()[key]
-
-        if (!isValid && !stored) {
-            logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`)
-        }
-        if (isValid && stored) {
-            updateUrl(source, url)
-        }
-
-        return isValid && !stored
-    })
+    return urlList.filter(createUrlFilter(source, (url) => /^https:\/\/(www\.)?asurascans.com\/.*/.test(url)))
 }
 
 async function fetchAsura(source: Source) {

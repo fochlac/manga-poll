@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import { registerParser } from '../parser'
+import { createSource, createUrlFilter, registerParser } from '../parser'
 import { logWarning } from '../stats'
 import { getUrlKey, getUrls, updateUrl } from '../url-storage'
 
@@ -38,21 +38,7 @@ async function fetchMangadex(source: Source) {
                 }
             })
 
-        return urlList.filter((url) => {
-            const isValid = url.chapter && url.url.split('/')?.[4]?.length && !isNaN(Number(url.created)) &&
-                /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0
-            const key = getUrlKey(url, source.id)
-            const stored = getUrls()[key]
-
-            if (!isValid && !stored) {
-                logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`)
-            }
-            if (isValid && stored) {
-                updateUrl(source, url)
-            }
-
-            return isValid && !stored
-        })
+        return urlList.filter(createUrlFilter(source))
     }
     catch (err) {
         logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0)
@@ -75,12 +61,7 @@ async function parseMangadexPage(rawUrl: string) {
             return null
         }
 
-        return {
-            type: TYPE,
-            mangaId: id,
-            title: mangaInfo.data.attributes?.title?.en,
-            url: `https://api.mangadex.org/manga/${id}`
-        }
+        return createSource(TYPE, id, mangaInfo.data.attributes?.title?.en, `https://api.mangadex.org/manga/${id}`)
     }
     else if (/chapter\/[\d-\w]*(\/\d*)?/.test(rawUrl)) {
         const id = rawUrl.split('/chapter/')?.[1]?.split('/')[0]

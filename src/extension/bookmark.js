@@ -123,6 +123,33 @@ function test () {
         }
     }
 
+    function testGenkan () {
+        const [url, id] = location.href.match(/https?:\/\/[^/]*\/comics\/(\d*)-[-\w\d]*/) || []
+
+        if (!url || !id) {
+            return null
+        }
+
+        if (/^\d$/.test(location.href.split('/').slice(-2).join('').replace('.'))) {
+            const title = document.querySelector('.heading h6').textContent.trim()
+            return {
+                type: 'genkan',
+                id,
+                title,
+                url
+            }
+        }
+        else {
+            const title = document.querySelector('meta[property*="title"]').content.trim()
+            return {
+                type: 'genkan',
+                id,
+                title,
+                url
+            }
+        }
+    }
+
     function testLeviathan () {
         const header = document.querySelector('.post-title h1')
         const titles = [
@@ -215,6 +242,9 @@ function test () {
 
     if (window.location.host === 'fanfox.net') {
         result = testFanFox()
+    }
+    else if (document.documentElement.innerHTML.includes('Powered by Genkan.')) {
+        result = testGenkan()
     }
     else if (window.location.host.includes('asurascans.com')) {
         result = testAsura()

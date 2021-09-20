@@ -1,7 +1,7 @@
 import cheerio from 'cheerio'
 import FormData from 'form-data'
 import fetch from 'node-fetch'
-import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse } from '../parser'
+import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, createUrlFilter } from '../parser'
 import { logWarning } from '../stats'
 import { getUrlKey, getUrls, updateUrl } from '../url-storage'
 
@@ -33,8 +33,10 @@ function getDateType(urlList) {
     return Object.keys(types).reduce((type1, type2) => types[type1] > types[type2] ? type1 : type2, 'unparsable')
 }
 
-function parseDates(urlList, type) {
-    return urlList.map((url) => {
+function parseDates(urlList) {
+    const type = getDateType(urlList)
+
+    return (url) => {
         const baseDate = new Date()
         baseDate.setHours(0, 0, 0, 0)
         let created = baseDate.getTime()
@@ -64,9 +66,10 @@ function parseDates(urlList, type) {
 
         return {
             ...url,
-            created
+            created,
+            date: undefined
         }
-    })
+    }
 }
 
 function parseMadara(source: Source, body) {
@@ -89,24 +92,9 @@ function parseMadara(source: Source, body) {
         return []
     }
 
-    const newUrls = urlList.filter((url) => {
-        const isValid = /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url.url) &&
-            /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0
-        const key = getUrlKey(url, source.id)
-        const stored = getUrls()[key]
-
-        if (!isValid && !stored) {
-            logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`)
-        }
-        if (isValid && stored) {
-            updateUrl(source, url)
-        }
-
-        return isValid && !stored
-    })
-
-    const type = getDateType(urlList)
-    return parseDates(newUrls, type)
+    return urlList
+        .map(parseDates(urlList))
+        .filter(createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)))
 }
 
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g
@@ -147,20 +135,9 @@ async function parseMadaraPage(rawUrl: string) {
         }, {})
     const title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0]
 
-    let url = null
-    if (rawUrl.includes('leviatanscans.com')) {
-        url = rawUrl.split('/').slice(0, 6).join('/')
-    }
-    else {
-        url = rawUrl.match(/https?:\/\/[^/]*\/[^/]*\/[^/]*\//)?.[0]
-    }
+    let url = rawUrl.match(/https?:\/\/[^/]*\/[^/]*\/[^/]*\//)?.[0]
 
-    return {
-        type: TYPE,
-        mangaId,
-        title,
-        url
-    }
+    return createSource(TYPE, mangaId, title, url)
 }
 
 async function fetchMadara(source: Source) {

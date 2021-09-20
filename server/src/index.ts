@@ -15,6 +15,7 @@ import './parser/parse-fanfox'
 import './parser/parse-madara'
 import './parser/parse-mangadex'
 import './parser/parse-asura'
+import './parser/parse-genkan'
 import './parser/parse-leviathan'
 
 const app = express()

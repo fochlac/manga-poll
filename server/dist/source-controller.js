@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sourceController = void 0;
-const check_source_1 = require("./check-source");
 const parser_1 = require("./parser");
 const scheduler_1 = require("./scheduler");
 const stats_1 = require("./stats");
@@ -45,7 +44,7 @@ function sourceController(app) {
             if (!url) {
                 throw new Error('No url passed to test endpoint.');
             }
-            const rawSource = await check_source_1.extractSourceIfPossible(url);
+            const rawSource = await parser_1.parseSourceLink(url);
             if (!rawSource) {
                 throw new Error(`Error parsing raw source "${url}".`);
             }

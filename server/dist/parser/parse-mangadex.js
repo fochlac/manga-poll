@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const parser_1 = require("../parser");
 const stats_1 = require("../stats");
-const url_storage_1 = require("../url-storage");
 const TYPE = 'mangadex';
 const pageSize = 100;
 async function fetchMangadex(source) {
@@ -35,20 +34,7 @@ async function fetchMangadex(source) {
                 created: new Date(chapter.attributes.publishAt).getTime()
             };
         });
-        return urlList.filter((url) => {
-            var _a, _b;
-            const isValid = url.chapter && ((_b = (_a = url.url.split('/')) === null || _a === void 0 ? void 0 : _a[4]) === null || _b === void 0 ? void 0 : _b.length) && !isNaN(Number(url.created)) &&
-                /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0;
-            const key = url_storage_1.getUrlKey(url, source.id);
-            const stored = url_storage_1.getUrls()[key];
-            if (!isValid && !stored) {
-                stats_1.logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`);
-            }
-            if (isValid && stored) {
-                url_storage_1.updateUrl(source, url);
-            }
-            return isValid && !stored;
-        });
+        return urlList.filter(parser_1.createUrlFilter(source));
     }
     catch (err) {
         stats_1.logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${(err === null || err === void 0 ? void 0 : err.message) || 'Unknown Error.'}`, 0);
@@ -68,12 +54,7 @@ async function parseMangadexPage(rawUrl) {
             console.log('Invalid id extracted from manga link.');
             return null;
         }
-        return {
-            type: TYPE,
-            mangaId: id,
-            title: (_e = (_d = mangaInfo.data.attributes) === null || _d === void 0 ? void 0 : _d.title) === null || _e === void 0 ? void 0 : _e.en,
-            url: `https://api.mangadex.org/manga/${id}`
-        };
+        return parser_1.createSource(TYPE, id, (_e = (_d = mangaInfo.data.attributes) === null || _d === void 0 ? void 0 : _d.title) === null || _e === void 0 ? void 0 : _e.en, `https://api.mangadex.org/manga/${id}`);
     }
     else if (/chapter\/[\d-\w]*(\/\d*)?/.test(rawUrl)) {
         const id = (_g = (_f = rawUrl.split('/chapter/')) === null || _f === void 0 ? void 0 : _f[1]) === null || _g === void 0 ? void 0 : _g.split('/')[0];

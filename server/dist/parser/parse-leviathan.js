@@ -7,7 +7,6 @@ const cheerio_1 = __importDefault(require("cheerio"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const parser_1 = require("../parser");
 const stats_1 = require("../stats");
-const url_storage_1 = require("../url-storage");
 const TYPE = 'leviathan';
 function parseLeviathan(source, body, url) {
     const $ = cheerio_1.default.load(body);
@@ -32,20 +31,7 @@ function parseLeviathan(source, body, url) {
         stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} from ${url}: Recieved empty URL-List`, 0);
         return [];
     }
-    const newUrls = urlList.filter((url) => {
-        const isValid = /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url.url) &&
-            /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0;
-        const key = url_storage_1.getUrlKey(url, source.id);
-        const stored = url_storage_1.getUrls()[key];
-        if (!isValid && !stored) {
-            stats_1.logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`);
-        }
-        if (isValid && stored) {
-            url_storage_1.updateUrl(source, url);
-        }
-        return isValid && !stored;
-    });
-    return newUrls;
+    return urlList.filter(parser_1.createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)));
 }
 async function parseLeviathanPage(rawUrl) {
     const sourcehtml = await node_fetch_1.default(rawUrl, { headers: parser_1.headers }).then(res => res.text());
@@ -66,13 +52,7 @@ async function parseLeviathanPage(rawUrl) {
     const title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0];
     const baseUrl = rawUrl.split('/manga/')[0] + '/manga/';
     const mangaId = rawUrl.replace(baseUrl, '').split('/')[0];
-    const url = `${baseUrl}${mangaId}`;
-    return {
-        type: TYPE,
-        mangaId,
-        title,
-        url
-    };
+    return parser_1.createSource(TYPE, mangaId, title, `${baseUrl}${mangaId}`);
 }
 async function fetchLeviathan(source) {
     let body;

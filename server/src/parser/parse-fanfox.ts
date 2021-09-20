@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, getResponseBody } from '../parser'
+import { registerParser, headers, getResponseBody, createSource, createUrlFilter } from '../parser'
 import { logWarning } from '../stats'
 import { getUrlKey, getUrls, updateUrl } from '../url-storage'
 
@@ -28,21 +28,8 @@ function parseFanfox(source: Source, body) {
         logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0)
         return []
     }
-    return urlList.filter((url) => {
-        const isValid = /^https:\/\/fanfox.net\/manga\/.*\/c([\d.]*)\/1.html$/.test(url.url) &&
-            /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0
-        const key = getUrlKey(url, source.id)
-        const stored = getUrls()[key]
 
-        if (!isValid && !stored) {
-            logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`)
-        }
-        if (isValid && stored) {
-            updateUrl(source, url)
-        }
-
-        return isValid && !stored
-    })
+    return urlList.filter(createUrlFilter(source, (url) => /^https:\/\/fanfox.net\/manga\/.*\/c([\d.]*)\/1.html$/.test(url)))
 }
 
 async function fetchFanFox(source: Source) {
@@ -61,19 +48,14 @@ async function fetchFanFox(source: Source) {
 
 
 async function parseFanfoxPage(rawUrl: string) {
-    const sourcehtml: string = await fetch(rawUrl, { headers: { ...headers, cookie: 'isAdult=1;' }}).then(res => res.text())
+    const sourcehtml: string = await fetch(rawUrl, { headers: { ...headers, cookie: 'isAdult=1;' } }).then(res => res.text())
 
     const $ = cheerio.load(sourcehtml)
 
     const path = rawUrl.match(/\/manga\/[^/]*\//)?.[0]
-    const name = $('.reader-header-title-1 a:first-child').text() || $('.detail-info-right-title-font').text()
+    const title = $('.reader-header-title-1 a:first-child').text() || $('.detail-info-right-title-font').text()
 
-    return {
-        type: TYPE,
-        mangaId: path ? path.split('/')[2] : null,
-        title: name,
-        url: rawUrl.match(/^http.*fanfox.net\/manga\/[^/]*\//)?.[0]
-    }
+    return createSource(TYPE, path?.split('/')[2], title, rawUrl.match(/^http.*fanfox.net\/manga\/[^/]*\//)?.[0])
 }
 
 const fanfox: Parser = {

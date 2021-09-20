@@ -7,7 +7,6 @@ const cheerio_1 = __importDefault(require("cheerio"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const parser_1 = require("../parser");
 const stats_1 = require("../stats");
-const url_storage_1 = require("../url-storage");
 const TYPE = 'fanfox';
 function parseFanfox(source, body) {
     const $ = cheerio_1.default.load(body);
@@ -28,19 +27,7 @@ function parseFanfox(source, body) {
         stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0);
         return [];
     }
-    return urlList.filter((url) => {
-        const isValid = /^https:\/\/fanfox.net\/manga\/.*\/c([\d.]*)\/1.html$/.test(url.url) &&
-            /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0;
-        const key = url_storage_1.getUrlKey(url, source.id);
-        const stored = url_storage_1.getUrls()[key];
-        if (!isValid && !stored) {
-            stats_1.logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`);
-        }
-        if (isValid && stored) {
-            url_storage_1.updateUrl(source, url);
-        }
-        return isValid && !stored;
-    });
+    return urlList.filter(parser_1.createUrlFilter(source, (url) => /^https:\/\/fanfox.net\/manga\/.*\/c([\d.]*)\/1.html$/.test(url)));
 }
 async function fetchFanFox(source) {
     try {
@@ -59,13 +46,8 @@ async function parseFanfoxPage(rawUrl) {
     const sourcehtml = await node_fetch_1.default(rawUrl, { headers: { ...parser_1.headers, cookie: 'isAdult=1;' } }).then(res => res.text());
     const $ = cheerio_1.default.load(sourcehtml);
     const path = (_a = rawUrl.match(/\/manga\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
-    const name = $('.reader-header-title-1 a:first-child').text() || $('.detail-info-right-title-font').text();
-    return {
-        type: TYPE,
-        mangaId: path ? path.split('/')[2] : null,
-        title: name,
-        url: (_b = rawUrl.match(/^http.*fanfox.net\/manga\/[^/]*\//)) === null || _b === void 0 ? void 0 : _b[0]
-    };
+    const title = $('.reader-header-title-1 a:first-child').text() || $('.detail-info-right-title-font').text();
+    return parser_1.createSource(TYPE, path === null || path === void 0 ? void 0 : path.split('/')[2], title, (_b = rawUrl.match(/^http.*fanfox.net\/manga\/[^/]*\//)) === null || _b === void 0 ? void 0 : _b[0]);
 }
 const fanfox = {
     fetchFunction: fetchFanFox,

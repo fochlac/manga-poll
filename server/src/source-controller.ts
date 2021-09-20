@@ -1,5 +1,4 @@
-import { extractSourceIfPossible } from "./check-source"
-import { checkSourceType } from "./parser"
+import { checkSourceType, parseSourceLink } from "./parser"
 import { fetchSource } from "./scheduler"
 import { getHosts, getStats, updateHosts } from "./stats"
 import { addSource, getSources, removeSource } from "./source-storage"
@@ -47,7 +46,7 @@ export function sourceController(app) {
                 throw new Error('No url passed to test endpoint.')
             }
 
-            const rawSource = await extractSourceIfPossible(url)
+            const rawSource = await parseSourceLink(url)
             if (!rawSource) {
                 throw new Error(`Error parsing raw source "${url}".`)
             }
