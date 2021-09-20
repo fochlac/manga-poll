@@ -23,7 +23,14 @@ export async function renderHostList (_db, api) {
             `
         }
         hostContainer.innerHTML += `
-            <p>Many other pages can work as well, if they use the <a href="https://themeforest.net/item/madara-wordpress-theme-for-manga/20849828" target="_blank" rel="noopener">Madara-Theme</a>.</p>
+            <p>
+                <span>Many other pages can work as well, if they use the </span>
+                <a href="https://themeforest.net/item/madara-wordpress-theme-for-manga/20849828" target="_blank" rel="noopener">Madara-</a>
+                <span> or </span>
+                <a href="https://themesia.com/mangastream-wordpress-theme/" target="_blank" rel="noopener">MangaStream-Theme</a>
+                <span> or are built using the </span>
+                <a href="https://genkan.io/groups" target="_blank" rel="noopener">Genkan Reader</a><span>.</span>
+            </p>
         `
     }
 }
