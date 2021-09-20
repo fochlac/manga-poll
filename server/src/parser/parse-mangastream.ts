@@ -27,7 +27,7 @@ function parseMangastream(source: Source, body) {
 
         return {
             url: $(elem).find('a').attr('href'),
-            chapter: $(elem).data('num').match(/^\d+/)?.[0],
+            chapter: $(elem).data('num') && String($(elem).data('num')).match(/^\d+/)?.[0],
             host,
             created: !isNaN(rawDate.getTime()) ? rawDate.getTime() : baseDate.getTime()
         }
