@@ -22,10 +22,11 @@ function parseMangastream(source, body) {
     baseDate.setHours(0, 0, 0, 0);
     const host = source.url.split('/')[2].split('.').slice(-2).join('.');
     const urlList = $('#chapterlist li').toArray().map((elem) => {
+        var _a;
         const rawDate = new Date($(elem).find('.chapterdate').text());
         return {
             url: $(elem).find('a').attr('href'),
-            chapter: $(elem).data('num'),
+            chapter: (_a = $(elem).data('num').match(/^\d+/)) === null || _a === void 0 ? void 0 : _a[0],
             host,
             created: !isNaN(rawDate.getTime()) ? rawDate.getTime() : baseDate.getTime()
         };
