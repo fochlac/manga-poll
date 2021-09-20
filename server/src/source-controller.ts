@@ -29,12 +29,18 @@ async function createSourceIfNeeded(rawSource) {
 
 export function sourceController(app) {
     app.post('/api/sources', async (req, res) => {
-        const entry = await createSourceIfNeeded(req.body)
-
-        if (entry) {
-            res.status(200).json({ valid: true, payload: entry })
+        try {
+            const entry = await createSourceIfNeeded(req.body)
+            
+            if (entry) {
+                res.status(200).json({ valid: true, payload: entry })
+            }
+            else {
+                res.status(400).json({ valid: false })
+            }
         }
-        else {
+        catch(err) {
+            console.log(err?.message)
             res.status(400).json({ valid: false })
         }
     })
