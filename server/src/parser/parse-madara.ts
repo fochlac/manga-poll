@@ -78,7 +78,7 @@ function parseMadara(source: Source, body) {
 
     const urlList = $('li.wp-manga-chapter > a').toArray().map((elem) => {
         const url = $(elem).attr('href')
-        const result = String(url).match(/^https?:\/\/([^/]*)\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/) || []
+        const result = String(url).match(/^https?:\/\/([^/]*)\/.*\/([^/]*hapter[^/\d]*|ch[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/) || []
         return {
             host,
             chapter: result[3],
