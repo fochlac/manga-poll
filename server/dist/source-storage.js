@@ -12,6 +12,16 @@ const sourcesPath = path_1.resolve(__dirname, '../db/sources.json');
 let sources = {};
 try {
     sources = JSON.parse(fs_1.default.readFileSync(sourcesPath, { encoding: 'utf-8' }));
+    let hasChanges = false;
+    Object.keys(sources).forEach((key) => {
+        if (sources[key].type === "asura") {
+            sources[key].type = "mangastream";
+            hasChanges = true;
+        }
+    });
+    if (hasChanges) {
+        fs_1.default.writeFile(sourcesPath, JSON.stringify(sources, null, 2), () => null);
+    }
 }
 catch (e) {
     console.log(e);

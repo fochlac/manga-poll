@@ -7,16 +7,16 @@ const cheerio_1 = __importDefault(require("cheerio"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const parser_1 = require("../parser");
 const stats_1 = require("../stats");
-const TYPE = 'asura';
-async function testAsura(rawUrl) {
+const TYPE = 'mangastream';
+async function testMangastream(rawUrl) {
     const sourcehtml = await node_fetch_1.default(rawUrl, { headers: parser_1.headers }).then(res => res.text());
     const $ = cheerio_1.default.load(sourcehtml);
-    const breadcrumpLink = $('ol[itemtype="http://schema.org/BreadcrumbList"] a[itemprop="item"][href*="/comics/"]');
+    const breadcrumpLink = $('ol[itemtype="http://schema.org/BreadcrumbList"] li:has(meta[itemprop="position"][content="2"]) a[itemprop="item"][href*="/comics/"]');
     const url = breadcrumpLink.attr('href');
     const name = breadcrumpLink.find('span').text();
     return parser_1.createSource(TYPE, url === null || url === void 0 ? void 0 : url.split('/')[4], name, url);
 }
-function parseAsura(source, body) {
+function parseMangastream(source, body) {
     const $ = cheerio_1.default.load(body);
     const baseDate = new Date();
     baseDate.setHours(0, 0, 0, 0);
@@ -34,13 +34,13 @@ function parseAsura(source, body) {
         stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0);
         return [];
     }
-    return urlList.filter(parser_1.createUrlFilter(source, (url) => /^https:\/\/(www\.)?asurascans.com\/.*/.test(url)));
+    return urlList.filter(parser_1.createUrlFilter(source));
 }
-async function fetchAsura(source) {
+async function fetchMangastream(source) {
     try {
         const response = await node_fetch_1.default(source.url, { method: 'get', headers: parser_1.headers });
         const body = await parser_1.getResponseBody(response);
-        return parseAsura(source, body);
+        return parseMangastream(source, body);
     }
     catch (err) {
         const host = source.url.split('/')[2].split('.').slice(-2).join('.');
@@ -48,10 +48,13 @@ async function fetchAsura(source) {
         return [];
     }
 }
-const asura = {
-    fetchFunction: fetchAsura,
+const mangastream = {
+    fetchFunction: fetchMangastream,
     type: TYPE,
-    parseLink: testAsura,
-    parseCondition: (url) => url.includes('asurascans.com')
+    parseLink: testMangastream,
+    parseCondition: async (url) => {
+        const sourcehtml = await node_fetch_1.default(url, { headers: parser_1.headers }).then(res => res.text());
+        return sourcehtml.includes('ts-breadcrumb bixbox');
+    }
 };
-parser_1.registerParser(asura);
+parser_1.registerParser(mangastream);

@@ -17,7 +17,7 @@ const link_controller_1 = require("./link-controller");
 require("./parser/parse-fanfox");
 require("./parser/parse-madara");
 require("./parser/parse-mangadex");
-require("./parser/parse-asura");
+require("./parser/parse-mangastream");
 require("./parser/parse-genkan");
 require("./parser/parse-leviathan");
 const app = express_1.default();

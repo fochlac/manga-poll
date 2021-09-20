@@ -2,22 +2,21 @@ import cheerio from 'cheerio'
 import fetch from 'node-fetch'
 import { registerParser, headers, getResponseBody, createSource, createUrlFilter } from '../parser'
 import { logWarning } from '../stats'
-import { getUrlKey, getUrls, updateUrl } from '../url-storage'
 
-const TYPE = 'asura'
+const TYPE = 'mangastream'
 
-async function testAsura(rawUrl) {
+async function testMangastream(rawUrl) {
     const sourcehtml: string = await fetch(rawUrl, { headers }).then(res => res.text())
 
     const $ = cheerio.load(sourcehtml)
-    const breadcrumpLink = $('ol[itemtype="http://schema.org/BreadcrumbList"] a[itemprop="item"][href*="/comics/"]')
+    const breadcrumpLink = $('ol[itemtype="http://schema.org/BreadcrumbList"] li:has(meta[itemprop="position"][content="2"]) a[itemprop="item"][href*="/comics/"]')
     const url = breadcrumpLink.attr('href')
     const name = breadcrumpLink.find('span').text()
 
     return createSource(TYPE, url?.split('/')[4], name, url)
 }
 
-function parseAsura(source: Source, body) {
+function parseMangastream(source: Source, body) {
     const $ = cheerio.load(body)
     const baseDate = new Date()
     baseDate.setHours(0, 0, 0, 0)
@@ -39,15 +38,15 @@ function parseAsura(source: Source, body) {
         return []
     }
 
-    return urlList.filter(createUrlFilter(source, (url) => /^https:\/\/(www\.)?asurascans.com\/.*/.test(url)))
+    return urlList.filter(createUrlFilter(source))
 }
 
-async function fetchAsura(source: Source) {
+async function fetchMangastream(source: Source) {
     try {
         const response = await fetch(source.url, { method: 'get', headers })
         const body = await getResponseBody(response)
 
-        return parseAsura(source, body)
+        return parseMangastream(source, body)
     }
     catch (err) {
         const host = source.url.split('/')[2].split('.').slice(-2).join('.')
@@ -56,11 +55,14 @@ async function fetchAsura(source: Source) {
     }
 }
 
-const asura: Parser = {
-    fetchFunction: fetchAsura,
+const mangastream: Parser = {
+    fetchFunction: fetchMangastream,
     type: TYPE,
-    parseLink: testAsura,
-    parseCondition: (url) => url.includes('asurascans.com')
+    parseLink: testMangastream,
+    parseCondition: async (url) => {
+        const sourcehtml: string = await fetch(url, { headers }).then(res => res.text())
+        return sourcehtml.includes('ts-breadcrumb bixbox')
+    }
 }
 
-registerParser(asura)
+registerParser(mangastream)

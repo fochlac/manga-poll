@@ -18,6 +18,16 @@ const sourcesPath = resolve(__dirname, '../db/sources.json')
 let sources: Record<string, Source> = {}
 try {
     sources = JSON.parse(fs.readFileSync(sourcesPath, { encoding: 'utf-8' }))
+    let hasChanges = false
+    Object.keys(sources).forEach((key) => {
+        if (sources[key].type === "asura") {
+            sources[key].type = "mangastream"
+            hasChanges = true
+        }
+    })
+    if (hasChanges) {
+        fs.writeFile(sourcesPath, JSON.stringify(sources, null, 2), () => null)        
+    }
 }
 catch (e) {
     console.log(e)

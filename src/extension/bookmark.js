@@ -22,7 +22,7 @@ chrome.runtime.onMessage.addListener(async (request) => {
     if (request.id && request.title && request.url) {
         const sources = await db.sources.read()
 
-        if (!sources.some((source) => source.url === request.url && String(source.mangaId) === String(request.id))) {
+        if (!sources.some((source) => source.url.split('/')[2] === request.url.split('/')[2] && String(source.mangaId) === String(request.id))) {
             bookmark.style.display = 'flex'
             bookmarkTitle.innerText = `Do you want to start tracking "${request.title}"?`
             currentSource = {
@@ -84,13 +84,19 @@ function test () {
         }
     }
 
-    function testAsura () {
-        const breadcrumpLink = document.querySelector('ol[itemtype="http://schema.org/BreadcrumbList"] a[itemprop="item"][href*="/comics/"]')
+    function testMangastream () {
+        const breadcrumpLink = document.querySelector('ol[itemtype="http://schema.org/BreadcrumbList"] meta[itemprop="position"][content="2"]')
+            ?.closest('li')
+            ?.querySelector('a')
+
+        if (!breadcrumpLink) {
+            return null
+        }
         const url = breadcrumpLink.href
         const name = breadcrumpLink.querySelector('span')?.innerText
 
         return {
-            type: 'asura',
+            type: 'mangastream',
             id: url?.split('/')[4],
             title: name,
             url
@@ -124,13 +130,15 @@ function test () {
     }
 
     function testGenkan () {
-        const [url, id] = location.href.match(/https?:\/\/[^/]*\/comics\/(\d*)-[-\w\d]*/) || []
+        const result = location.href.match(/https?:\/\/[^/]*\/comics\/(\d*)-[-\w\d]*/) || []
+        const url = result[0]
+        const id = result[1]
 
         if (!url || !id) {
             return null
         }
 
-        if (/^\d$/.test(location.href.split('/').slice(-2).join('').replace('.'))) {
+        if (/^\d+$/.test(location.href.split('/').slice(-2).join('').replace('.', '').trim())) {
             const title = document.querySelector('.heading h6').textContent.trim()
             return {
                 type: 'genkan',
@@ -179,7 +187,7 @@ function test () {
         }
     }
 
-    function testMadaro () {
+    function testMadara () {
         function parse (string, fallback) {
             try {
                 return JSON.parse(string)
@@ -195,6 +203,7 @@ function test () {
             document.querySelector('.wp-manga-action-button')?.dataset?.['post'],
             document.querySelector('.chapter-selection')?.dataset?.['manga'],
             document.getElementById('manga-chapters-holder')?.dataset?.['id'],
+            document.querySelector('.bookmark')?.dataset?.['id'],
             document.getElementById('manga-reading-nav-head')?.dataset?.['id'],
             document.getElementById('manga-reading-nav-foot')?.dataset?.['id']
         ]
@@ -205,7 +214,7 @@ function test () {
             }, {})
         const id = Object.keys(ids).sort((id1, id2) => ids[id1] - ids[id2])[0]
 
-        const header = document.querySelector('.post-title h1')
+        const header = document.querySelector('.post-title h1') || document.querySelector('h1.entry-title')
         const titles = [
             Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
                 .map((script) => parse(script.innerText)?.headline).find((h) => h),
@@ -241,22 +250,28 @@ function test () {
     let result
 
     if (window.location.host === 'fanfox.net') {
+        console.log('fanfox')
         result = testFanFox()
     }
     else if (document.documentElement.innerHTML.includes('Powered by Genkan.')) {
+        console.log('genkan')
         result = testGenkan()
     }
-    else if (window.location.host.includes('asurascans.com')) {
-        result = testAsura()
+    else if (document.documentElement.innerHTML.includes('ts-breadcrumb bixbox')) {
+        console.log('mangastream')
+        result = testMangastream()
     }
     else if (window.location.host.includes('leviatanscans.com') || window.location.host.includes('immortalupdates.com')) {
+        console.log('leviathan')
         result = testLeviathan()
     }
     else if (window.location.host === 'mangadex.org') {
+        console.log('mangadex')
         result = testMangadex()
     }
     else {
-        result = testMadaro()
+        console.log('madara')
+        result = testMadara()
     }
 
     console.log(result)
@@ -266,3 +281,4 @@ function test () {
     }
 }
 
+window.triggerTest = () => testBookmark()
