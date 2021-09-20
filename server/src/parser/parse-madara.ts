@@ -94,7 +94,7 @@ function parseMadara(source: Source, body) {
 
     return urlList
         .map(parseDates(urlList))
-        .filter(createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)))
+        .filter(createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|ch[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)))
 }
 
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g

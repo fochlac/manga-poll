@@ -87,7 +87,7 @@ function parseMadara(source, body) {
     }
     return urlList
         .map(parseDates(urlList))
-        .filter(parser_1.createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)));
+        .filter(parser_1.createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|ch[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)));
 }
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g;
 async function parseMadaraPage(rawUrl) {

@@ -26,7 +26,7 @@ function parseMangastream(source, body) {
         const rawDate = new Date($(elem).find('.chapterdate').text());
         return {
             url: $(elem).find('a').attr('href'),
-            chapter: (_a = $(elem).data('num').match(/^\d+/)) === null || _a === void 0 ? void 0 : _a[0],
+            chapter: $(elem).data('num') && ((_a = String($(elem).data('num')).match(/^\d+/)) === null || _a === void 0 ? void 0 : _a[0]),
             host,
             created: !isNaN(rawDate.getTime()) ? rawDate.getTime() : baseDate.getTime()
         };
