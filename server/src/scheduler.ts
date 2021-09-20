@@ -3,6 +3,7 @@ import { addUrl } from './url-storage'
 import { sendTopicMessage } from './subscriptions-controller'
 import { fetchChapterList } from './parser'
 import { getSources } from './source-storage'
+import { updateHosts } from './stats'
 
 async function fetchUrls(source, isNew = false) {
     let urls = []
@@ -42,6 +43,7 @@ async function fetchAllUrls(isNew?: boolean) {
 
     await Promise.all(Object.values(fetchPromiseMap))
 
+    updateHosts()
     console.log('Fetching all chapters completed after', Math.ceil((Date.now() - start) / 1000), 'seconds.')
 
     return results.forEach((result) => {
