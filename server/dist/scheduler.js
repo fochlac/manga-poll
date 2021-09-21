@@ -5,6 +5,7 @@ const url_storage_1 = require("./url-storage");
 const subscriptions_controller_1 = require("./subscriptions-controller");
 const parser_1 = require("./parser");
 const source_storage_1 = require("./source-storage");
+const stats_1 = require("./stats");
 async function fetchUrls(source, isNew = false) {
     let urls = [];
     urls = await parser_1.fetchChapterList(source);
@@ -37,6 +38,7 @@ async function fetchAllUrls(isNew) {
         return promiseMap;
     }, {});
     await Promise.all(Object.values(fetchPromiseMap));
+    stats_1.updateHosts();
     console.log('Fetching all chapters completed after', Math.ceil((Date.now() - start) / 1000), 'seconds.');
     return results.forEach((result) => {
         var _a;
