@@ -199,7 +199,7 @@ export async function addSettingsHandlers (db, api) {
             linkLink.href = link ? `https://manga.fochlac.com?link=${link.key}` : ''
         }
         linkNumberText.innerText = link ? formatKey(link.key) : 'Unlinked'
-        linkNumberText.style.color = link ? '#000c21' : '#c3cbd2'
+        linkNumberText.classList[link ? 'add' : 'remove']('linked')
     }
 
     const link = await db.link.read()
@@ -266,6 +266,7 @@ export async function addSettingsHandlers (db, api) {
     const darkModeInput = document.querySelector('#darkmode-toggle')
     const settings = await db.settings.local.read()
     if (settings.dark) {
+        darkModeInput.checked = true
         document.querySelector('html').classList.add('dark')
     }
     darkModeInput.addEventListener('change', async (e) => {

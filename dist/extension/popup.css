@@ -267,6 +267,10 @@ h6 {
   margin-top: 4px;
 }
 
+.link-id.linked {
+  color: #000c21;
+}
+
 .link-id {
   text-align: center;
   font-size: 1.2rem;
@@ -436,19 +440,22 @@ h6 {
 }
 html.dark {
   color: #f4f7ff;
-  background: #222;
+  background: #333;
 }
 .dark body {
-  background: #111;
+  background: #222;
 }
 .dark #link-id {
+  color: #868686;
+}
+.dark #link-id.linked {
   color: #b2c2ec;
 }
 .dark button:hover {
   background: #1a1a1a;
 }
 .dark button {
-  background: #111;
+  background: #222;
   color: white;
   border: solid 1px #666;
   cursor: pointer;
@@ -460,31 +467,34 @@ html.dark {
   color: #6590ff;
 }
 .dark a:visited {
-  color: #9965ff;
+  color: #a97eff;
 }
 .dark .slider {
   background-color: #444;
 }
 .dark .old-chapters,
 .dark .new-chapters {
-  outline: #111 solid 2px;
-  background: #111;
+  outline: #222 solid 2px;
+  background: #222;
   color: inherit;
 }
 .dark .old {
-  opacity: 0.7;
+  opacity: 0.8;
 }
 .dark #impressum {
-  background: #222;
+  background: #333;
 }
 .dark #impressum h3 {
-  background: #222;
+  background: #333;
 }
 .dark .bar {
-  background: #222;
+  background: #333;
 }
 .dark .add-bookmark {
   margin-top: 4px;
+}
+.dark #bookmark {
+  color: #000c21;
 }
 .dark input {
   background: #222;
