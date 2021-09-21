@@ -262,4 +262,25 @@ export async function addSettingsHandlers (db, api) {
             }
         }
     })
+
+    const darkModeInput = document.querySelector('#darkmode-toggle')
+    const settings = await db.settings.local.read()
+    if (settings.dark) {
+        document.querySelector('html').classList.add('dark')
+    }
+    darkModeInput.addEventListener('change', async (e) => {
+        const settings = await db.settings.local.read()
+
+        if (e.target.checked) {
+            document.querySelector('html').classList.add('dark')
+        }
+        else {
+            document.querySelector('html').classList.remove('dark')
+        }
+
+        db.settings.local.set({
+            ...settings,
+            dark: e.target.checked
+        })
+    })
 }

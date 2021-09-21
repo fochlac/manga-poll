@@ -255,8 +255,11 @@ h6 {
 }
 
 .settings {
-  width: 100%;
+  width: calc(100% - 4px);
   font-size: calc(400% / 3);
+  padding-right: 4px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .settings p {
@@ -430,4 +433,83 @@ h6 {
   width: 100%;
   flex-direction: column;
   display: none;
+}
+html.dark {
+  color: #f4f7ff;
+  background: #222;
+}
+.dark body {
+  background: #111;
+}
+.dark #link-id {
+  color: #b2c2ec;
+}
+.dark button:hover {
+  background: #1a1a1a;
+}
+.dark button {
+  background: #111;
+  color: white;
+  border: solid 1px #666;
+  cursor: pointer;
+}
+.dark #unlink-button {
+  margin-top: 16px;
+}
+.dark a {
+  color: #6590ff;
+}
+.dark a:visited {
+  color: #9965ff;
+}
+.dark .slider {
+  background-color: #444;
+}
+.dark .old-chapters,
+.dark .new-chapters {
+  outline: #111 solid 2px;
+  background: #111;
+  color: inherit;
+}
+.dark .old {
+  opacity: 0.7;
+}
+.dark #impressum {
+  background: #222;
+}
+.dark #impressum h3 {
+  background: #222;
+}
+.dark .bar {
+  background: #222;
+}
+.dark .add-bookmark {
+  margin-top: 4px;
+}
+.dark input {
+  background: #222;
+  border: solid 1px white;
+  color: white;
+  padding: 2px 4px;
+}
+::-webkit-scrollbar {
+  width: 6px;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #999;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #333;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #222;
+}
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b1b1b1;
 }
