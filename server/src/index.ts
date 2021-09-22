@@ -30,7 +30,7 @@ app.use(
     express.json(), 
     express.static(resolve(__dirname, '../../dist/webapp')),
     (req, res, next) => {
-        const ip = req.headers.proxy_ip as string || req.connection.remoteAddress;
+        const ip = String(req.headers.proxy_ip || req.connection.remoteAddress).replace('::ffff:', '')
         console.log(4, `${req.method}-request from ip "${ip}" to ${req.originalUrl}`)
         if (!requests[ip]) {
             requests[ip] = 0

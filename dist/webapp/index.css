@@ -618,6 +618,9 @@ html.dark {
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #333;
 }
+.dark #progress:hover::before {
+  background-color: #222;
+}
 ::-webkit-scrollbar-thumb {
   background: #c1c1c1;
 }
