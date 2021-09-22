@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUrls = exports.addUrl = exports.updateUrl = exports.getUrlKey = void 0;
+exports.deleteUrlBySource = exports.getUrls = exports.addUrl = exports.updateUrl = exports.getUrlKey = void 0;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = require("path");
 const urlsPath = path_1.resolve(__dirname, '../db/urls.json');
@@ -58,3 +58,15 @@ function getUrls() {
     return urls;
 }
 exports.getUrls = getUrls;
+function deleteUrlBySource(sourceId) {
+    Object.keys(urls).forEach((key) => {
+        if (key.includes(getUrlKey({ host: '', chapter: '' }, sourceId))) {
+            delete urls[key];
+        }
+    });
+    clearTimeout(writeUrlsTimeout);
+    writeUrlsTimeout = setTimeout(() => {
+        fs_1.default.writeFile(urlsPath, JSON.stringify(urls, null, 2), () => null);
+    }, 100);
+}
+exports.deleteUrlBySource = deleteUrlBySource;

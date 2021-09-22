@@ -5,6 +5,8 @@ const parser_1 = require("./parser");
 const scheduler_1 = require("./scheduler");
 const stats_1 = require("./stats");
 const source_storage_1 = require("./source-storage");
+const url_storage_1 = require("./url-storage");
+const link_controller_1 = require("./link-controller");
 async function createSourceIfNeeded(rawSource) {
     const { title, url, mangaId, type } = rawSource;
     if (!title || !url || !mangaId || !type) {
@@ -68,15 +70,20 @@ function sourceController(app) {
             res.status(400).json({ valid: false });
         }
     });
-    app.delete('/api/sources/:id', (req, res) => {
+    app.delete('/api/sources/:id', async (req, res) => {
         const { id } = req.params;
         const { authentication } = req.headers;
-        if (authentication === 'Ich darf!') {
+        if (authentication === 'Ich darf das!') {
+            const sources = await source_storage_1.getSources();
+            console.log(`Deleting source with id "${id}": ${JSON.stringify(sources[id])}`);
             const success = source_storage_1.removeSource(id);
+            url_storage_1.deleteUrlBySource(id);
+            link_controller_1.deleteSourceFromLinks(id);
             stats_1.updateHosts();
             res.status(200).json({ valid: success, payload: id });
         }
         else {
+            console.log(`Rejected delete request for source with id "${id}" - bad password.`);
             res.status(401).json({ valid: false });
         }
     });

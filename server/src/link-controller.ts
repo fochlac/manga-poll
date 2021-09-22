@@ -103,6 +103,16 @@ function handleKeyError(res) {
     )
 }
 
+export function deleteSourceFromLinks(sourceId) {
+    Object.keys(links).forEach((key) => {
+        if (links[key].sources?.includes(sourceId)) {
+            links[key].sources = links[key].sources.filter((sourceKey) => sourceKey && sourceKey !== sourceId)
+        }
+    })
+    write()
+}
+
+
 export function linksController(app) {
     app.post('/api/links', (req, res) => {
         const {

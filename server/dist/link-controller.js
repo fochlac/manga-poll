@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.linksController = void 0;
+exports.linksController = exports.deleteSourceFromLinks = void 0;
 const fs_1 = __importDefault(require("fs"));
 const nanoid_1 = require("nanoid");
 const path_1 = require("path");
@@ -82,6 +82,16 @@ function handleKeyError(res) {
         }
     }, 5000)));
 }
+function deleteSourceFromLinks(sourceId) {
+    Object.keys(links).forEach((key) => {
+        var _a;
+        if ((_a = links[key].sources) === null || _a === void 0 ? void 0 : _a.includes(sourceId)) {
+            links[key].sources = links[key].sources.filter((sourceKey) => sourceKey && sourceKey !== sourceId);
+        }
+    });
+    write();
+}
+exports.deleteSourceFromLinks = deleteSourceFromLinks;
 function linksController(app) {
     app.post('/api/links', (req, res) => {
         const { hiddenChapters, hide, sources } = req.body;

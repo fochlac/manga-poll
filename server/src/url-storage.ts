@@ -25,7 +25,7 @@ catch (e) {
 
 let writeUrlsTimeout = null
 
-export function getUrlKey(url, sourceId) {
+export function getUrlKey(url: Partial<Url>, sourceId) {
     const { chapter, host } = url
 
     return `${host}--${sourceId}--${chapter}`
@@ -67,4 +67,16 @@ export function addUrl(source: Source, isNew = false) {
 
 export function getUrls() {
     return urls
+}
+
+export function deleteUrlBySource(sourceId) {
+    Object.keys(urls).forEach((key) => {
+        if (key.includes(getUrlKey({host: '', chapter: ''}, sourceId))) {
+            delete urls[key]
+        }
+    })
+    clearTimeout(writeUrlsTimeout)
+    writeUrlsTimeout = setTimeout(() => {
+        fs.writeFile(urlsPath, JSON.stringify(urls, null, 2), () => null)
+    }, 100)
 }
