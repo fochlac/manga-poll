@@ -22,9 +22,26 @@ require("./parser/parse-genkan");
 require("./parser/parse-leviathan");
 const app = express_1.default();
 const server = http_1.createServer(app);
-app.use(cors_1.default(), compression_1.default(), express_1.default.json(), express_1.default.static(path_1.resolve(__dirname, '../../dist/webapp')), (req, _res, next) => {
-    console.log(4, `${req.method} call to ${req.originalUrl}`);
-    next();
+let requests = {};
+setInterval(() => {
+    requests = {};
+}, 20000);
+app.use(cors_1.default(), compression_1.default(), express_1.default.json(), express_1.default.static(path_1.resolve(__dirname, '../../dist/webapp')), (req, res, next) => {
+    const ip = req.headers.proxy_ip || req.connection.remoteAddress;
+    console.log(4, `${req.method}-request from ip "${ip}" to ${req.originalUrl}`);
+    if (!requests[ip]) {
+        requests[ip] = 0;
+    }
+    requests[ip] += 1;
+    if (requests[ip] >= 25) {
+        if (requests[ip] % 25 === 0) {
+            console.log(`IP ${ip} exceeded rate limit. ${requests[ip]} requests in 20 seconds.`);
+        }
+        res.status(429).json({ valid: false, message: 'Too many requests.' });
+    }
+    else {
+        next();
+    }
 });
 source_controller_1.sourceController(app);
 url_controller_1.urlController(app);

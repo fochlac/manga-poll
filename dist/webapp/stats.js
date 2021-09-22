@@ -1,6 +1,7 @@
 /* global document, fetch, setInterval, window */
 
 const warningIcon = document.querySelector('svg.warning')
+const deleteIcon = document.querySelector('svg.delete')
 
 function date (date) {
     const dateRaw = new Date(date).toISOString().split('T')[0]
@@ -16,6 +17,38 @@ function time (date) {
 const dialog = document.getElementById('warnings-dialog')
 const warningList = document.getElementById('warnings')
 const dialogBody = document.querySelector('.warnings')
+const deleteDialog = document.getElementById('delete-dialog')
+const deleteTitle = document.getElementById('delete-title')
+const deleteSource = document.getElementById('delete-source')
+const deletePass = document.getElementById('delete-passcode')
+const deleteButton = document.getElementById('delete-button')
+const deleteError = document.getElementById('delete-error')
+
+deleteButton.addEventListener('click', (e) => {
+    if (deleteSource.value && deletePass.value) {
+        deleteButton.disabled = true
+        deletePass.disabled = true
+        deleteError.innerHTML = ''
+        fetch(`/api/sources/${deleteSource.value}`, {method: 'delete', headers: {authentication: deletePass.value}})
+            .then((res) => {
+                deleteButton.disabled = false
+                deletePass.disabled = false
+                if (res.status === 200) {
+                    deleteDialog.style.display = 'none'
+                    renderStats()
+                }
+                else {
+                    deleteError.innerHTML = 'Error deleting source!'
+                }
+            })
+            .catch(() => {
+                deleteError.innerHTML = 'Error deleting source!'
+            })
+    }
+})
+document.querySelector('#delete-dialog .closebutton').addEventListener('click', (e) => {
+    deleteDialog.style.display = 'none'
+})
 
 dialog.addEventListener('click', (e) => {
     if (!dialogBody.contains(e.target) || e.target.closest('.closebutton')) {
@@ -27,8 +60,17 @@ document.addEventListener('click', (event) => {
     const closestTitle = event.target.closest('.host .title')
     const closestHost = event.target.closest('.host')
     const closestWarning = event.target.closest('.warning')
+    const closestDelete = event.target.closest('.delete')
 
-    if (closestWarning && closestWarning.contains(event.target)) {
+    if (closestDelete && closestDelete.contains(event.target)) {
+        const td = event.target.closest('td')
+        if (td.dataset.source && td.dataset.title) {
+            deleteDialog.style.display = 'flex'
+            deleteSource.value = td.dataset.source
+            deleteTitle.innerHTML = td.dataset.title
+        }
+    }
+    else if (closestWarning && closestWarning.contains(event.target)) {
         const warnings = JSON.parse(closestHost.dataset.warnings)
         const html = warnings.reduce((html, warning) => {
             html += `
@@ -95,6 +137,11 @@ function renderStats () {
     fetch('/api/sources/stats')
         .then((r) => r.json())
         .then(({ payload: stats }) => {
+            const expandedHosts = Array.from(document.querySelectorAll('.host.expanded'))
+                .reduce((hostMap, el) => {
+                    hostMap[el.dataset.id] = el.querySelector('.details').getBoundingClientRect().height
+                    return hostMap
+                }, {})
             document.querySelector('#stats').innerHTML = ''
             Object.keys(stats)
                 .sort((a, b) => {
@@ -108,12 +155,13 @@ function renderStats () {
                 .forEach((host) => {
                     const tableRows = Object.values(stats[host].sources)
                         .sort((a, b) => String(a.title).localeCompare(b.title))
-                        .map(({ title, latest, count, warnings }) => `
+                        .map(({ title, latest, count, warnings, id }) => `
                                 <td title="${title}" class="chtitle" data-warnings='${JSON.stringify(warnings).replace(/'/g, '`')}'>
                                     ${title}${warnings.length && getIcon('severe') || ''}
                                 </td>
                                 <td>${count}</td>
                                 <td>${date(latest)}</td>
+                                <td data-source="${id}" data-title="${title}">${deleteIcon.outerHTML}</td>
                             `)
 
                     let weight = 'light'
@@ -127,7 +175,10 @@ function renderStats () {
 
                     const title = `${host}&nbsp;(${Object.keys(stats[host].sources).length})`
                     document.querySelector('#stats').innerHTML += `
-                            <div class="host" data-sources='${Object.keys(stats[host].sources).length}' data-warnings='${JSON.stringify(stats[host].warnings).replace(/'/g, '`')}'>
+                            <div class="host${expandedHosts[host] !== undefined ? ' expanded' : ''}" 
+                                data-id="${host}"
+                                data-sources='${Object.keys(stats[host].sources).length}'
+                                data-warnings='${JSON.stringify(stats[host].warnings).replace(/'/g, '`')}'>
                                 <table class="title">
                                     <tbody>
                                         <tr>
@@ -141,13 +192,14 @@ function renderStats () {
                                         </tr>
                                     </tbody>
                                 </table>
-                                <div class="details">
+                                <div class="details" style="height: ${expandedHosts[host]}px;">
                                     <table>
                                         <thead>
                                             <tr>
                                                 <th>Title</th>
                                                 <th>Chs.</th>
                                                 <th>Updated</th>
+                                                <th></th>
                                             </tr>
                                         </thead>
                                         <tbody>

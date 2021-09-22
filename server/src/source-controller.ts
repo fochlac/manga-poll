@@ -74,9 +74,15 @@ export function sourceController(app) {
 
     app.delete('/api/sources/:id', (req, res) => {
         const { id } = req.params
-        const success = removeSource(id)
-        updateHosts()
-        res.status(200).json({ valid: success, payload: id })
+        const { authentication } = req.headers
+        if (authentication === 'Ich darf das!') {
+            const success = removeSource(id)
+            updateHosts()
+            res.status(200).json({ valid: success, payload: id })
+        }
+        else {
+            res.status(401).json({ valid: false })
+        }
     })
 
     app.get('/api/sources', async (req, res) => {

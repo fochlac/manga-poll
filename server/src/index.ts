@@ -20,15 +20,31 @@ import './parser/parse-leviathan'
 
 const app = express()
 const server = createServer(app)
-
+let requests = {}
+setInterval(() => {
+    requests = {}
+}, 20000)
 app.use(
     cors(), 
     compression(), 
     express.json(), 
     express.static(resolve(__dirname, '../../dist/webapp')),
-    (req, _res, next) => {
-        console.log(4, `${req.method} call to ${req.originalUrl}`)
-        next()
+    (req, res, next) => {
+        const ip = req.headers.proxy_ip as string || req.connection.remoteAddress;
+        console.log(4, `${req.method}-request from ip "${ip}" to ${req.originalUrl}`)
+        if (!requests[ip]) {
+            requests[ip] = 0
+        }
+        requests[ip] += 1
+        if (requests[ip] >= 25) {
+            if (requests[ip] % 25 === 0) {
+                console.log(`IP ${ip} exceeded rate limit. ${requests[ip]} requests in 20 seconds.`)
+            }
+            res.status(429).json({ valid: false, message: 'Too many requests.' })
+        }
+        else {
+            next()
+        }
     }
 )
 

@@ -125,6 +125,7 @@ export async function getStats(): Promise<Stats> {
         stats[host].latest = stats[host].latest >= latest ? stats[host].latest : latest
         stats[host].count += sourceChapters.length
         stats[host].sources[source.id] = {
+            id: source.id,
             title: source.title,
             latest,
             count: sourceChapters.length,

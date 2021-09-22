@@ -70,9 +70,15 @@ function sourceController(app) {
     });
     app.delete('/api/sources/:id', (req, res) => {
         const { id } = req.params;
-        const success = source_storage_1.removeSource(id);
-        stats_1.updateHosts();
-        res.status(200).json({ valid: success, payload: id });
+        const { authentication } = req.headers;
+        if (authentication === 'Ich darf!') {
+            const success = source_storage_1.removeSource(id);
+            stats_1.updateHosts();
+            res.status(200).json({ valid: success, payload: id });
+        }
+        else {
+            res.status(401).json({ valid: false });
+        }
     });
     app.get('/api/sources', async (req, res) => {
         const sources = await source_storage_1.getSources();
