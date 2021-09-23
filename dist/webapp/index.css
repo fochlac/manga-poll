@@ -284,7 +284,11 @@ h6 {
 }
 
 .settings {
-  width: 100%;
+  width: calc(100% - 4px);
+  font-size: calc(400% / 3);
+  padding-right: 4px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .settings p {
