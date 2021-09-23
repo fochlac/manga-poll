@@ -10,6 +10,7 @@ import { urlController } from './url-controller'
 import { init } from './scheduler'
 import { subscriptionsController } from './subscriptions-controller'
 import { linksController } from './link-controller'
+import { createRateLimiter } from './utils/rate-limiter'
 
 import './parser/parse-fanfox'
 import './parser/parse-madara'
@@ -20,32 +21,12 @@ import './parser/parse-leviathan'
 
 const app = express()
 const server = createServer(app)
-let requests = {}
-setInterval(() => {
-    requests = {}
-}, 20000)
 app.use(
     cors(), 
     compression(), 
     express.json(), 
     express.static(resolve(__dirname, '../../dist/webapp')),
-    (req, res, next) => {
-        const ip = String(req.headers.proxy_ip || req.connection.remoteAddress).replace('::ffff:', '')
-        console.log(4, `${req.method}-request from ip "${ip}" to ${req.originalUrl}`)
-        if (!requests[ip]) {
-            requests[ip] = 0
-        }
-        requests[ip] += 1
-        if (requests[ip] >= 25) {
-            if (requests[ip] % 25 === 0) {
-                console.log(`IP ${ip} exceeded rate limit. ${requests[ip]} requests in 20 seconds.`)
-            }
-            res.status(429).json({ valid: false, message: 'Too many requests.' })
-        }
-        else {
-            next()
-        }
-    }
+    createRateLimiter(50, 30)
 )
 
 sourceController(app)
