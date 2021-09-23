@@ -1,7 +1,6 @@
 import fetch from 'node-fetch'
 import { createSource, createUrlFilter, registerParser } from '../parser'
 import { logWarning } from '../stats'
-import { getUrlKey, getUrls, updateUrl } from '../url-storage'
 
 const TYPE = 'mangadex'
 

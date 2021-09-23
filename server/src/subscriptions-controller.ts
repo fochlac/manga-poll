@@ -1,11 +1,12 @@
 import * as admin from 'firebase-admin'
 import { join, resolve } from 'path'
+import fetch from 'node-fetch'
 
 admin.initializeApp({
     credential: admin.credential.cert(resolve(join(__dirname, '../firebase-credentials.json')))
 })
 
-console.log(process.env.MANGA_GAPI_SERVER_KEY?.length ? `${(process.env.MANGA_GAPI_SERVER_KEY).slice(0, 10)}*********${(process.env.MANGA_GAPI_SERVER_KEY).slice(-10)}` : 'No GAPI key.')
+console.log(process.env.MANGA_GAPI_SERVER_KEY?.length ? `GAPI Server key: ${(process.env.MANGA_GAPI_SERVER_KEY).slice(0, 10)}*********${(process.env.MANGA_GAPI_SERVER_KEY).slice(-10)}` : 'No GAPI Server key.')
 
 async function getTopicSubscriptions(token) {
     if (!process.env.MANGA_GAPI_SERVER_KEY?.length) {

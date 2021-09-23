@@ -2,7 +2,6 @@ import cheerio from 'cheerio'
 import fetch from 'node-fetch'
 import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, createUrlFilter } from '../parser'
 import { logWarning } from '../stats'
-import { getUrlKey, getUrls, updateUrl } from '../url-storage'
 
 const TYPE = 'leviathan'
 

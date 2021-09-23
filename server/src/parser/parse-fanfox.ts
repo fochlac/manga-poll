@@ -2,7 +2,6 @@ import cheerio from 'cheerio'
 import fetch from 'node-fetch'
 import { registerParser, headers, getResponseBody, createSource, createUrlFilter } from '../parser'
 import { logWarning } from '../stats'
-import { getUrlKey, getUrls, updateUrl } from '../url-storage'
 
 const TYPE = 'fanfox'
 
