@@ -27,7 +27,7 @@ setInterval(() => {
     requests = {};
 }, 20000);
 app.use(cors_1.default(), compression_1.default(), express_1.default.json(), express_1.default.static(path_1.resolve(__dirname, '../../dist/webapp')), (req, res, next) => {
-    const ip = req.headers.proxy_ip || req.connection.remoteAddress;
+    const ip = String(req.headers.proxy_ip || req.connection.remoteAddress).replace('::ffff:', '');
     console.log(4, `${req.method}-request from ip "${ip}" to ${req.originalUrl}`);
     if (!requests[ip]) {
         requests[ip] = 0;
