@@ -12,12 +12,17 @@ async function getTopicSubscriptions(token) {
     if (!process.env.MANGA_GAPI_SERVER_KEY?.length) {
         return []
     }
+    console.log('fetching token list for ', token)
     const headers = { authorization: process.env.MANGA_GAPI_SERVER_KEY, accept: 'application/json'}
     const response = await fetch(`https://iid.googleapis.com/iid/info/${token}?details=true`, { headers })
+    const body = await response.json()
     if (response.status !== 200) {
+        console.log('Error fetching token list: ' + JSON.stringify(body))
         return []
     }
-    const body = await response.json()
+    if (!body?.rel?.topics) {
+        console.log('Error fetching token list: ' + JSON.stringify(body))
+    }
     return Object.keys(body?.rel?.topics || {})
 }
 
@@ -60,7 +65,7 @@ export function subscriptionsController(app) {
             if (unsubscribe.length) {
                 await Promise.all(subscribe.map((topic) => admin.messaging().unsubscribeFromTopic([key], topic)))
             }
-            console.log(subscribe.length && `Subscribed ${subscribe.length} topics`, unsubscribe.length && `Unsubscribed ${unsubscribe.length} topics`)
+            console.log(subscribe.length && `Subscribed ${subscribe.length} topics` || '', unsubscribe.length && `Unsubscribed ${unsubscribe.length} topics` || '')
             res.status(200).json({ valid: true })
         }
         catch (err) {
