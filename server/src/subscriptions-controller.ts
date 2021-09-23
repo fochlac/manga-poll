@@ -60,6 +60,7 @@ export function subscriptionsController(app) {
             if (unsubscribe.length) {
                 await Promise.all(subscribe.map((topic) => admin.messaging().unsubscribeFromTopic([key], topic)))
             }
+            console.log(subscribe.length && `Subscribed ${subscribe.length} topics`, unsubscribe.length && `Unsubscribed ${unsubscribe.length} topics`)
             res.status(200).json({ valid: true })
         }
         catch (err) {
