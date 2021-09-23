@@ -14,6 +14,7 @@ const url_controller_1 = require("./url-controller");
 const scheduler_1 = require("./scheduler");
 const subscriptions_controller_1 = require("./subscriptions-controller");
 const link_controller_1 = require("./link-controller");
+const rate_limiter_1 = require("./utils/rate-limiter");
 require("./parser/parse-fanfox");
 require("./parser/parse-madara");
 require("./parser/parse-mangadex");
@@ -22,27 +23,7 @@ require("./parser/parse-genkan");
 require("./parser/parse-leviathan");
 const app = express_1.default();
 const server = http_1.createServer(app);
-let requests = {};
-setInterval(() => {
-    requests = {};
-}, 20000);
-app.use(cors_1.default(), compression_1.default(), express_1.default.json(), express_1.default.static(path_1.resolve(__dirname, '../../dist/webapp')), (req, res, next) => {
-    const ip = String(req.headers.proxy_ip || req.connection.remoteAddress).replace('::ffff:', '');
-    console.log(4, `${req.method}-request from ip "${ip}" to ${req.originalUrl}`);
-    if (!requests[ip]) {
-        requests[ip] = 0;
-    }
-    requests[ip] += 1;
-    if (requests[ip] >= 25) {
-        if (requests[ip] % 25 === 0) {
-            console.log(`IP ${ip} exceeded rate limit. ${requests[ip]} requests in 20 seconds.`);
-        }
-        res.status(429).json({ valid: false, message: 'Too many requests.' });
-    }
-    else {
-        next();
-    }
-});
+app.use(cors_1.default(), compression_1.default(), express_1.default.json(), express_1.default.static(path_1.resolve(__dirname, '../../dist/webapp')), rate_limiter_1.createRateLimiter(50, 30));
 source_controller_1.sourceController(app);
 url_controller_1.urlController(app);
 subscriptions_controller_1.subscriptionsController(app);

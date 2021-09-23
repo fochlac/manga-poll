@@ -18,26 +18,31 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.subscriptionsController = exports.sendTopicMessage = void 0;
 const admin = __importStar(require("firebase-admin"));
 const path_1 = require("path");
+const node_fetch_1 = __importDefault(require("node-fetch"));
 admin.initializeApp({
     credential: admin.credential.cert(path_1.resolve(path_1.join(__dirname, '../firebase-credentials.json')))
 });
-console.log(((_a = process.env.MANGA_GAPI_SERVER_KEY) === null || _a === void 0 ? void 0 : _a.length) ? `${(process.env.MANGA_GAPI_SERVER_KEY).slice(0, 10)}*********${(process.env.MANGA_GAPI_SERVER_KEY).slice(-10)}` : 'No GAPI key.');
+console.log(((_a = process.env.MANGA_GAPI_SERVER_KEY) === null || _a === void 0 ? void 0 : _a.length) ? `GAPI Server key: ${(process.env.MANGA_GAPI_SERVER_KEY).slice(0, 10)}*********${(process.env.MANGA_GAPI_SERVER_KEY).slice(-10)}` : 'No GAPI Server key.');
 async function getTopicSubscriptions(token) {
     var _a, _b;
     if (!((_a = process.env.MANGA_GAPI_SERVER_KEY) === null || _a === void 0 ? void 0 : _a.length)) {
         return [];
     }
-    const headers = { authorization: process.env.MANGA_GAPI_SERVER_KEY, accept: 'application/json' };
-    const response = await fetch(`https://iid.googleapis.com/iid/info/${token}?details=true`, { headers });
+    const headers = { authorization: `key=${process.env.MANGA_GAPI_SERVER_KEY}`, accept: 'application/json' };
+    const response = await node_fetch_1.default(`https://iid.googleapis.com/iid/info/${token}?details=true`, { headers });
+    const body = await response.json();
     if (response.status !== 200) {
+        console.log('Error fetching token list: ' + JSON.stringify(body));
         return [];
     }
-    const body = await response.json();
     return Object.keys(((_b = body === null || body === void 0 ? void 0 : body.rel) === null || _b === void 0 ? void 0 : _b.topics) || {});
 }
 const timeouts = {};
@@ -72,6 +77,7 @@ function subscriptionsController(app) {
             if (unsubscribe.length) {
                 await Promise.all(subscribe.map((topic) => admin.messaging().unsubscribeFromTopic([key], topic)));
             }
+            console.log(subscribe.length && `Subscribed ${subscribe.length} topics` || '', unsubscribe.length && `Unsubscribed ${unsubscribe.length} topics` || '');
             res.status(200).json({ valid: true });
         }
         catch (err) {
@@ -86,6 +92,7 @@ function subscriptionsController(app) {
         const unsubscribe = oldTopics.length && oldTopics || deleteTopics;
         try {
             await Promise.all(unsubscribe.map((topic) => admin.messaging().unsubscribeFromTopic([key], topic)));
+            console.log(unsubscribe.length && `Unsubscribed from ${unsubscribe.length} topics.` || '');
             res.status(200).json({ valid: true });
         }
         catch (err) {
