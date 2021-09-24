@@ -9,7 +9,6 @@ const form_data_1 = __importDefault(require("form-data"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const parser_1 = require("../parser");
 const stats_1 = require("../stats");
-const url_storage_1 = require("../url-storage");
 const TYPE = 'madara';
 const dateMonthFirst = /^[^\d]*(1[012]|0\d|\d)[^\d](3[0,1]|[012]\d|\d)[^\d](\d{2}|\d{4})[^\d]*$/;
 const dateDayFirst = /^[^\d]*(3[0,1]|[012]\d|\d)[^\d](1[012]|0\d|\d)[^\d](\d{2}|\d{4})[^\d]*$/;
@@ -69,10 +68,6 @@ function parseDates(urlList) {
         };
     };
 }
-let warned = {};
-setTimeout(() => {
-    warned = {};
-}, 1000 * 3600);
 async function parseMadara(source, body) {
     const $ = cheerio_1.default.load(body);
     const host = source.url.split('/')[2].split('.').slice(-2).join('.');
@@ -93,38 +88,13 @@ async function parseMadara(source, body) {
     let newUrls = urlList
         .map(parseDates(urlList))
         .filter(parser_1.createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|ch[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)));
-    const invalidIndexes = [];
-    if (newUrls.length < 5) {
-        await newUrls.reduce((promise, url, index) => {
-            return promise.then(async () => {
-                const resp = await node_fetch_1.default(url.url, { headers: parser_1.headers });
-                body = await parser_1.getResponseBody(resp);
-                const $ = cheerio_1.default.load(body);
-                if (!$('#image-0').length || !$('#image-1').length) {
-                    invalidIndexes.push(index);
-                }
-            });
-        }, Promise.resolve());
-        if (invalidIndexes.length) {
-            invalidIndexes.forEach((index) => {
-                const url = newUrls[index];
-                if (!warned[url.url]) {
-                    stats_1.logWarning(url_storage_1.getUrlKey(url, source.id), `Found url for "${source.title} - Chapter ${url.chapter}" but link doesnt lead to chapter: ${url.url}`, 0);
-                    warned[url.url] = true;
-                    warned[source.id] = true;
-                }
-            });
-            newUrls = newUrls.filter((url, index) => !invalidIndexes.includes(index));
+    return parser_1.checkNewUrlAvailability(source, newUrls, (body) => {
+        const $ = cheerio_1.default.load(body);
+        if ($('#image-0').length && $('#image-1').length) {
+            return true;
         }
-    }
-    if (warned[source.id]) {
-        newUrls.forEach((url) => {
-            if (warned[url.url]) {
-                console.log(`Previously invalid url for "${source.title} - Chapter ${url.chapter}"`);
-            }
-        });
-    }
-    return newUrls;
+        return false;
+    });
 }
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g;
 async function parseMadaraPage(rawUrl) {

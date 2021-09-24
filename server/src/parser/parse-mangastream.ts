@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, getResponseBody, createSource, createUrlFilter } from '../parser'
+import { registerParser, headers, getResponseBody, createSource, createUrlFilter, checkNewUrlAvailability } from '../parser'
 import { logWarning } from '../stats'
 
 const TYPE = 'mangastream'
@@ -16,6 +16,10 @@ async function testMangastream(rawUrl) {
     return createSource(TYPE, url?.split('/')[4], name, url)
 }
 
+let warned = {}
+setTimeout(() => {
+    warned = {}
+}, 1000 * 3600)
 function parseMangastream(source: Source, body) {
     const $ = cheerio.load(body)
     const baseDate = new Date()
@@ -38,7 +42,16 @@ function parseMangastream(source: Source, body) {
         return []
     }
 
-    return urlList.filter(createUrlFilter(source))
+    let newUrls = urlList.filter(createUrlFilter(source))
+
+    return checkNewUrlAvailability(source, newUrls, (body) => {
+        const $ = cheerio.load(body)
+
+        if ($('#readerarea img').length > 3) {
+            return true
+        }
+        return false
+    })
 }
 
 async function fetchMangastream(source: Source) {

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createUrlFilter = exports.createSource = exports.decodeHTMLEntities = exports.parse = exports.headers = exports.getResponseBody = exports.checkSourceType = exports.parseSourceLink = exports.fetchChapterList = exports.registerParser = void 0;
+exports.checkNewUrlAvailability = exports.createUrlFilter = exports.createSource = exports.decodeHTMLEntities = exports.parse = exports.headers = exports.getResponseBody = exports.checkSourceType = exports.parseSourceLink = exports.fetchChapterList = exports.registerParser = void 0;
 const cheerio_1 = __importDefault(require("cheerio"));
 const stats_1 = require("./stats");
 const url_storage_1 = require("./url-storage");
@@ -134,3 +134,42 @@ function createUrlFilter(source, validateUrl) {
     };
 }
 exports.createUrlFilter = createUrlFilter;
+let warned = {};
+setTimeout(() => {
+    warned = {};
+}, 1000 * 3600);
+async function checkNewUrlAvailability(source, newUrls, validateBody) {
+    const invalidIndexes = [];
+    if (newUrls.length < 5) {
+        await newUrls.reduce((promise, url, index) => {
+            return promise.then(async () => {
+                const resp = await fetch(url.url, { headers: exports.headers });
+                const body = await getResponseBody(resp);
+                if (!validateBody(body)) {
+                    invalidIndexes.push(index);
+                }
+            });
+        }, Promise.resolve());
+        if (invalidIndexes.length) {
+            invalidIndexes.forEach((index) => {
+                const url = newUrls[index];
+                if (!warned[url.url]) {
+                    stats_1.logWarning(url_storage_1.getUrlKey(url, source.id), `Found url for "${source.title} - Chapter ${url.chapter}" but link doesnt lead to chapter: ${url.url}`, 0);
+                    warned[url.url] = true;
+                    warned[source.id] = true;
+                }
+            });
+            newUrls = newUrls.filter((url, index) => !invalidIndexes.includes(index));
+        }
+    }
+    if (warned[source.id]) {
+        newUrls.forEach((url) => {
+            if (warned[url.url]) {
+                delete warned[url.url];
+                console.log(`Previously invalid url for "${source.title} - Chapter ${url.chapter}"`);
+            }
+        });
+    }
+    return newUrls;
+}
+exports.checkNewUrlAvailability = checkNewUrlAvailability;

@@ -16,6 +16,10 @@ async function testMangastream(rawUrl) {
     const name = breadcrumpLink.find('span').text();
     return parser_1.createSource(TYPE, url === null || url === void 0 ? void 0 : url.split('/')[4], name, url);
 }
+let warned = {};
+setTimeout(() => {
+    warned = {};
+}, 1000 * 3600);
 function parseMangastream(source, body) {
     const $ = cheerio_1.default.load(body);
     const baseDate = new Date();
@@ -35,7 +39,14 @@ function parseMangastream(source, body) {
         stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0);
         return [];
     }
-    return urlList.filter(parser_1.createUrlFilter(source));
+    let newUrls = urlList.filter(parser_1.createUrlFilter(source));
+    return parser_1.checkNewUrlAvailability(source, newUrls, (body) => {
+        const $ = cheerio_1.default.load(body);
+        if ($('#readerarea img').length > 3) {
+            return true;
+        }
+        return false;
+    });
 }
 async function fetchMangastream(source) {
     try {

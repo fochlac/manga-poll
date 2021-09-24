@@ -1,7 +1,7 @@
 import cheerio from 'cheerio'
 import FormData from 'form-data'
 import fetch from 'node-fetch'
-import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, createUrlFilter } from '../parser'
+import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, createUrlFilter, checkNewUrlAvailability } from '../parser'
 import { logWarning } from '../stats'
 import { getUrlKey } from '../url-storage'
 
@@ -71,10 +71,7 @@ function parseDates(urlList) {
         }
     }
 }
-let warned = {}
-setTimeout(() => {
-    warned = {}
-}, 1000 * 3600)
+
 async function parseMadara(source: Source, body) {
     const $ = cheerio.load(body)
     const host = source.url.split('/')[2].split('.').slice(-2).join('.')
@@ -99,40 +96,14 @@ async function parseMadara(source: Source, body) {
         .map(parseDates(urlList))
         .filter(createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|ch[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)))
 
-    const invalidIndexes = [] 
-    if (newUrls.length < 5) {
-        await newUrls.reduce((promise, url: Url, index) => {
-            return promise.then(async () => {              
-                const resp = await fetch(url.url, { headers })
-                body = await getResponseBody(resp)
-                const $ = cheerio.load(body)
+    return checkNewUrlAvailability(source, newUrls, (body) => {
+        const $ = cheerio.load(body)
 
-                if (!$('#image-0').length || !$('#image-1').length) {
-                    invalidIndexes.push(index)
-                }
-            })
-        }, Promise.resolve())
-
-        if (invalidIndexes.length) {
-            invalidIndexes.forEach((index) => {
-                const url = newUrls[index]
-                if (!warned[url.url]) {
-                    logWarning(getUrlKey(url, source.id), `Found url for "${source.title} - Chapter ${url.chapter}" but link doesnt lead to chapter: ${url.url}`, 0)
-                    warned[url.url] = true
-                    warned[source.id] = true
-                }
-            })
-            newUrls = newUrls.filter((url, index) => !invalidIndexes.includes(index))
+        if ($('#image-0').length && $('#image-1').length) {
+            return true
         }
-    }
-    if (warned[source.id]) {
-        newUrls.forEach((url) => {
-            if (warned[url.url]) {
-                console.log(`Previously invalid url for "${source.title} - Chapter ${url.chapter}"`)
-            }
-        })
-    }
-    return newUrls
+        return false
+    })
 }
 
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g

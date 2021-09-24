@@ -147,3 +147,44 @@ export function createUrlFilter(source, validateUrl?: (url: string) => boolean) 
         return isValid && !stored
     }
 }
+
+let warned = {}
+setTimeout(() => {
+    warned = {}
+}, 1000 * 3600)
+export async function checkNewUrlAvailability (source: Source, newUrls: Partial<Url>[], validateBody: (body: string) => boolean) {
+    const invalidIndexes = [] 
+    if (newUrls.length < 5) {
+        await newUrls.reduce((promise, url: Url, index) => {
+            return promise.then(async () => {              
+                const resp = await fetch(url.url, { headers })
+                const body = await getResponseBody(resp)
+
+                if (!validateBody(body)) {
+                    invalidIndexes.push(index)
+                }
+            })
+        }, Promise.resolve())
+
+        if (invalidIndexes.length) {
+            invalidIndexes.forEach((index) => {
+                const url = newUrls[index]
+                if (!warned[url.url]) {
+                    logWarning(getUrlKey(url, source.id), `Found url for "${source.title} - Chapter ${url.chapter}" but link doesnt lead to chapter: ${url.url}`, 0)
+                    warned[url.url] = true
+                    warned[source.id] = true
+                }
+            })
+            newUrls = newUrls.filter((url, index) => !invalidIndexes.includes(index))
+        }
+    }
+    if (warned[source.id]) {
+        newUrls.forEach((url) => {
+            if (warned[url.url]) {
+                delete warned[url.url]
+                console.log(`Previously invalid url for "${source.title} - Chapter ${url.chapter}"`)
+            }
+        })
+    }
+    return newUrls
+}
