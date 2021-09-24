@@ -266,6 +266,7 @@ function renderStats () {
                         const sourceCount = Object.keys(stats[host].sources).length
                         const errorCount = dayWarningMap[day]?.[host] || 0
                         if (errorCount === 0) {
+                            dayBars += '<div class="percentage" style="width: 0px; border: none; visibility: hidden;"></div>'
                             return dayBars
                         }
                         const percentage = Math.round(errorCount / sourceCount / fetchIntervallsPerDay * 100)
