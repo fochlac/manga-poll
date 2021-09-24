@@ -68,7 +68,7 @@ function parseDates(urlList) {
         };
     };
 }
-function parseMadara(source, body) {
+async function parseMadara(source, body) {
     const $ = cheerio_1.default.load(body);
     const host = source.url.split('/')[2].split('.').slice(-2).join('.');
     const urlList = $('li.wp-manga-chapter > a').toArray().map((elem) => {
@@ -85,9 +85,26 @@ function parseMadara(source, body) {
         stats_1.logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0);
         return [];
     }
-    return urlList
+    const newUrls = urlList
         .map(parseDates(urlList))
         .filter(parser_1.createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|ch[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)));
+    const invalidIndexes = [];
+    if (newUrls.length < 5) {
+        await newUrls.reduce((promise, url, index) => {
+            return promise.then(async () => {
+                const resp = await node_fetch_1.default(url.url, { headers: parser_1.headers });
+                body = await parser_1.getResponseBody(resp);
+                const $ = cheerio_1.default.load(body);
+                if (!$('#image-0').length || !$('#image-1').length) {
+                    invalidIndexes.push(index);
+                }
+            });
+        }, Promise.resolve());
+        if (invalidIndexes.length) {
+            console.log(`Found urls for chapter${invalidIndexes.length !== 1 ? 's' : ''} "${invalidIndexes.map((index) => newUrls[index].chapter).join(', ')}" but couldn't find images for ${invalidIndexes.length !== 1 ? 'those urls' : 'that url'}: ${invalidIndexes.map((index) => newUrls[index].url).join(', ')}`);
+        }
+    }
+    return invalidIndexes.length ? newUrls.filter((url, index) => invalidIndexes.includes(index)) : newUrls;
 }
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g;
 async function parseMadaraPage(rawUrl) {
