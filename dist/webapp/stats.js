@@ -265,6 +265,9 @@ function renderStats () {
                     .reduce((dayBars, host) => {
                         const sourceCount = Object.keys(stats[host].sources).length
                         const errorCount = dayWarningMap[day]?.[host] || 0
+                        if (errorCount === 0) {
+                            return dayBars
+                        }
                         const percentage = Math.round(errorCount / sourceCount / fetchIntervallsPerDay * 100)
                         const title = `${host}: ${percentage}% error rate (${errorCount})`
                         dayBars += `<div class="percentage" style="height: ${percentage / maxPercentage * 100}%" data-host="${host}" data-title="${title}"></div>`
