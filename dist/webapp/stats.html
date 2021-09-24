@@ -210,6 +210,7 @@
     #warningsDiagramm .bar:hover {
       border-color: #e3ebfb;
     }
+    #globalDiagramm .compound,
     #warningsDiagramm .bar {
       width: 6%;
       height: calc(100% - 2px);
@@ -225,6 +226,7 @@
       background: #b90000;
       margin-top: auto;
     }
+    #globalDiagramm .compound:before,
     #warningsDiagramm .bar:before {
       content: attr(data-date);
       font-size: min(10px, calc((100vw - 32px) * 0.9 * 0.06 / 2.85));
@@ -238,6 +240,7 @@
       bottom: -12px;
       position: absolute;
     }
+    #globalDiagramm .percentage:hover:after,
     #warningsDiagramm .bar:hover:after {
       content: attr(data-title);
       font-size: 10px;
@@ -251,6 +254,7 @@
       text-align: center;
       padding: 2px;
     }
+    #globalDiagramm,
     #warningsDiagramm {
       height: 100px;
       width: calc(100% - 20px);
@@ -266,6 +270,8 @@
       flex-shrink: 0;
       padding-left: 10px;
     }
+    #globalDiagramm:after,
+    #globalDiagramm:before,
     #warningsDiagramm:after,
     #warningsDiagramm:before {
       content: "0%";
@@ -279,6 +285,7 @@
       line-height: 12px;
       background: white;
     }
+    #globalDiagramm:after,
     #warningsDiagramm:after {
       content: "100%";
       left: -12px;
@@ -286,6 +293,9 @@
       font-size: 10px;
       font-weight: 700;
       top: -2px;
+    }
+    #globalDiagramm:after {
+      content: attr(data-max);
     }
     #warnings-dialog-title {
       display: flex;
@@ -342,9 +352,102 @@
       font-size: 15px;
       margin-top: 4px;
     }
+    #globalDiagramm .percentage {
+      max-height: 100%;
+      padding: 0;
+      margin-top: auto;
+      width: 100%;
+      border: solid 1px transparent;
+    }
+    #globalDiagramm .percentage.highlight {
+      border-color: black;
+      box-shadow: #8a8a8a 1px 0px 5px 1px;
+    }
+    #globalLegend .host.highlight {
+      border-color: black;
+      box-shadow: #8a8a8a 1px 0px 5px 1px;
+    }
+    #globalDiagramm .compound {
+      display: flex;
+      flex-direction: row;
+      flex-grow: 1;
+      margin: 0 8px;
+    }
+    #globalLegend .host:before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      display: block;
+      margin-right: 2px;
+      margin-top: 2px;
+    }
+    #globalLegend .host {
+      display: flex;
+      align-items: center;
+      margin-right: 8px;
+      border: solid 1px transparent;
+      padding: 2px;
+      cursor: pointer;
+    }
+    #globalLegend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      font-size: 12px;
+    }
+    #globalLegend .host:nth-child(1):before,
+    #globalDiagramm .percentage:nth-child(1) {
+      background: red;
+    }
+    #globalLegend .host:nth-child(2):before,
+    #globalDiagramm .percentage:nth-child(2) {
+      background: purple;
+    }
+    #globalLegend .host:nth-child(3):before,
+    #globalDiagramm .percentage:nth-child(3) {
+      background: blue;
+    }
+    #globalLegend .host:nth-child(4):before,
+    #globalDiagramm .percentage:nth-child(4) {
+      background: green;
+    }
+    #globalLegend .host:nth-child(5):before,
+    #globalDiagramm .percentage:nth-child(5) {
+      background: yellow;
+    }
+    #globalLegend .host:nth-child(6):before,
+    #globalDiagramm .percentage:nth-child(6) {
+      background: orange;
+    }
+    #globalLegend .host:nth-child(7):before,
+    #globalDiagramm .percentage:nth-child(7) {
+      background: #990000;
+    }
+    #globalLegend .host:nth-child(8):before,
+    #globalDiagramm .percentage:nth-child(8) {
+      background: magenta;
+    }
+    #globalLegend .host:nth-child(9):before,
+    #globalDiagramm .percentage:nth-child(9) {
+      background: #000099;
+    }
+    #globalLegend .host:nth-child(10):before,
+    #globalDiagramm .percentage:nth-child(10) {
+      background: lime;
+    }
+    #globalLegend .host:nth-child(11):before,
+    #globalDiagramm .percentage:nth-child(11) {
+      background: #999900;
+    }
+    #globalLegend .host:nth-child(12):before,
+    #globalDiagramm .percentage:nth-child(12) {
+      background: #885800;
+    }
   </style>
   <body>
     <h3>Stats</h3>
+    <div id="globalDiagramm"></div>
+    <div id="globalLegend"></div>
     <div id="stats"></div>
     <div id="warnings-dialog">
       <div class="warnings">

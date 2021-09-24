@@ -432,7 +432,9 @@ h6 {
   width: 436px;
   height: 94px;
 }
-
+#donate {
+  margin-bottom: 16px;
+}
 #intro {
   width: 100%;
   flex-direction: column;

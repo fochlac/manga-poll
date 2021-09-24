@@ -142,6 +142,7 @@ function renderStats () {
                     hostMap[el.dataset.id] = el.querySelector('.details').getBoundingClientRect().height
                     return hostMap
                 }, {})
+            const allWarnings = {}
             document.querySelector('#stats').innerHTML = ''
             Object.keys(stats)
                 .sort((a, b) => {
@@ -172,6 +173,9 @@ function renderStats () {
                         weight = ''
                     }
                     const warning = stats[host].warnings.length ? getIcon(weight) : ''
+                    if (stats[host].warnings.length) {
+                        allWarnings[host] = stats[host].warnings
+                    }
 
                     const title = `${host}&nbsp;(${Object.keys(stats[host].sources).length})`
                     document.querySelector('#stats').innerHTML += `
@@ -213,7 +217,77 @@ function renderStats () {
                         `
                 })
             document.querySelector('#stats').innerHTML += `<div class="updated">Updated: ${time(Date.now())}</div>`
+
+            const dayWarningMap = Object.keys(allWarnings).reduce((dayWarningMap, host) => {
+                const warnings = allWarnings[host]
+                warnings.forEach((warning) => {
+                    const warningDay = date(warning.date)
+                    if (!dayWarningMap[warningDay]) {
+                        dayWarningMap[warningDay] = {}
+                    }
+                    if (!dayWarningMap[warningDay][host]) {
+                        dayWarningMap[warningDay][host] = 0
+                    }
+                    dayWarningMap[warningDay][host]++
+                })
+
+                return dayWarningMap
+            }, {hosts: Object.keys(allWarnings).sort((a, b) => String(a).localeCompare(b))})
+
+            document.querySelector('#globalDiagramm').innerHTML = ''
+
+            const days = new Array(7).fill(0)
+                .map((_v, index) => date(Date.now() - 3600000 * 24 * (6 - index)))
+
+            const today = date(Date.now())
+            const allMax = days
+                .reduce((allMax, day) => {
+                    let fetchIntervallsPerDay = 24 * 60 / 5
+                    if (day === today) {
+                        fetchIntervallsPerDay = new Date().getHours() * 60 / 5
+                    }
+                    const dayMax = Object.keys(dayWarningMap[day] || {}).reduce((max, host) => {
+                        const sourceCount = Object.keys(stats[host].sources).length
+                        const errorCount = dayWarningMap[day][host] || 0
+                        const percentage = Math.round(errorCount / sourceCount / fetchIntervallsPerDay * 100)
+                        return percentage > max ? percentage : max
+                    }, 0)
+                    return dayMax > allMax ? dayMax : allMax
+                }, 0)
+            const maxPercentage = Math.ceil(allMax / 5) * 5
+            days.forEach((day) => {
+                let fetchIntervallsPerDay = 24 * 60 / 5
+                if (day === today) {
+                    fetchIntervallsPerDay = new Date().getHours() * 60 / 5
+                }
+                const dayBars = dayWarningMap.hosts
+                    .reduce((dayBars, host) => {
+                        const sourceCount = Object.keys(stats[host].sources).length
+                        const errorCount = dayWarningMap[day]?.[host] || 0
+                        const percentage = Math.round(errorCount / sourceCount / fetchIntervallsPerDay * 100)
+                        const title = `${host}: ${percentage}% error rate (${errorCount})`
+                        dayBars += `<div class="percentage" style="height: ${percentage / maxPercentage * 100}%" data-host="${host}" data-title="${title}"></div>`
+                        return dayBars
+                    }, '')
+                document.querySelector('#globalDiagramm').dataset.max = `${maxPercentage}%`
+                document.querySelector('#globalDiagramm').innerHTML += `<div class="compound" data-date="${day}">${dayBars}</div>`
+            })
+            document.querySelector('#globalLegend').innerHTML = dayWarningMap.hosts.map((host) => `<div class="host" data-host="${host}">${host}</div>`).join(' ')
         })
+
+    document.querySelector('#globalLegend').addEventListener('click', (e) => {
+        const closestHost = e.target.closest('.host')
+        if (closestHost) {
+            document.querySelectorAll('#globalDiagramm .percentage.highlight, #globalLegend .host').forEach((elem) => {
+                elem.classList.remove('highlight')
+            })
+
+            document.querySelectorAll(`#globalDiagramm .percentage[data-host="${closestHost.dataset.host}"]`).forEach((elem) => {
+                elem.classList.add('highlight')
+            })
+            closestHost.classList.add('highlight')
+        }
+    })
 }
 
 renderStats()
