@@ -11,11 +11,21 @@ const bookmarkTitle = document.getElementById('bookmark-title')
 const { Source } = API(API_ADDRESS)
 
 bookmarkTrack.addEventListener('click', () => {
-    bookmark.style.display = 'none'
-    bookmarkTitle.innerText = ''
+    bookmark.classList.remove('error')
+    bookmark.classList.add('progress')
     Source.insert(currentSource)
         .then((source) => source && db.sources.add(source))
-    currentSource = null
+        .then(() => {
+            bookmark.style.display = 'none'
+            bookmarkTitle.innerText = ''
+            currentSource = null
+        })
+        .catch(() => {
+            bookmark.classList.add('error')
+            bookmark.classList.remove('progress')
+            bookmarkTrack.innerText = 'Retry'
+            bookmarkTitle.innerText = 'Unable to create bookmark, please retry later and if it keeps failing, send an email with the time + url to "info@fochlac.com".'
+        })
 })
 
 chrome.runtime.onMessage.addListener(async (request) => {

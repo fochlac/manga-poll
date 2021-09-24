@@ -432,14 +432,85 @@ h6 {
   width: 436px;
   height: 94px;
 }
+
 #donate {
   margin-bottom: 16px;
 }
+
 #intro {
   width: 100%;
   flex-direction: column;
   display: none;
 }
+
+#bookmark.error {
+  background-color: rgb(150, 50, 50);
+}
+
+#bookmark.progress::before {
+  position: absolute;
+  content: "";
+  width: 14px;
+  height: 14px;
+  background: #c5c4c4;
+  border-radius: 50%;
+  top: calc(50% - 7px);
+  left: calc(50% + 7px);
+  animation: loading2 2s infinite linear;
+}
+
+#bookmark.progress::after {
+  position: absolute;
+  content: "";
+  width: 14px;
+  height: 14px;
+  background: #4e4e4e;
+  border-radius: 50%;
+  top: calc(50% - 7px);
+  left: calc(50% - 14px);
+  animation: loading 2s infinite linear;
+}
+
+#bookmark.progress > * {
+  visibility: hidden;
+}
+
+@keyframes loading {
+  0% {
+    left: calc(50% - 14px);
+  }
+  30% {
+    left: calc(50% + 7px);
+  }
+  60% {
+    left: calc(50% + 7px);
+  }
+  90% {
+    left: calc(50% - 14px);
+  }
+  100% {
+    left: calc(50% - 14px);
+  }
+}
+
+@keyframes loading2 {
+  0% {
+    left: calc(50% + 7px);
+  }
+  30% {
+    left: calc(50% + 7px);
+  }
+  60% {
+    left: calc(50% - 14px);
+  }
+  90% {
+    left: calc(50% + 7px);
+  }
+  100% {
+    left: calc(50% + 7px);
+  }
+}
+
 html.dark {
   color: #f4f7ff;
   background: #333;

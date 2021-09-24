@@ -188,10 +188,11 @@ function renderStats () {
                                         <tr>
                                             <td>
                                                 <h5>
-                                                    <span class="titletext" title="title">${title}</span>
+                                                    <span class="titletext" title="${title}">${title}</span>
                                                     ${warning}
                                                 </h5>
                                             </td>
+                                            <td><b>${stats[host].type.replace(/[aeiou]/g, '').slice(0, 3).toUpperCase()}</b></td>
                                             <td><b>${date(stats[host].latest)}</b></td>
                                         </tr>
                                     </tbody>

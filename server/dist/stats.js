@@ -21,9 +21,6 @@ function shouldWarn(key, limit) {
 }
 exports.shouldWarn = shouldWarn;
 function logWarning(key, message, limit = 3) {
-    if (!shouldWarn(key, limit)) {
-        return;
-    }
     if (!warnings[key]) {
         warnings[key] = [];
     }
@@ -31,13 +28,17 @@ function logWarning(key, message, limit = 3) {
         date: Date.now(),
         message
     });
+    if (!shouldWarn(key, limit)) {
+        return;
+    }
     write();
     updateHosts();
     console.log(message);
 }
 exports.logWarning = logWarning;
-const emptyStats = (url, warnings = []) => ({
+const emptyStats = (url, type, warnings = []) => ({
     latest: 0,
+    type,
     sources: {},
     count: 0,
     warnings,
@@ -75,7 +76,7 @@ async function getStats() {
     const stats = Object.values(sources).reduce((stats, source) => {
         const host = source.url.split('/')[2].split('.').slice(-2).join('.');
         const url = source.url.split('/').slice(0, 3).join('/');
-        stats[host] = stats[host] || emptyStats(url, warnings[host]);
+        stats[host] = stats[host] || emptyStats(url, source.type, warnings[host]);
         const sourceChapters = Object.values(urls).filter((url) => url.sourceId === source.id);
         const latest = sourceChapters.reduce((latest, url) => latest > Number(url.created) ? latest : Number(url.created), 0);
         const chapterWarnings = Object.keys(warnings)

@@ -3,6 +3,7 @@ import FormData from 'form-data'
 import fetch from 'node-fetch'
 import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, createUrlFilter } from '../parser'
 import { logWarning } from '../stats'
+import { getUrlKey } from '../url-storage'
 
 const TYPE = 'madara'
 
@@ -70,7 +71,10 @@ function parseDates(urlList) {
         }
     }
 }
-
+let warned = {}
+setTimeout(() => {
+    warned = {}
+}, 1000 * 3600)
 async function parseMadara(source: Source, body) {
     const $ = cheerio.load(body)
     const host = source.url.split('/')[2].split('.').slice(-2).join('.')
@@ -91,7 +95,7 @@ async function parseMadara(source: Source, body) {
         return []
     }
 
-    const newUrls = urlList
+    let newUrls = urlList
         .map(parseDates(urlList))
         .filter(createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|ch[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)))
 
@@ -110,10 +114,25 @@ async function parseMadara(source: Source, body) {
         }, Promise.resolve())
 
         if (invalidIndexes.length) {
-            console.log(`Found url${invalidIndexes.length !== 1 ? 's': ''} for chapter${invalidIndexes.length !== 1 ? 's': ''} "${invalidIndexes.map((index) => newUrls[index].chapter).join(', ')}" but couldn't find images for ${invalidIndexes.length !== 1 ? 'those urls': 'that url'}: ${invalidIndexes.map((index) => newUrls[index].url).join(', ')}`)
+            invalidIndexes.forEach((index) => {
+                const url = newUrls[index]
+                if (!warned[url.url]) {
+                    logWarning(getUrlKey(url, source.id), `Found url for "${source.title} - Chapter ${url.chapter}" but link doesnt lead to chapter: ${url.url}`, 0)
+                    warned[url.url] = true
+                    warned[source.id] = true
+                }
+            })
+            newUrls = newUrls.filter((url, index) => !invalidIndexes.includes(index))
         }
     }
-    return invalidIndexes.length ? newUrls.filter((url, index) => !invalidIndexes.includes(index)) : newUrls
+    if (warned[source.id]) {
+        newUrls.forEach((url) => {
+            if (warned[url.url]) {
+                console.log(`Previously invalid url for "${source.title} - Chapter ${url.chapter}"`)
+            }
+        })
+    }
+    return newUrls
 }
 
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g
