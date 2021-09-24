@@ -55,6 +55,20 @@ const weekInMs = 7 * dayInMs;
 const fetchesPerHour = 60 / 5;
 const fetchesPerDay = 24 * fetchesPerHour;
 const fetchesPerWeek = 7 * fetchesPerDay;
+setInterval(() => {
+    let removedNumber = 0;
+    Object.keys(warnings).filter((key) => {
+        const newWarnings = warnings[key].filter((warning) => (Date.now() - warning.date) > 2 * weekInMs);
+        if (newWarnings.length !== warnings[key].length) {
+            removedNumber += warnings[key].length - newWarnings.length;
+            warnings[key] = newWarnings;
+        }
+    });
+    if (removedNumber > 0) {
+        console.log(`Removed ${removedNumber} old warnings.`);
+        write();
+    }
+}, dayInMs);
 async function getStats() {
     const urls = await url_storage_1.getUrls();
     const sources = await source_storage_1.getSources();

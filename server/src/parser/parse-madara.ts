@@ -110,10 +110,10 @@ async function parseMadara(source: Source, body) {
         }, Promise.resolve())
 
         if (invalidIndexes.length) {
-            console.log(`Found urls for chapter${invalidIndexes.length !== 1 ? 's': ''} "${invalidIndexes.map((index) => newUrls[index].chapter).join(', ')}" but couldn't find images for ${invalidIndexes.length !== 1 ? 'those urls': 'that url'}: ${invalidIndexes.map((index) => newUrls[index].url).join(', ')}`)
+            console.log(`Found url${invalidIndexes.length !== 1 ? 's': ''} for chapter${invalidIndexes.length !== 1 ? 's': ''} "${invalidIndexes.map((index) => newUrls[index].chapter).join(', ')}" but couldn't find images for ${invalidIndexes.length !== 1 ? 'those urls': 'that url'}: ${invalidIndexes.map((index) => newUrls[index].url).join(', ')}`)
         }
     }
-    return invalidIndexes.length ? newUrls.filter((url, index) => invalidIndexes.includes(index)) : newUrls
+    return invalidIndexes.length ? newUrls.filter((url, index) => !invalidIndexes.includes(index)) : newUrls
 }
 
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g
