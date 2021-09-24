@@ -115,12 +115,13 @@ export async function getStats(): Promise<Stats> {
             .filter(key => key.includes(getUrlKey({ host: sourceChapters[0]?.host || '', chapter: '' }, source.id)))
             .reduce((chWarnings, warningKey) => chWarnings.concat(warnings[warningKey] || []), [])
 
-        const weekWarnings = chapterWarnings.filter((warning) => Date.now() - warning.date < weekInMs)
-        const dayWarnings = weekWarnings.filter((warning) => Date.now() - warning.date < dayInMs)
-        const hourWarnings = dayWarnings.filter((warning) => Date.now() - warning.date < hourInMs)
+        const weekWarnings = chapterWarnings.filter((warning) => (Date.now() - warning.date) < weekInMs)
+        const dayWarnings = weekWarnings.filter((warning) => (Date.now() - warning.date) < dayInMs)
+        const hourWarnings = dayWarnings.filter((warning) => (Date.now() - warning.date) < hourInMs)
         const weekFailPercentage = weekWarnings.length / fetchesPerWeek
         const dayFailPercentage = dayWarnings.length / fetchesPerDay
         const hourFailPercentage = hourWarnings.length / fetchesPerHour
+
         stats[host].chapterWarnings = stats[host].chapterWarnings.concat(chapterWarnings)
         stats[host].latest = stats[host].latest >= latest ? stats[host].latest : latest
         stats[host].count += sourceChapters.length
@@ -141,8 +142,8 @@ export async function getStats(): Promise<Stats> {
     }, {})
 
     Object.keys(stats).forEach((host) => {
-        if (stats[host]?.length) {
-            const weekWarnings = stats[host].filter((warning) => Date.now() - warning.date < weekInMs)
+        if (stats[host]?.warnings?.length) {
+            const weekWarnings = stats[host]?.warnings.filter((warning) => Date.now() - warning.date < weekInMs)
             const dayWarnings = weekWarnings.filter((warning) => Date.now() - warning.date < dayInMs)
             const hourWarnings = dayWarnings.filter((warning) => Date.now() - warning.date < hourInMs)
             const sources = Object.keys(stats[host].sources).length

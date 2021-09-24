@@ -67,9 +67,9 @@ async function getStats() {
         const chapterWarnings = Object.keys(warnings)
             .filter(key => { var _a; return key.includes(url_storage_1.getUrlKey({ host: ((_a = sourceChapters[0]) === null || _a === void 0 ? void 0 : _a.host) || '', chapter: '' }, source.id)); })
             .reduce((chWarnings, warningKey) => chWarnings.concat(warnings[warningKey] || []), []);
-        const weekWarnings = chapterWarnings.filter((warning) => Date.now() - warning.date < weekInMs);
-        const dayWarnings = weekWarnings.filter((warning) => Date.now() - warning.date < dayInMs);
-        const hourWarnings = dayWarnings.filter((warning) => Date.now() - warning.date < hourInMs);
+        const weekWarnings = chapterWarnings.filter((warning) => (Date.now() - warning.date) < weekInMs);
+        const dayWarnings = weekWarnings.filter((warning) => (Date.now() - warning.date) < dayInMs);
+        const hourWarnings = dayWarnings.filter((warning) => (Date.now() - warning.date) < hourInMs);
         const weekFailPercentage = weekWarnings.length / fetchesPerWeek;
         const dayFailPercentage = dayWarnings.length / fetchesPerDay;
         const hourFailPercentage = hourWarnings.length / fetchesPerHour;
@@ -91,9 +91,9 @@ async function getStats() {
         return stats;
     }, {});
     Object.keys(stats).forEach((host) => {
-        var _a;
-        if ((_a = stats[host]) === null || _a === void 0 ? void 0 : _a.length) {
-            const weekWarnings = stats[host].filter((warning) => Date.now() - warning.date < weekInMs);
+        var _a, _b, _c;
+        if ((_b = (_a = stats[host]) === null || _a === void 0 ? void 0 : _a.warnings) === null || _b === void 0 ? void 0 : _b.length) {
+            const weekWarnings = (_c = stats[host]) === null || _c === void 0 ? void 0 : _c.warnings.filter((warning) => Date.now() - warning.date < weekInMs);
             const dayWarnings = weekWarnings.filter((warning) => Date.now() - warning.date < dayInMs);
             const hourWarnings = dayWarnings.filter((warning) => Date.now() - warning.date < hourInMs);
             const sources = Object.keys(stats[host].sources).length;
