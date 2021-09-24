@@ -137,18 +137,22 @@ async function fetchMadara(source) {
     var _a;
     let body;
     try {
-        const formData = new form_data_1.default();
-        formData.append('action', 'manga_get_chapters');
-        formData.append('manga', source.mangaId);
-        const baseurl = (_a = source.url.match(/https?:\/\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
-        const response = await node_fetch_1.default(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData, headers: parser_1.headers });
+        const resp = await node_fetch_1.default(source.url, { headers: parser_1.headers });
         try {
-            body = await parser_1.getResponseBody(response);
+            body = await parser_1.getResponseBody(resp);
         }
         catch (err) { }
-        if (!body || body.length < 1000) {
-            const resp = await node_fetch_1.default(source.url, { headers: parser_1.headers });
-            body = await parser_1.getResponseBody(resp);
+        const $ = cheerio_1.default.load(body);
+        if ($('li.wp-manga-chapter > a').length) {
+            return parseMadara(source, body);
+        }
+        else {
+            const formData = new form_data_1.default();
+            formData.append('action', 'manga_get_chapters');
+            formData.append('manga', source.mangaId);
+            const baseurl = (_a = source.url.match(/https?:\/\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
+            const response = await node_fetch_1.default(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData, headers: parser_1.headers });
+            body = await parser_1.getResponseBody(response);
         }
         return parseMadara(source, body);
     }
