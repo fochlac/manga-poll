@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkNewUrlAvailability = exports.createUrlFilter = exports.createSource = exports.decodeHTMLEntities = exports.parse = exports.headers = exports.getResponseBody = exports.checkSourceType = exports.parseSourceLink = exports.fetchChapterList = exports.registerParser = void 0;
 const cheerio_1 = __importDefault(require("cheerio"));
+const node_fetch_1 = __importDefault(require("node-fetch"));
 const stats_1 = require("./stats");
 const url_storage_1 = require("./url-storage");
 const defaultType = 'madara';
@@ -143,7 +144,7 @@ async function checkNewUrlAvailability(source, newUrls, validateBody) {
     if (newUrls.length < 5) {
         await newUrls.reduce((promise, url, index) => {
             return promise.then(async () => {
-                const resp = await fetch(url.url, { headers: exports.headers });
+                const resp = await node_fetch_1.default(url.url, { headers: exports.headers });
                 const body = await getResponseBody(resp);
                 if (!validateBody(body)) {
                     invalidIndexes.push(index);
