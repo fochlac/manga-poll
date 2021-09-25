@@ -129,7 +129,7 @@ document.addEventListener('click', (event) => {
 function getIcon (classes = []) {
     const icon = warningIcon.cloneNode(true)
     classes = Array.isArray(classes) ? classes : [classes]
-    classes.forEach((className) => icon.classList.add(className))
+    classes.forEach((className) => className && icon.classList.add(className))
     return icon.outerHTML
 }
 
