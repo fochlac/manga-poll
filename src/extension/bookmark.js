@@ -2,6 +2,8 @@ import { API } from '../common/api'
 import { API_ADDRESS } from './constants'
 import { db } from './storage'
 
+const controller = chrome || browser
+
 let currentSource = null
 
 const bookmark = document.getElementById('bookmark')
@@ -28,7 +30,7 @@ bookmarkTrack.addEventListener('click', () => {
         })
 })
 
-chrome.runtime.onMessage.addListener(async (request) => {
+controller.runtime.onMessage.addListener(async (request) => {
     if (request.id && request.title && request.url) {
         const sources = await db.sources.read()
 
@@ -51,11 +53,11 @@ chrome.runtime.onMessage.addListener(async (request) => {
 })
 
 export function testBookmark () {
-    chrome.tabs.query(
-        { active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
+    controller.tabs.query(
+        { active: true, windowId: controller.windows.WINDOW_ID_CURRENT },
         (tabs) => {
-            if (!tabs[0].url.includes('chrome://')) {
-                chrome.scripting.executeScript({ target: { tabId: tabs[0].id }, function: test })
+            if (tabs[0].url.includes('http://') || tabs[0].url.includes('https://')) {
+                controller.scripting.executeScript({ target: { tabId: tabs[0].id }, function: test })
             }
         }
     )
@@ -287,7 +289,7 @@ function test () {
     console.log(result)
 
     if (result) {
-        chrome.runtime.sendMessage(result)
+        controller.runtime.sendMessage(result)
     }
 }
 

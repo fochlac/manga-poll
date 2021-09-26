@@ -1,15 +1,17 @@
 import { createDB } from '../common/db'
 
+const browserStorage = chrome?.storage || browser?.storage
+
 function read (namespace, keys) {
-    return new Promise((resolve) => chrome.storage[namespace].get(keys, resolve))
+    return new Promise((resolve) => browserStorage[namespace].get(keys, resolve))
 }
 
 function write (namespace, keyPairs) {
-    return new Promise((resolve) => chrome.storage[namespace].set(keyPairs, resolve))
+    return new Promise((resolve) => browserStorage[namespace].set(keyPairs, resolve))
 }
 
 function addListener (callback) {
-    return chrome.storage.onChanged.addListener(callback)
+    return browserStorage.onChanged.addListener(callback)
 }
 
 const storage = {

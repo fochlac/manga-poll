@@ -1,8 +1,8 @@
 import 'regenerator-runtime/runtime.js'
 import { API } from '../common/api'
 import { getLinkHelpers } from '../common/settings'
-import { API_ADDRESS } from './constants'
-import { db } from './storage'
+import { API_ADDRESS } from '../extension/constants'
+import { db } from '../extension/storage'
 
 const Api = API(API_ADDRESS)
 
@@ -58,11 +58,5 @@ db.onChange(async (changes) => {
     }
     if (Object.keys(changes).some((change) => change.includes('sources')) || Object.prototype.hasOwnProperty.call(changes, 'maxOld')) {
         await fetchUrls()
-    }
-})
-
-self.addEventListener('message', (event) => {
-    if (event.data === 'FETCH_CHAPTERS') {
-        fetchUrls()
     }
 })
