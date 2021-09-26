@@ -276,11 +276,11 @@ function renderStats () {
                         return dayBars
                     }, '')
                 document.querySelector('#globalDiagramm').dataset.max = `${maxPercentage}%`
+                document.querySelector('#globalDiagramm').style.display = 'flex'
                 document.querySelector('#globalDiagramm').innerHTML += `<div class="compound" data-date="${day}">${dayBars}</div>`
             })
             document.querySelector('#globalLegend').innerHTML = dayWarningMap.hosts.map((host) => `<div class="host" data-host="${host}">${host}</div>`).join(' ')
         })
-    document.querySelector('#globalDiagramm').style.display = 'flex'
 
     document.querySelector('#globalLegend').addEventListener('click', (e) => {
         const closestHost = e.target.closest('.host')
