@@ -2,3 +2,4 @@ node_modules
 dist.pem
 firebase-credentials.json
 db
+dist
