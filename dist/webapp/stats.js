@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* global document, fetch, setInterval, window */
 
 const warningIcon = document.querySelector('svg.warning')
@@ -224,6 +225,12 @@ function renderStats () {
                 const warnings = allWarnings[host]
                 warnings.forEach((warning) => {
                     const warningDay = date(warning.date)
+                    if (Date.now() - warning.date <= 60 * 60 * 1000) {
+                        if (!dayWarningMap.hour[host]) {
+                            dayWarningMap.hour[host] = 0
+                        }
+                        dayWarningMap.hour[host]++
+                    }
                     if (!dayWarningMap[warningDay]) {
                         dayWarningMap[warningDay] = {}
                     }
@@ -234,7 +241,7 @@ function renderStats () {
                 })
 
                 return dayWarningMap
-            }, {hosts: Object.keys(allWarnings).sort((a, b) => String(a).localeCompare(b))})
+            }, {hosts: Object.keys(allWarnings).sort((a, b) => String(a).localeCompare(b)), hour: {}})
 
             document.querySelector('#globalDiagramm').innerHTML = ''
 
@@ -278,6 +285,22 @@ function renderStats () {
                 document.querySelector('#globalDiagramm').dataset.max = `${maxPercentage}%`
                 document.querySelector('#globalDiagramm').style.display = 'flex'
                 document.querySelector('#globalDiagramm').innerHTML += `<div class="compound" data-date="${day}">${dayBars}</div>`
+                if (day === today) {
+                    const hourBars = dayWarningMap.hosts
+                        .reduce((hourBars, host) => {
+                            const sourceCount = Object.keys(stats[host].sources).length
+                            const errorCount = dayWarningMap.hour?.[host] || 0
+                            if (errorCount === 0) {
+                                hourBars += '<div class="percentage" style="width: 0px; border: none; visibility: hidden;"></div>'
+                                return hourBars
+                            }
+                            const percentage = Math.min(Math.round(errorCount / sourceCount / fetchIntervallsPerDay * 100), 100)
+                            const title = `${host}: ${percentage}% error rate (${errorCount})`
+                            hourBars += `<div class="percentage" style="height: ${percentage / maxPercentage * 100}%" data-host="${host}" data-title="${title}"></div>`
+                            return hourBars
+                        }, '')
+                    document.querySelector('#globalDiagramm').innerHTML += `<div class="compound" data-date="Last hour">${hourBars}</div>`
+                }
             })
             document.querySelector('#globalLegend').innerHTML = dayWarningMap.hosts.map((host) => `<div class="host" data-host="${host}">${host}</div>`).join(' ')
         })
