@@ -59,8 +59,7 @@ async function fetchLeviathan(source) {
     let url;
     try {
         const baseUrl = await node_fetch_1.default(source.url.split('/').slice(0, 3).join('/'), { headers: parser_1.headers }).then((res) => res.url);
-        url = `${baseUrl}/manga/${source.url.split('/manga/')[1]}/ajax/chapters`;
-        url = url.slice(0, 10) + url.slice(10).replace(/\/\//g, '/');
+        url = parser_1.joinUrl(baseUrl, 'manga', source.url.split('/manga/')[1], 'ajax/chapters');
         const response = await node_fetch_1.default(url, { method: 'post', headers: parser_1.headers });
         body = await parser_1.getResponseBody(response);
         return parseLeviathan(source, body, url);

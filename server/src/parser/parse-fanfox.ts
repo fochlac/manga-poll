@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, getResponseBody, createSource, createUrlFilter } from '../parser'
+import { registerParser, headers, getResponseBody, createSource, createUrlFilter, joinUrl } from '../parser'
 import { logWarning } from '../stats'
 
 const TYPE = 'fanfox'
@@ -16,7 +16,7 @@ function parseFanfox(source: Source, body) {
         const url = $(elem).find('a').attr('href')
 
         return {
-            url: url.includes('https://fanfox.net') ? url : `https://fanfox.net${url}`,
+            url: url.includes('https://fanfox.net') ? url : joinUrl('https://fanfox.net', url),
             chapter: $(elem).find('.title3a').text().replace(/^.*Ch\./, '').replace(/ - .*/, ''),
             host,
             created: !isNaN(rawDate.getTime()) ? rawDate.getTime() : baseDate.getTime()

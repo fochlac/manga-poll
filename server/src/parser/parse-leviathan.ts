@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, createUrlFilter } from '../parser'
+import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, createUrlFilter, joinUrl } from '../parser'
 import { logWarning } from '../stats'
 
 const TYPE = 'leviathan'
@@ -67,8 +67,7 @@ async function fetchLeviathan(source: Source) {
     let url
     try {
         const baseUrl = await fetch(source.url.split('/').slice(0, 3).join('/'), { headers }).then((res) => res.url)
-        url = `${baseUrl}/manga/${source.url.split('/manga/')[1]}/ajax/chapters`
-        url = url.slice(0, 10) + url.slice(10).replace(/\/\//g, '/')
+        url = joinUrl(baseUrl, 'manga', source.url.split('/manga/')[1],'ajax/chapters')
         const response = await fetch(url, { method: 'post', headers })
         body = await getResponseBody(response)
         return parseLeviathan(source, body, url)

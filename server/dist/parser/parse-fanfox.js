@@ -17,7 +17,7 @@ function parseFanfox(source, body) {
         const rawDate = new Date($(elem).find('.title2').text());
         const url = $(elem).find('a').attr('href');
         return {
-            url: url.includes('https://fanfox.net') ? url : `https://fanfox.net${url}`,
+            url: url.includes('https://fanfox.net') ? url : parser_1.joinUrl('https://fanfox.net', url),
             chapter: $(elem).find('.title3a').text().replace(/^.*Ch\./, '').replace(/ - .*/, ''),
             host,
             created: !isNaN(rawDate.getTime()) ? rawDate.getTime() : baseDate.getTime()
