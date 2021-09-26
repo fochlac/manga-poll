@@ -151,12 +151,15 @@ async function parseMadaraPage(rawUrl: string) {
 
 async function fetchMadara(source: Source) {
     let body
+    let firsterror
     try {
         const resp = await fetch(source.url, { headers })
         try {
             body = await getResponseBody(resp)
         }
-        catch(err) {}
+        catch(err) {
+            firsterror = err
+        }
         const $ = cheerio.load(body) 
 
         if ($('li.wp-manga-chapter > a').length) {
@@ -168,7 +171,12 @@ async function fetchMadara(source: Source) {
             formData.append('manga', source.mangaId)
             const baseurl = source.url.match(/https?:\/\/[^/]*\//)?.[0]
             const response = await fetch(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData, headers })
-            body = await getResponseBody(response)
+            try {
+                body = await getResponseBody(response)
+            }
+            catch(err) {
+                throw new Error(`${firsterror} + ${err}`)
+            }
         }
 
         return parseMadara(source, body)
