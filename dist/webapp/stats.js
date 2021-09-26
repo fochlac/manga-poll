@@ -172,7 +172,7 @@ function renderStats () {
                     else if (stats[host].failureRate.day > 0.02) {
                         weight = ''
                     }
-                    const warnings = [].concat(stats[host].warnings, stats[host].chapterWarnings)
+                    const warnings = [].concat(stats[host].warnings, stats[host].chapterWarnings).sort((a, b) => a.date - b.date)
                     const warning = warnings.length ? getIcon(weight) : ''
                     if (warnings.length) {
                         allWarnings[host] = warnings
