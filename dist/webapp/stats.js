@@ -105,7 +105,7 @@ document.addEventListener('click', (event) => {
                 const title = `${height}% error rate (${(dayMap[day]?.length || 0)})`
                 document.querySelector('#warningsDiagramm').innerHTML += `
                     <div class="bar" data-date="${day}" data-title="${title}" >
-                        <div class="percentage" style="height: ${height}%" />
+                        <div class="percentage" style="height: ${Math.min(height, 100)}%" />
                     </div>
                 `
             })
@@ -270,7 +270,7 @@ function renderStats () {
                             dayBars += '<div class="percentage" style="width: 0px; border: none; visibility: hidden;"></div>'
                             return dayBars
                         }
-                        const percentage = Math.round(errorCount / sourceCount / fetchIntervallsPerDay * 100)
+                        const percentage = Math.min(Math.round(errorCount / sourceCount / fetchIntervallsPerDay * 100), 100)
                         const title = `${host}: ${percentage}% error rate (${errorCount})`
                         dayBars += `<div class="percentage" style="height: ${percentage / maxPercentage * 100}%" data-host="${host}" data-title="${title}"></div>`
                         return dayBars
@@ -280,6 +280,7 @@ function renderStats () {
             })
             document.querySelector('#globalLegend').innerHTML = dayWarningMap.hosts.map((host) => `<div class="host" data-host="${host}">${host}</div>`).join(' ')
         })
+    document.querySelector('#globalDiagramm').style.display = 'flex'
 
     document.querySelector('#globalLegend').addEventListener('click', (e) => {
         const closestHost = e.target.closest('.host')

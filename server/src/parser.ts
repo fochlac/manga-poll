@@ -156,12 +156,16 @@ export function createUrlFilter(source, validateUrl?: (url: string) => boolean) 
     }
 }
 
-let warned = {}
-setTimeout(() => {
-    warned = {}
-}, 1000 * 3600)
+let warnedRaw = {}
 export async function checkNewUrlAvailability (source: Source, newUrls: Partial<Url>[], validateBody: (body: string) => boolean) {
-    const invalidIndexes = [] 
+    const invalidIndexes = []
+    const hour = Math.floor(Date.now() / (60 * 60 * 1000))
+    if (!warnedRaw[hour]) {
+        warnedRaw = {
+            [hour]: {}
+        }
+    }
+    const warned = warnedRaw[hour]
     if (newUrls.length < 5) {
         await newUrls.reduce((promise, url: Url, index) => {
             return promise.then(async () => {              
@@ -182,7 +186,11 @@ export async function checkNewUrlAvailability (source: Source, newUrls: Partial<
                     warned[url.url] = true
                     warned[source.id] = true
                 }
+
             })
+            const pl = invalidIndexes.length !== 1
+            const invalidChapters = invalidIndexes.map((index) => newUrls[index].chapter).join(', ')
+            logWarning(`Found url${pl ? 's': ''} for chapter${pl ? 's': ''} "${invalidChapters}" but ${pl ? 'those urls are': 'that url is'} not published.`, -1)
             newUrls = newUrls.filter((url, index) => !invalidIndexes.includes(index))
         }
     }
@@ -190,7 +198,7 @@ export async function checkNewUrlAvailability (source: Source, newUrls: Partial<
         newUrls.forEach((url) => {
             if (warned[url.url]) {
                 delete warned[url.url]
-                console.log(`Previously invalid url for "${source.title} - Chapter ${url.chapter}"`)
+                console.log(`Previously invalid url for "${source.title} - Chapter ${url.chapter}" is now available.`)
             }
         })
     }
