@@ -2,6 +2,7 @@ import 'regenerator-runtime/runtime.js'
 import { API } from '../common/api'
 import { getLinkHelpers } from '../common/settings'
 import { API_ADDRESS } from './constants'
+import { fetchUrls } from './fetch-urls'
 import { db } from './storage'
 
 const Api = API(API_ADDRESS)
@@ -11,15 +12,6 @@ const ALARMS = {
 }
 
 const Links = getLinkHelpers(db, Api)
-async function fetchUrls () {
-    await Links.fetchLinkUpdate()
-    const maxOld = await db.urls.getMaxOld()
-    const hide = await db.urls.getHide()
-    const sources = await db.sources.read()
-    await Api.Urls.read(sources.map((source) => source.id), maxOld, hide)
-        .then(db.urls.import)
-    refreshBadge()
-}
 
 const alarms = chrome?.alarms || browser?.alarms
 
@@ -27,7 +19,7 @@ alarms.create(ALARMS.URLS, { periodInMinutes: 5 })
 
 alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name === ALARMS.URLS) {
-        fetchUrls()
+        await fetchUrls(db, Api)
     }
 })
 
@@ -57,12 +49,6 @@ db.onChange(async (changes) => {
         refreshBadge()
     }
     if (Object.keys(changes).some((change) => change.includes('sources')) || Object.prototype.hasOwnProperty.call(changes, 'maxOld')) {
-        await fetchUrls()
-    }
-})
-
-self.addEventListener('message', (event) => {
-    if (event.data === 'FETCH_CHAPTERS') {
-        fetchUrls()
+        await fetchUrls(db, Api)
     }
 })

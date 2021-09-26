@@ -2,25 +2,28 @@ const webpack = require('webpack')
 const CopyPlugin = require("copy-webpack-plugin")
 const path = require('path')
 
+const chromeExtensionPath = './extension_chrome/'
+const firefoxExtensionPath = './extension_firefox/'
+
 const config = {
     mode: 'development',
     devtool: 'inline-source-map',
     entry: {
         popup: {
             import: './src/extension/popup.js',
-            filename: 'extension/popup.js'
-        },
-        'popup-firefox': {
-            import: './src/extension_ff/popup.js',
-            filename: 'extension_firefox/popup.js'
+            filename: chromeExtensionPath + 'popup.js'
         },
         'ext-sw': {
             import: './src/extension/sw.js',
-            filename: 'extension/sw.js'
+            filename: chromeExtensionPath + 'sw.js'
+        },
+        'popup-firefox': {
+            import: './src/extension/popup.js',
+            filename: firefoxExtensionPath + 'popup.js'
         },
         'ext-ff-sw': {
-            import: './src/extension_ff/sw.js',
-            filename: 'extension_firefox/sw.js'
+            import: './src/extension/sw.js',
+            filename: firefoxExtensionPath + 'sw.js'
         },
         'page-sw': {
             import: './src/web/sw/sw.js',
@@ -62,16 +65,16 @@ const config = {
                     to: "web/[name][ext]"
                 },
                 {
-                    from: "./src/extension/*.{html,css,json}",
+                    from: "./src/extension/*.{html,css}",
                     to: "extension/[name][ext]"
                 },
                 {
                     from: "./src/extension/popup.html",
-                    to: "extension_firefox/[name][ext]"
+                    to: firefoxExtensionPath + "[name][ext]"
                 },
                 {
-                    from: "./src/extension_ff/*.{html,css,json}",
-                    to: "extension_firefox/[name][ext]"
+                    from: "./src/extension/*.{html,css}",
+                    to: firefoxExtensionPath + "[name][ext]"
                 },
                 {
                     from: "./static/web/*",
@@ -79,13 +82,23 @@ const config = {
                 },
                 {
                     from: "**/*",
-                    to: "./extension/",
+                    to: chromeExtensionPath,
                     context: './static/extension/'
                 },
                 {
                     from: "**/*",
-                    to: "./extension_firefox/",
+                    to: firefoxExtensionPath,
                     context: './static/extension/'
+                },
+                {
+                    from: "**/*",
+                    to: firefoxExtensionPath,
+                    context: './static/extension_ff/'
+                },
+                {
+                    from: "**/*",
+                    to: chromeExtensionPath,
+                    context: './static/extension_chrome/'
                 }
             ],
         }),

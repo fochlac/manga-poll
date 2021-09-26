@@ -9,6 +9,9 @@
   padding-right: 2px;
   box-sizing: border-box;
 }
+body {
+  width: 500px;
+}
 #sources {
   display: none;
   margin-top: 8px;
@@ -118,7 +121,7 @@ body {
   opacity: 0.5;
 }
 html {
-  width: 500px;
+  width: 100%;
   height: 600px;
   font-family: system-ui;
   color: #000c21;
@@ -257,7 +260,7 @@ h6 {
 
 .settings {
   width: calc(100% - 4px);
-  font-size: calc(400% / 3);
+  font-size: 16px;
   padding-right: 4px;
   overflow-x: hidden;
   overflow-y: auto;

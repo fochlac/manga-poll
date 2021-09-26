@@ -12,6 +12,7 @@ import { API } from '../common/api'
 import { API_ADDRESS } from './constants'
 import { initIntro } from './intro'
 import { renderHostList } from '../common/hosts'
+import { fetchUrls } from '../web/fetch'
 
 const api = API(API_ADDRESS)
 
@@ -29,12 +30,12 @@ db.onChange((changes) => {
     }
 })
 
-navigator.serviceWorker.controller.postMessage('FETCH_CHAPTERS')
+fetchUrls(db, api)
 markRefreshed()
 
 const interval = createSchedule({
     callback: () => {
-        navigator.serviceWorker.controller.postMessage('FETCH_CHAPTERS')
+        fetchUrls(db, api)
         markRefreshed()
     },
     interval: 60 * 1000,
