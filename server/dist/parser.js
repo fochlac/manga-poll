@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkNewUrlAvailability = exports.createUrlFilter = exports.createSource = exports.decodeHTMLEntities = exports.parse = exports.headers = exports.getResponseBody = exports.checkSourceType = exports.parseSourceLink = exports.fetchChapterList = exports.registerParser = void 0;
+exports.checkNewUrlAvailability = exports.createUrlFilter = exports.createSource = exports.joinUrl = exports.decodeHTMLEntities = exports.parse = exports.headers = exports.getResponseBody = exports.checkSourceType = exports.parseSourceLink = exports.fetchChapterList = exports.registerParser = void 0;
 const cheerio_1 = __importDefault(require("cheerio"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const stats_1 = require("./stats");
@@ -94,6 +94,12 @@ function decodeHTMLEntities(str) {
     return str;
 }
 exports.decodeHTMLEntities = decodeHTMLEntities;
+function joinUrl(...str) {
+    const raw = str.join('/') + '/';
+    const [protocol, ...urlSegments] = raw.split(/\/+/g);
+    return `${protocol}//${urlSegments.join('/')}`;
+}
+exports.joinUrl = joinUrl;
 function createSource(type, mangaId, title, url) {
     const missingFields = [];
     if (!title) {

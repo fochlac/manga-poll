@@ -106,6 +106,13 @@ export function decodeHTMLEntities(str) {
     return str
 }
 
+export function joinUrl(...str) {
+    const raw = str.join('/') + '/'
+    const [protocol, ...urlSegments] = raw.split(/\/+/g)
+
+    return `${protocol}//${urlSegments.join('/')}`
+}
+
 export function createSource(type: string, mangaId: string, title: string, url: string) {
     const missingFields = []
     if (!title) {

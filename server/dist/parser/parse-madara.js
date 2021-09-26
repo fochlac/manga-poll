@@ -134,27 +134,47 @@ async function parseMadaraPage(rawUrl) {
     return parser_1.createSource(TYPE, mangaId, title, url);
 }
 async function fetchMadara(source) {
-    var _a;
+    var _a, _b, _c;
     let body;
+    let errortext;
     try {
         const resp = await node_fetch_1.default(source.url, { headers: parser_1.headers });
         try {
             body = await parser_1.getResponseBody(resp);
         }
-        catch (err) { }
-        const $ = cheerio_1.default.load(body);
-        if ($('li.wp-manga-chapter > a').length) {
+        catch (err) {
+            errortext = err;
+        }
+        if (body && ((_a = cheerio_1.default.load(body)('li.wp-manga-chapter > a')) === null || _a === void 0 ? void 0 : _a.length)) {
             return parseMadara(source, body);
         }
         else {
             const formData = new form_data_1.default();
             formData.append('action', 'manga_get_chapters');
             formData.append('manga', source.mangaId);
-            const baseurl = (_a = source.url.match(/https?:\/\/[^/]*\//)) === null || _a === void 0 ? void 0 : _a[0];
-            const response = await node_fetch_1.default(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData, headers: parser_1.headers });
-            body = await parser_1.getResponseBody(response);
+            const baseurl = (_b = source.url.match(/https?:\/\/[^/]*\//)) === null || _b === void 0 ? void 0 : _b[0];
+            try {
+                const response = await node_fetch_1.default(`${baseurl}wp-admin/admin-ajax.php`, { method: 'post', body: formData, headers: parser_1.headers });
+                const body = await parser_1.getResponseBody(response);
+                return parseMadara(source, body);
+            }
+            catch (err) {
+                errortext = `${errortext || 'Could not find chapter list in body.'} + ${err}`;
+            }
         }
-        return parseMadara(source, body);
+        if (body && ((_c = cheerio_1.default.load(body)('#manga-chapters-holder')) === null || _c === void 0 ? void 0 : _c.length)) {
+            console.log(source.title, parser_1.joinUrl(source.url, '/ajax/chapters/'));
+            const resp = await node_fetch_1.default(parser_1.joinUrl(source.url, '/ajax/chapters/'), { headers: parser_1.headers, method: 'post' });
+            try {
+                body = await parser_1.getResponseBody(resp);
+                console.log(source.title, body.slice(0, 1000));
+                return parseMadara(source, body);
+            }
+            catch (err) {
+                throw new Error(`${errortext} + ${err}`);
+            }
+        }
+        return [];
     }
     catch (err) {
         const host = source.url.split('/')[2].split('.').slice(-2).join('.');
