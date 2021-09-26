@@ -1,8 +1,8 @@
 {
-    "name": "Manga-Poll",
+    "name": "Manga-Scout",
     "version": "1.0.0",
     "manifest_version": 3,
-    "short_name": "Manga-Poll",
+    "short_name": "Manga-Scout",
     "theme_color": "#2196f3",
     "background_color": "#2196f3",
     "display": "standalone",

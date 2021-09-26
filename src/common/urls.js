@@ -103,13 +103,13 @@ export function urlRenderer (db) {
                 .concat(oldRows.slice(0, maxOld))
                 .concat(oldRows.length >= maxOld ? ['<li class="action load-more">Load up to 100 more old chapters...</li>'] : [])
                 .join('\n')
-            document.title = newRows.length ? `(${newRows.length}) Manga Poll` : 'Manga Poll'
+            document.title = newRows.length ? `(${newRows.length}) Manga Scout` : 'Manga Scout'
             checkTopButton()
         }
         else {
             intro.style.display = 'none'
             urls.innerHTML = '<li class="row">No Chapters available.</li>'
-            document.title = 'Manga Poll'
+            document.title = 'Manga Scout'
         }
     }
 

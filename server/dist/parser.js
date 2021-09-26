@@ -141,12 +141,16 @@ function createUrlFilter(source, validateUrl) {
     };
 }
 exports.createUrlFilter = createUrlFilter;
-let warned = {};
-setTimeout(() => {
-    warned = {};
-}, 1000 * 3600);
+let warnedRaw = {};
 async function checkNewUrlAvailability(source, newUrls, validateBody) {
     const invalidIndexes = [];
+    const hour = Math.floor(Date.now() / (60 * 60 * 1000));
+    if (!warnedRaw[hour]) {
+        warnedRaw = {
+            [hour]: {}
+        };
+    }
+    const warned = warnedRaw[hour];
     if (newUrls.length < 5) {
         await newUrls.reduce((promise, url, index) => {
             return promise.then(async () => {
@@ -166,6 +170,9 @@ async function checkNewUrlAvailability(source, newUrls, validateBody) {
                     warned[source.id] = true;
                 }
             });
+            const pl = invalidIndexes.length !== 1;
+            const invalidChapters = invalidIndexes.map((index) => newUrls[index].chapter).join(', ');
+            stats_1.logWarning(`Found url${pl ? 's' : ''} for chapter${pl ? 's' : ''} "${invalidChapters}" but ${pl ? 'those urls are' : 'that url is'} not published.`, -1);
             newUrls = newUrls.filter((url, index) => !invalidIndexes.includes(index));
         }
     }
@@ -173,7 +180,7 @@ async function checkNewUrlAvailability(source, newUrls, validateBody) {
         newUrls.forEach((url) => {
             if (warned[url.url]) {
                 delete warned[url.url];
-                console.log(`Previously invalid url for "${source.title} - Chapter ${url.chapter}"`);
+                console.log(`Previously invalid url for "${source.title} - Chapter ${url.chapter}" is now available.`);
             }
         });
     }
