@@ -44,6 +44,7 @@ declare global {
 
 let warnings: Record<string, Warning[]> = {}
 const warningsPath = resolve(__dirname, '../db/warnings.json')
+const ipStatsPath = resolve(__dirname, '../db/ip-history.json')
 try {
     warnings = JSON.parse(readFileSync(warningsPath, { encoding: 'utf-8' }))
 }
@@ -54,6 +55,44 @@ catch (e) {
 function write() {
     writeFile(warningsPath, JSON.stringify(warnings, null, 2), () => null)
 }
+
+export function createUserCountEndpoint (app) {
+    let history = [{}]
+    try {
+        history = JSON.parse(readFileSync(ipStatsPath, { encoding: 'utf-8' }))
+    }
+    catch (e) {
+        console.log(e)
+    }
+
+    setInterval(() => {
+        if (history.length >= 10) {
+            history.shift()
+        }
+        history.push({})
+        writeFile(ipStatsPath, JSON.stringify(history, null, 2), () => null)  
+    }, 30 * 60 * 1000)
+
+    app.use((req, _res, next) => {
+        const ip = String(req.headers.proxy_ip || req.connection.remoteAddress).replace('::ffff:', '')
+        next()
+        if (!history[history.length - 1][ip]) {
+            history[history.length - 1][ip] = true
+            writeFile(ipStatsPath, JSON.stringify(history, null, 2), () => null)  
+        }
+    })
+
+    app.get('/stats/users', (req, res) => {
+        res.status(200).json({
+            valid: true,
+            payload: {
+                ipCount: Object.keys(history.reduce((historicIpStats, ipStats) => Object.assign(historicIpStats, ipStats), {})).length
+            }
+        })
+    })
+}
+
+
 
 export function shouldWarn(key, limit) {
     return !warnings[key] || !limit || warnings[key].filter((warning) => Date.now() - warning.date <= 48 * 3600 * 1000).length < limit

@@ -1,12 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateHosts = exports.getHosts = exports.getStats = exports.logWarning = exports.shouldWarn = void 0;
+exports.updateHosts = exports.getHosts = exports.getStats = exports.logWarning = exports.shouldWarn = exports.createUserCountEndpoint = void 0;
 const fs_1 = require("fs");
 const path_1 = require("path");
 const source_storage_1 = require("./source-storage");
 const url_storage_1 = require("./url-storage");
 let warnings = {};
 const warningsPath = path_1.resolve(__dirname, '../db/warnings.json');
+const ipStatsPath = path_1.resolve(__dirname, '../db/ip-history.json');
 try {
     warnings = JSON.parse(fs_1.readFileSync(warningsPath, { encoding: 'utf-8' }));
 }
@@ -16,6 +17,39 @@ catch (e) {
 function write() {
     fs_1.writeFile(warningsPath, JSON.stringify(warnings, null, 2), () => null);
 }
+function createUserCountEndpoint(app) {
+    let history = [{}];
+    try {
+        history = JSON.parse(fs_1.readFileSync(ipStatsPath, { encoding: 'utf-8' }));
+    }
+    catch (e) {
+        console.log(e);
+    }
+    setInterval(() => {
+        if (history.length >= 10) {
+            history.shift();
+        }
+        history.push({});
+        fs_1.writeFile(ipStatsPath, JSON.stringify(history, null, 2), () => null);
+    }, 30 * 60 * 1000);
+    app.use((req, _res, next) => {
+        const ip = String(req.headers.proxy_ip || req.connection.remoteAddress).replace('::ffff:', '');
+        next();
+        if (!history[history.length - 1][ip]) {
+            history[history.length - 1][ip] = true;
+            fs_1.writeFile(ipStatsPath, JSON.stringify(history, null, 2), () => null);
+        }
+    });
+    app.get('/stats/users', (req, res) => {
+        res.status(200).json({
+            valid: true,
+            payload: {
+                ipCount: Object.keys(history.reduce((historicIpStats, ipStats) => Object.assign(historicIpStats, ipStats), {})).length
+            }
+        });
+    });
+}
+exports.createUserCountEndpoint = createUserCountEndpoint;
 function shouldWarn(key, limit) {
     return !warnings[key] || !limit || warnings[key].filter((warning) => Date.now() - warning.date <= 48 * 3600 * 1000).length < limit;
 }

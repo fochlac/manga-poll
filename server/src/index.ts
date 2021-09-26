@@ -18,6 +18,7 @@ import './parser/parse-mangadex'
 import './parser/parse-mangastream'
 import './parser/parse-genkan'
 import './parser/parse-leviathan'
+import { createUserCountEndpoint } from './stats'
 
 const app = express()
 const server = createServer(app)
@@ -29,6 +30,7 @@ app.use(
     createRateLimiter(50, 30)
 )
 
+createUserCountEndpoint(app)
 sourceController(app)
 urlController(app)
 subscriptionsController(app)
