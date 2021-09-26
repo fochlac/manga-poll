@@ -59,7 +59,7 @@ dialog.addEventListener('click', (e) => {
 document.addEventListener('click', (event) => {
     const closestTitle = event.target.closest('.host .title')
     const closestHost = event.target.closest('.host')
-    const closestWarning = event.target.closest('.warning')
+    const closestWarning = event.target.closest('.title .warning')
     const closestDelete = event.target.closest('.delete')
 
     if (closestDelete && closestDelete.contains(event.target)) {
@@ -172,9 +172,10 @@ function renderStats () {
                     else if (stats[host].failureRate.day > 0.02) {
                         weight = ''
                     }
-                    const warning = stats[host].warnings.length ? getIcon(weight) : ''
-                    if (stats[host].warnings.length) {
-                        allWarnings[host] = stats[host].warnings
+                    const warnings = [].concat(stats[host].warnings, stats[host].chapterWarnings)
+                    const warning = warnings.length ? getIcon(weight) : ''
+                    if (warnings.length) {
+                        allWarnings[host] = warnings
                     }
 
                     const title = `${host}&nbsp;(${Object.keys(stats[host].sources).length})`
@@ -182,7 +183,7 @@ function renderStats () {
                             <div class="host${expandedHosts[host] !== undefined ? ' expanded' : ''}" 
                                 data-id="${host}"
                                 data-sources='${Object.keys(stats[host].sources).length}'
-                                data-warnings='${JSON.stringify(stats[host].warnings).replace(/'/g, '`')}'>
+                                data-warnings='${JSON.stringify(warnings).replace(/'/g, '`')}'>
                                 <table class="title">
                                     <tbody>
                                         <tr>
