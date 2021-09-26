@@ -62,7 +62,7 @@ function renderHostDiagram (stats, hosts) {
         .reduce((allMax, day) => {
             let fetchIntervallsPerDay = 24 * 60 / 5
             if (day === today) {
-                fetchIntervallsPerDay = new Date().getHours() * 60 / 5
+                fetchIntervallsPerDay = Math.max(new Date().getHours() * 60 / 5, 1)
             }
             const dayMax = Object.keys(dayWarningMap[day] || {}).reduce((max, host) => {
                 const sourceCount = Object.keys(stats[host].sources).length
