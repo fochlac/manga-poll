@@ -1,6 +1,6 @@
-import { API } from '../common/api'
-import { db } from './storage'
-import { getMessagingToken, requestPermission } from './sw-helper'
+import { API } from '../../common/api'
+import { db } from '../storage'
+import { getMessagingToken, requestPermission } from '../sw/sw-helper'
 const { Subscription } = API('')
 
 const notificationInput = document.getElementById('notification-toggle')

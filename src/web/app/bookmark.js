@@ -1,5 +1,5 @@
-import { db } from './storage'
-import { API } from '../common/api'
+import { db } from '../storage'
+import { API } from '../../common/api'
 
 const { Source } = API('')
 

@@ -24,6 +24,7 @@
     "babel-jest": "^26.3.0",
     "babel-loader": "^8.1.0",
     "cheerio": "^1.0.0-rc.5",
+    "copy-webpack-plugin": "^9.0.1",
     "core-js": "^3.6.5",
     "css-loader": "^4.2.1",
     "eslint": "^7.5.0",

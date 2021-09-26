@@ -1,21 +1,21 @@
 import 'regenerator-runtime/runtime.js'
 import firebase from 'firebase/app'
 import 'firebase/messaging'
-import { addImportHandlers } from '../common/import'
-import { urlRenderer } from '../common/urls'
-import { sourceRenderer } from '../common/sources'
+import { addImportHandlers } from '../../common/import'
+import { urlRenderer } from '../../common/urls'
+import { sourceRenderer } from '../../common/sources'
 import { addBookmarkListener } from './bookmark'
-import { createSchedule } from '../common/schedule'
-import { markRefreshed, resisterProgressHandler, updateProgress } from '../common/progress-bar'
+import { createSchedule } from '../../common/schedule'
+import { markRefreshed, resisterProgressHandler, updateProgress } from '../../common/progress-bar'
 import { registerNotificationHandlers } from './notification-settings'
-import { getMessagingToken } from './sw-helper'
-import { registerMenuListeners } from '../common/menu'
-import { db } from './storage'
-import { API } from '../common/api'
-import { addSettingsHandlers, getLinkHelpers } from '../common/settings'
-import { fetchUrls } from './fetch'
+import { getMessagingToken } from '../sw/sw-helper'
+import { registerMenuListeners } from '../../common/menu'
+import { db } from '../storage'
+import { API } from '../../common/api'
+import { addSettingsHandlers, getLinkHelpers } from '../../common/settings'
+import { fetchUrls } from '../fetch'
 import { addImpressumListeners } from './impressum'
-import { renderHostList } from '../common/hosts'
+import { renderHostList } from '../../common/hosts'
 
 const Api = API('')
 const Links = getLinkHelpers(db, Api)
@@ -29,7 +29,7 @@ firebase.initializeApp({
 })
 
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js')
+    navigator.serviceWorker.register('../sw/sw.js')
 }
 db.urls.setMaxOld(100)
 

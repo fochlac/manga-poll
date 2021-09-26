@@ -1,6 +1,6 @@
 import { checkSourceType, parseSourceLink } from "./parser"
 import { fetchSource } from "./scheduler"
-import { getHosts, getStats, updateHosts } from "./stats"
+import { getHosts, updateHosts } from "./stats"
 import { addSource, getSources, removeSource } from "./source-storage"
 import { deleteUrlBySource } from "./url-storage"
 import { deleteSourceFromLinks } from "./link-controller"
@@ -96,11 +96,6 @@ export function sourceController(app) {
     app.get('/api/sources', async (req, res) => {
         const sources = await getSources()
         res.status(200).json({ valid: true, payload: Object.values(sources) })
-    })
-
-    app.get('/api/sources/stats', async (req, res) => {
-        const stats = await getStats()
-        res.status(200).json({ valid: true, payload: stats })
     })
 
     app.get('/api/sources/hosts', async (req, res) => {

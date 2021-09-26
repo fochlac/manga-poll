@@ -56,7 +56,7 @@ function write() {
     writeFile(warningsPath, JSON.stringify(warnings, null, 2), () => null)
 }
 
-export function createUserCountEndpoint (app) {
+export function createStatsEndpoints (app) {
     let history = [{}]
     try {
         history = JSON.parse(readFileSync(ipStatsPath, { encoding: 'utf-8' }))
@@ -82,7 +82,7 @@ export function createUserCountEndpoint (app) {
         }
     })
 
-    app.get('/stats/users', (req, res) => {
+    app.get('/api/stats/users', (req, res) => {
         res.status(200).json({
             valid: true,
             payload: {
@@ -90,6 +90,12 @@ export function createUserCountEndpoint (app) {
             }
         })
     })
+
+    app.get('/api/stats/sources', async (req, res) => {
+        const stats = await getStats()
+        res.status(200).json({ valid: true, payload: stats })
+    })
+
 }
 
 

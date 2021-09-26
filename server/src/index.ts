@@ -11,6 +11,7 @@ import { init } from './scheduler'
 import { subscriptionsController } from './subscriptions-controller'
 import { linksController } from './link-controller'
 import { createRateLimiter } from './utils/rate-limiter'
+import { createStatsEndpoints } from './stats'
 
 import './parser/parse-fanfox'
 import './parser/parse-madara'
@@ -18,7 +19,6 @@ import './parser/parse-mangadex'
 import './parser/parse-mangastream'
 import './parser/parse-genkan'
 import './parser/parse-leviathan'
-import { createUserCountEndpoint } from './stats'
 
 const app = express()
 const server = createServer(app)
@@ -26,11 +26,11 @@ app.use(
     cors(), 
     compression(), 
     express.json(), 
-    express.static(resolve(__dirname, '../../dist/webapp')),
+    express.static(resolve(__dirname, '../../dist/web')),
     createRateLimiter(50, 30)
 )
 
-createUserCountEndpoint(app)
+createStatsEndpoints(app)
 sourceController(app)
 urlController(app)
 subscriptionsController(app)
