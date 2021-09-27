@@ -12,7 +12,7 @@ import { API } from '../common/api'
 import { API_ADDRESS } from './constants'
 import { initIntro } from './intro'
 import { renderHostList } from '../common/hosts'
-import { fetchUrls } from '../web/fetch'
+import { fetchUrls } from './fetch-urls'
 
 const api = API(API_ADDRESS)
 

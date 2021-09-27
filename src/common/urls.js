@@ -26,7 +26,6 @@ export function urlRenderer (db) {
         const closestLink = event.target.closest('.row.new .link')
         if (closestLink && closestLink.dataset['id'] && urls.contains(closestLink)) {
             await hide(closestLink.dataset['id'])
-            window.open(closestLink.href, '_blank')
         }
         const closestMore = event.target.closest('.action.load-more')
         if (closestMore && urls.contains(closestMore)) {

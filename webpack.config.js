@@ -4,11 +4,16 @@ const path = require('path')
 
 const chromeExtensionPath = './extension_chrome/'
 const firefoxExtensionPath = './extension_firefox/'
+const webappPath = './web/'
 
 const config = {
     mode: 'development',
     devtool: 'inline-source-map',
     entry: {
+        bookmark: {
+            import: './src/extension/test-bookmark.js',
+            filename: chromeExtensionPath + 'test-bookmark.js'
+        },
         popup: {
             import: './src/extension/popup.js',
             filename: chromeExtensionPath + 'popup.js'
@@ -16,6 +21,10 @@ const config = {
         'ext-sw': {
             import: './src/extension/sw.js',
             filename: chromeExtensionPath + 'sw.js'
+        },
+        'bookmark-firefox': {
+            import: './src/extension/test-bookmark.js',
+            filename: firefoxExtensionPath + 'test-bookmark.js'
         },
         'popup-firefox': {
             import: './src/extension/popup.js',
@@ -27,15 +36,15 @@ const config = {
         },
         'page-sw': {
             import: './src/web/sw/sw.js',
-            filename: 'web/sw.js'
+            filename: webappPath + 'sw.js'
         },
         page: {
             import: './src/web/app/index.js',
-            filename: 'web/index.js'
+            filename: webappPath + 'index.js'
         },
         stats: {
             import: './src/web/stats/stats.js',
-            filename: 'web/stats.js'
+            filename: webappPath + 'stats.js'
         }
     },
     output: {
@@ -62,11 +71,11 @@ const config = {
             patterns: [
                 {
                     from: "./src/web/**/*.{html,css}",
-                    to: "web/[name][ext]"
+                    to: webappPath + "[name][ext]"
                 },
                 {
                     from: "./src/extension/*.{html,css}",
-                    to: "extension/[name][ext]"
+                    to: chromeExtensionPath + "[name][ext]"
                 },
                 {
                     from: "./src/extension/popup.html",
@@ -78,27 +87,27 @@ const config = {
                 },
                 {
                     from: "./static/web/*",
-                    to: "web/[name][ext]"
+                    to: webappPath + "[name][ext]"
                 },
                 {
+                    context: './static/extension/',
                     from: "**/*",
-                    to: chromeExtensionPath,
-                    context: './static/extension/'
+                    to: chromeExtensionPath
                 },
                 {
+                    context: './static/extension/',
                     from: "**/*",
-                    to: firefoxExtensionPath,
-                    context: './static/extension/'
+                    to: firefoxExtensionPath
                 },
                 {
+                    context: './static/extension/',
                     from: "**/*",
-                    to: firefoxExtensionPath,
-                    context: './static/extension_ff/'
+                    to: firefoxExtensionPath
                 },
                 {
+                    context: './static/extension_chrome/',
                     from: "**/*",
-                    to: chromeExtensionPath,
-                    context: './static/extension_chrome/'
+                    to: chromeExtensionPath
                 }
             ],
         }),

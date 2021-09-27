@@ -24,7 +24,6 @@ body {
 #bookmark {
   width: 100%;
   background: #ffff8d;
-  border-radius: 2px;
   position: relative;
   display: none;
   flex-direction: column;
