@@ -3,7 +3,7 @@ const baseconfig = require('./webpack.config')
 const config = {
     ...baseconfig,
     mode: 'production',
-    devtool: 'none'
+    devtool: false
 }
 
 module.exports = config

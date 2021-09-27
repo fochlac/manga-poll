@@ -4,6 +4,7 @@ const path = require('path')
 
 const chromeExtensionPath = './extension_chrome/'
 const firefoxExtensionPath = './extension_firefox/'
+const firefoxSourcePath = './extension_firefox_source/'
 const webappPath = './web/'
 
 const config = {
@@ -76,6 +77,14 @@ const config = {
                 {
                     from: "./src/extension/*.{html,css}",
                     to: chromeExtensionPath + "[name][ext]"
+                },
+                {
+                    from: "./{src/extension,src/common,static/extension,static/extension_ff}/**/*",
+                    to: firefoxSourcePath
+                },
+                {
+                    from: "./*",
+                    to: firefoxSourcePath
                 },
                 {
                     from: "./src/extension/popup.html",
