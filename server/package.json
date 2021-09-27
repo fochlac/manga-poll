@@ -21,7 +21,8 @@
     "nanoid": "^3.1.22",
     "node-fetch": "^2.6.1",
     "node-polyfill-webpack-plugin": "^1.1.0",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@babel/core": "^7.10.5",

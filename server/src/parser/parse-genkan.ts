@@ -87,8 +87,14 @@ const genkan: Parser = {
     type: TYPE,
     parseLink: testGenkan,
     parseCondition: async (url) => {
-        const sourcehtml: string = await fetch(url, { headers }).then(res => res.text())
-        return sourcehtml.includes('Powered by Genkan.')
+        try {
+            const sourcehtml: string = await fetch(url, { headers, redirect: 'manual' }).then(res => res.text())
+            return sourcehtml.includes('Powered by Genkan.')
+        }
+        catch(e) {
+            console.log('Error fetching url.', e)
+            return false
+        }
     }
 }
 

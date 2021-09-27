@@ -19,6 +19,7 @@ import './parser/parse-mangadex'
 import './parser/parse-mangastream'
 import './parser/parse-genkan'
 import './parser/parse-leviathan'
+import './parser/parse-webtoons'
 
 const app = express()
 const server = createServer(app)

@@ -51,6 +51,19 @@ function testMangastream () {
     }
 }
 
+function testWebtoons () {
+    const url = window.location.href.split('/').slice(0, 6).join('/')
+    const id = new URLSearchParams(window.location.search).get('title_no')
+    const title = document.querySelector('#container .info .subj')?.innerText
+
+    return {
+        type: 'webtoon',
+        id,
+        title,
+        url
+    }
+}
+
 function testMangadex () {
     if (/title\/[\d-\w]*\/[\d-\w]*/.test(window.location.pathname)) {
         const id = window.location.pathname.split('/')?.[2]
@@ -199,27 +212,24 @@ function test () {
     let result
 
     if (window.location.host === 'fanfox.net') {
-        console.log('fanfox')
         result = testFanFox()
     }
+    else if (window.location.host.includes('webtoons.com')) {
+        result = testWebtoons()
+    }
     else if (document.documentElement.innerHTML.includes('Powered by Genkan.')) {
-        console.log('genkan')
         result = testGenkan()
     }
     else if (document.documentElement.innerHTML.includes('ts-breadcrumb bixbox')) {
-        console.log('mangastream')
         result = testMangastream()
     }
     else if (window.location.host.includes('leviatanscans.com') || window.location.host.includes('immortalupdates.com')) {
-        console.log('leviathan')
         result = testLeviathan()
     }
     else if (window.location.host === 'mangadex.org') {
-        console.log('mangadex')
         result = testMangadex()
     }
     else {
-        console.log('madara')
         result = testMadara()
     }
 

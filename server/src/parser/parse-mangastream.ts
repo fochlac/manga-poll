@@ -73,8 +73,14 @@ const mangastream: Parser = {
     type: TYPE,
     parseLink: testMangastream,
     parseCondition: async (url) => {
-        const sourcehtml: string = await fetch(url, { headers }).then(res => res.text())
-        return sourcehtml.includes('ts-breadcrumb bixbox')
+        try {
+            const sourcehtml: string = await fetch(url, { headers, redirect: 'manual' }).then(res => res.text())
+            return sourcehtml.includes('ts-breadcrumb bixbox')
+        }
+        catch(e) {
+            console.log('Error fetching url.', e)
+            return false
+        }
     }
 }
 
