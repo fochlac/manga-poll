@@ -79,7 +79,7 @@ const config = {
                     to: chromeExtensionPath + "[name][ext]"
                 },
                 {
-                    from: "./{src/extension,src/common,static/extension,static/extension_ff}/**/*",
+                    from: "./{src/extension,src/common,static/extension,static/extension_firefox}/**/*",
                     to: firefoxSourcePath
                 },
                 {
@@ -117,6 +117,11 @@ const config = {
                     context: './static/extension_chrome/',
                     from: "**/*",
                     to: chromeExtensionPath
+                },
+                {
+                    context: './static/extension_firefox/',
+                    from: "**/*",
+                    to: firefoxExtensionPath
                 }
             ],
         }),
