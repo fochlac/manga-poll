@@ -5,7 +5,7 @@ import { checkForWarningClick } from './warning-dialog'
 
 document.addEventListener('click', (event) => {
     const closestTitle = event.target.closest('.host .title')
-    const closestLink = event.target.closest('.host .title .link')
+    const closestLink = event.target.closest('.host .title .link, .host .title .warning')
     const closestHost = event.target.closest('.host')
 
     if (checkClickForDeleteClick(event) || checkForWarningClick(event)) {

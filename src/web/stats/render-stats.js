@@ -86,7 +86,7 @@ function renderHostDiagram (stats, hosts) {
             }, 0)
             return dayMax > allMax ? dayMax : allMax
         }, 0)
-    const maxPercentage = Math.ceil(allMax / 5) * 5
+    const maxPercentage = Math.min(100, Math.ceil(allMax / 5) * 5)
 
     days.forEach((day) => {
         const dayBars = dayWarningMap.hosts
