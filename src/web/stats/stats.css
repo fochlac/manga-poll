@@ -468,11 +468,22 @@ button:hover {
   font-size: 1rem;
   font-weight: 600;
 }
-
 h3 {
   display: flex;
 }
-
+.link {
+  width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  margin-top: 1px;
+  margin-bottom: -3px;
+}
+.link:hover path {
+  fill: royalblue;
+}
+.link path {
+  fill: cornflowerblue;
+}
 h5.row.date {
   position: sticky;
   top: 0;
