@@ -61,7 +61,7 @@ function createPayload(link: Link) {
         hide,
         sources: sources.map((linksrc) => typeof linksrc === 'string' && sourceMap[linksrc] ||
             linksrc.hasOwnProperty('id') && sourceMap[(linksrc as Source).id]
-        ),
+        ).filter((source) => !!source),
         lastModified
     }
 }
