@@ -16,6 +16,13 @@
     "activeTab",
     "scripting"
   ],
+  "host_permissions": ["*://*/*"],
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["content_script.js"]
+    }
+  ],
   "action": {
     "default_icon": {
       "19": "icons/manga-19-half.png",

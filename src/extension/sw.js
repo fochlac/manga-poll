@@ -52,3 +52,32 @@ db.onChange(async (changes) => {
         await fetchUrls(db, Api)
     }
 })
+
+chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+    console.log('request', request)
+
+    if (request?.action === 'PAGE_MATCH') {
+        if (request?.source?.id && request.source.title && request.source.url) {
+            db.sources.read().then((sources) => {
+                if (!sources.some((source) => source.url.split('/')[2] === request.source.url.split('/')[2] && String(source.mangaId) === String(request.source.id))) {
+                    sendResponse({ action: 'SHOW_BOOKMARK' })
+                }
+            })
+            return true
+        }
+    }
+    else if (request?.action === 'SAVE_BOOKMARK') {
+        if (request.source?.mangaId && request.source.title && request.source.url && request.source.type) {
+            Api.Source.insert(request.source)
+                .then((source) => db.sources.add(source))
+                .then(() => {
+                    sendResponse({ action: 'SAVE_BOOKMARK_SUCCESS' })
+                })
+                .catch(() => {
+                    sendResponse({ action: 'SAVE_BOOKMARK_ERROR' })
+                })
+            return true
+        }
+        sendResponse({ action: 'SAVE_BOOKMARK_ERROR' })
+    }
+})

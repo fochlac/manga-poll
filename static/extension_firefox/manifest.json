@@ -11,10 +11,17 @@
     "scripts": ["./sw.js"],
     "persistent": true
   },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["content_script.js"]
+    }
+  ],
   "permissions": [
     "alarms",
     "storage",
-    "activeTab"
+    "activeTab",
+    "*://*/*"
   ],
   "browser_specific_settings": {
     "gecko": {

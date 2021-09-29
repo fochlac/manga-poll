@@ -15,6 +15,7 @@ export function createDB (storage) {
                 return Promise.all([sources, read(NAMESPACES.SYNC, { [key]: '[]' })])
                     .then(([sources, source]) => sources.concat(parse(source[key], [])))
             }, Promise.resolve([]))
+            .then((sources) => sources.filter((source) => !!source))
     }
 
     function writeSources (sources) {
