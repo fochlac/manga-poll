@@ -376,6 +376,7 @@ button:hover {
   border: solid 1px transparent;
   padding: 2px;
   cursor: pointer;
+  user-select: none;
 }
 #globalLegend {
   display: flex;
@@ -454,6 +455,10 @@ button:hover {
 #globalLegend .host:nth-child(18):before,
 #globalDiagramm .percentage:nth-child(18) {
   background: cadetblue;
+}
+#globalLegend .host:nth-child(n + 18):before,
+#globalDiagramm .percentage:nth-child(n + 18) {
+  background: lightgreen;
 }
 #globalDiagramm {
   display: none;

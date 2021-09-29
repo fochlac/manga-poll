@@ -1,6 +1,7 @@
 import { date, getIcon, time } from './utils'
 
 const deleteIcon = document.querySelector('svg.delete')
+const linkIcon = document.querySelector('svg.link').outerHTML
 const activeUsers = document.querySelector('#active-users')
 
 export async function renderStats () {
@@ -161,6 +162,7 @@ function renderHostList (stats, hosts) {
                                             <h5>
                                                 <span class="titletext" title="${title}">${title}</span>
                                                 ${warning}
+                                                <a href="http://${host}/" target="_blank" rel="noopener">${linkIcon}</a>
                                             </h5>
                                         </td>
                                         <td><b>${stats[host].type.replace(/[aeiou]/g, '').slice(0, 3).toUpperCase()}</b></td>
