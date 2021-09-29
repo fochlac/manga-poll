@@ -35,6 +35,17 @@ document.querySelector('#globalLegend').addEventListener('click', (e) => {
     }
 })
 
+function getFetchIntervals (day) {
+    const today = date(Date.now())
+    if (day === today) {
+        return new Date().getHours() * 12 + Math.ceil(new Date().getMinutes() / 5)
+    }
+    else if (day === 'Last hour') {
+        return 12
+    }
+    return 24 * 12
+}
+
 function renderHostDiagram (stats, hosts) {
     const dayWarningMap = hosts.reduce((dayWarningMap, host) => {
         stats[host].warnings.forEach((warning) => {
@@ -63,17 +74,12 @@ function renderHostDiagram (stats, hosts) {
         .map((_v, index) => date(Date.now() - 3600000 * 24 * (6 - index)))
     days.push('Last hour')
 
-    const today = date(Date.now())
     const allMax = days
         .reduce((allMax, day) => {
-            let fetchIntervallsPerDay = 24 * 60 / 5
-            if (day === today) {
-                fetchIntervallsPerDay = Math.max(new Date().getHours() * 60 / 5, 1)
-            }
             const dayMax = Object.keys(dayWarningMap[day] || {}).reduce((max, host) => {
                 const sourceCount = Object.keys(stats[host].sources).length
                 const errorCount = dayWarningMap[day][host] || 0
-                const percentage = Math.round(errorCount / sourceCount / fetchIntervallsPerDay * 100)
+                const percentage = Math.round(errorCount / sourceCount / getFetchIntervals(day) * 100)
                 return percentage > max ? percentage : max
             }, 0)
             return dayMax > allMax ? dayMax : allMax
@@ -81,13 +87,6 @@ function renderHostDiagram (stats, hosts) {
     const maxPercentage = Math.ceil(allMax / 5) * 5
 
     days.forEach((day) => {
-        let fetchIntervallsPerDay = 24 * 60 / 5
-        if (day === today) {
-            fetchIntervallsPerDay = new Date().getHours() ? new Date().getHours() * 60 / 5 : Math.ceil(new Date().getMinutes() / 5)
-        }
-        else if (day === 'Last hour') {
-            fetchIntervallsPerDay = 60 / 5
-        }
         const dayBars = dayWarningMap.hosts
             .reduce((dayBars, host) => {
                 const sourceCount = Object.keys(stats[host].sources).length
@@ -96,7 +95,7 @@ function renderHostDiagram (stats, hosts) {
                     dayBars += '<div class="percentage" style="width: 0px; border: none; visibility: hidden;"></div>'
                     return dayBars
                 }
-                const percentage = Math.min(Math.round(errorCount / sourceCount / fetchIntervallsPerDay * 100), 100)
+                const percentage = Math.min(Math.round(errorCount / sourceCount / getFetchIntervals(day) * 100), 100)
                 const title = `${host}: ${percentage}% error rate (${errorCount})`
                 dayBars += `<div class="percentage" style="height: ${percentage / maxPercentage * 100}%" data-host="${host}" data-title="${title}"></div>`
                 return dayBars
