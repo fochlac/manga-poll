@@ -43,7 +43,7 @@ function renderHostDiagram (stats, hosts) {
                 if (!dayWarningMap['Last hour'][host]) {
                     dayWarningMap['Last hour'][host] = 0
                 }
-                dayWarningMap.hour[host]++
+                dayWarningMap['Last hour'][host]++
             }
             if (!dayWarningMap[warningDay]) {
                 dayWarningMap[warningDay] = {}
