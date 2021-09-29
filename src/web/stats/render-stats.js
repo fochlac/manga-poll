@@ -21,7 +21,7 @@ export async function renderStats () {
 
 document.querySelector('#globalLegend').addEventListener('click', (e) => {
     const closestHost = e.target.closest('.host')
-    const closestHighlight = e.target.closest('.percentage.highlight')
+    const closestHighlight = e.target.closest('.host.highlight')
     if (closestHighlight || closestHost) {
         document.querySelectorAll('#globalDiagramm .percentage.highlight, #globalLegend .host').forEach((elem) => {
             elem.classList.remove('highlight')
@@ -47,6 +47,7 @@ function getFetchIntervals (day) {
 }
 
 function renderHostDiagram (stats, hosts) {
+    const selectedHost = document.querySelector('#globalLegend .host.highlight')
     const dayWarningMap = hosts.reduce((dayWarningMap, host) => {
         stats[host].warnings.forEach((warning) => {
             const warningDay = date(warning.date)
@@ -106,6 +107,12 @@ function renderHostDiagram (stats, hosts) {
     })
 
     document.querySelector('#globalLegend').innerHTML = dayWarningMap.hosts.map((host) => `<div class="host" data-host="${host}">${host}</div>`).join(' ')
+    if (selectedHost) {
+        document.querySelectorAll(`#globalDiagramm .percentage[data-host="${selectedHost.dataset.host}"]`).forEach((elem) => {
+            elem.classList.add('highlight')
+        })
+        selectedHost.classList.add('highlight')
+    }
 }
 
 function renderHostList (stats, hosts) {
