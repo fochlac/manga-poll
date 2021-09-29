@@ -21,6 +21,7 @@ export function checkForWarningClick (event) {
         const html = warnings.reduce((html, warning) => {
             const day = date(warning.date)
             if (lastDay !== day) {
+                lastDay = day
                 html += `<h5 class="row date">${day}</h5>`
             }
             html += `
