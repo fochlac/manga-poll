@@ -467,3 +467,9 @@ button:hover {
 h3 {
   display: flex;
 }
+
+h5.row.date {
+  position: sticky;
+  top: 0;
+  background: white;
+}

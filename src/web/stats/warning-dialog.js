@@ -16,10 +16,16 @@ export function checkForWarningClick (event) {
 
     if (closestWarning && closestWarning.contains(event.target)) {
         const warnings = JSON.parse(closestHost.dataset.warnings)
+
+        let lastDay
         const html = warnings.reduce((html, warning) => {
+            const day = date(warning.date)
+            if (lastDay !== day) {
+                html += `<h5 class="row date">${day}</h5>`
+            }
             html += `
             <div class="row">
-            <div class="date">${date(warning.date)}, ${time(warning.date)}</div>
+            <div class="date">${day}, ${time(warning.date)}</div>
             <div class="message">${warning.message}</div>
             </div>
             `
@@ -38,7 +44,7 @@ export function checkForWarningClick (event) {
         }, {})
 
         const today = date(Date.now())
-        new Array(14).fill(0)
+        new Array(7).fill(0)
             .map((_v, index) => date(Date.now() - 3600000 * 24 * (13 - index)))
             .forEach((day) => {
                 let fetchIntervallsPerDay = 24 * 60 / 5

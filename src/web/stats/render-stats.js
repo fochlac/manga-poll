@@ -12,7 +12,11 @@ export async function renderStats () {
         .sort((a, b) => String(a).localeCompare(b))
 
     renderHostList(stats, sortedHosts)
-    renderHostDiagram(stats, sortedHosts.filter((host) => stats[host].warnings.length))
+    renderHostDiagram(stats, sortedHosts.filter((host) => {
+        return stats[host].warnings
+            .filter((warning) => Date.now() - warning.date <= 8 * 24 * 60 * 60 * 1000)
+            .length
+    }))
 }
 
 document.querySelector('#globalLegend').addEventListener('click', (e) => {
@@ -144,7 +148,9 @@ function renderHostList (stats, hosts) {
         else if (stats[host].failureRate.day > 0.02) {
             weight = ''
         }
-        const warnings = [].concat(stats[host].warnings, stats[host].chapterWarnings).sort((a, b) => a.date - b.date)
+        const warnings = [].concat(stats[host].warnings, stats[host].chapterWarnings)
+            .filter((warning) => Date.now() - warning.date <= 8 * 24 * 60 * 60 * 1000)
+            .sort((a, b) => b.date - a.date)
         const warning = warnings.length ? getIcon(weight) : ''
 
         const title = `${host}&nbsp;(${Object.keys(stats[host].sources).length})`
