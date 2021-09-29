@@ -5,12 +5,13 @@ import { checkForWarningClick } from './warning-dialog'
 
 document.addEventListener('click', (event) => {
     const closestTitle = event.target.closest('.host .title')
+    const closestLink = event.target.closest('.host .title .link')
     const closestHost = event.target.closest('.host')
 
     if (checkClickForDeleteClick(event) || checkForWarningClick(event)) {
         return
     }
-    else if (closestTitle && closestTitle.contains(event.target)) {
+    else if (closestTitle && closestTitle.contains(event.target) && !closestLink) {
         if (closestHost.classList.contains('expanded')) {
             closestHost.querySelector('.details').style.height = 0
             closestHost.classList.remove('expanded')
