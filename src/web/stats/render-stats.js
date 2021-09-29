@@ -8,10 +8,11 @@ export async function renderStats () {
 
     const result = await fetch('/api/stats/sources').then((r) => r.json())
     const stats = result.payload
-    const sortedHosts = Object.keys(stats).sort((a, b) => String(a).localeCompare(b))
+    const sortedHosts = Object.keys(stats)
+        .sort((a, b) => String(a).localeCompare(b))
 
     renderHostList(stats, sortedHosts)
-    renderHostDiagram(stats, sortedHosts)
+    renderHostDiagram(stats, sortedHosts.filter((host) => stats[host].warnings.length))
 }
 
 document.querySelector('#globalLegend').addEventListener('click', (e) => {
