@@ -190,6 +190,7 @@ tr:nth-child(2n) td {
 }
 .title h5 a {
   text-decoration: none;
+  margin-left: auto;
 }
 #warningsDiagramm .bar:hover {
   border-color: #e3ebfb;
