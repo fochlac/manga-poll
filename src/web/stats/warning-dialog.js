@@ -46,7 +46,7 @@ export function checkForWarningClick (event) {
 
         const today = date(Date.now())
         new Array(7).fill(0)
-            .map((_v, index) => date(Date.now() - 3600000 * 24 * (13 - index)))
+            .map((_v, index) => date(Date.now() - 3600000 * 24 * (6 - index)))
             .forEach((day) => {
                 let fetchIntervallsPerDay = 24 * 60 / 5
                 if (day === today) {
