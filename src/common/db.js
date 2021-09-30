@@ -32,7 +32,7 @@ export function createDB (storage) {
 
     async function addSource (source) {
         const sources = await readSources()
-        if (!sources.some(({url, mangaId}) => source.url === url && mangaId === source.mangaId)) {
+        if (!sources.some(({ url, mangaId }) => source.url === url && mangaId === source.mangaId)) {
             sources.push(source)
             await writeSources(sources)
         }
@@ -107,11 +107,26 @@ export function createDB (storage) {
     }
 
     async function init () {
-        const { hide } = await read(NAMESPACES.SYNC, { hide: false })
+        const { hide, uid } = await read(NAMESPACES.SYNC, { hide: false, uid: false })
         if (!hide) {
             const today = new Date()
             today.setHours(0, 0, 0, 0)
-            await write(NAMESPACES.SYNC, { hide: today.getTime()})
+            write(NAMESPACES.SYNC, { hide: today.getTime() })
+        }
+        if (!uid) {
+            let newUid
+            const link = await getLink()
+            if (link?.key) {
+                newUid = link.key
+            }
+            else {
+                newUid = 'anon_' + String(Date.now() * (Math.random() + 0.5) * Math.PI)
+                    .slice(20, 40)
+                    .split('')
+                    .map((ind) => 'acwetrsdqp'.charAt(Number(ind)))
+                    .join('')
+            }
+            write(NAMESPACES.SYNC, { uid: newUid })
         }
     }
 
@@ -125,7 +140,12 @@ export function createDB (storage) {
     }
 
     async function setLink (link) {
-        await write(NAMESPACES.SYNC, { link })
+        const update = { link }
+        if (!link) {
+            update.uid = null
+        }
+
+        await write(NAMESPACES.SYNC, update)
     }
 
     async function getLink () {
@@ -159,23 +179,38 @@ export function createDB (storage) {
         }
     }
 
-    async function setLinkData ({sources, hiddenChapters, hide}) {
-        const storedSources = (await readSources()).reduce((ss, source) => source ? ({...ss, [source.id]: true}) : ss, {})
+    async function setLinkData ({ sources, hiddenChapters, hide, key }) {
+        const storedSources = (await readSources()).reduce((ss, source) => source ? ({ ...ss, [source.id]: true }) : ss, {})
         const hasChangedSources = Object.keys(storedSources).length !== sources.length ||
             sources.some((source) => !storedSources[source.id])
         const promises = [Promise.resolve()]
         if (hasChangedSources) {
             promises.push(writeSources(sources))
         }
-        const hidden = await read(NAMESPACES.SYNC, { hiddenChapters: '{}', hide: 0 })
-        if (hidden.hiddenChapters !== JSON.stringify(hiddenChapters) || String(hidden.hide) !== String(hide)) {
+        const settings = await read(NAMESPACES.SYNC, { hiddenChapters: '{}', hide: 0, uid: '' })
+        if (
+            settings.hiddenChapters !== JSON.stringify(hiddenChapters) ||
+            String(settings.hide) !== String(hide) ||
+            String(settings.uid) !== String(key)
+        ) {
             promises.push(write(NAMESPACES.SYNC, {
                 hiddenChapters: JSON.stringify(hiddenChapters),
-                hide
+                hide,
+                uid: key
             }))
         }
 
         await Promise.all(promises)
+    }
+
+    async function readUid () {
+        const { uid } = await read(NAMESPACES.SYNC, { uid: '' })
+        return uid
+    }
+
+    async function writeUid (newUid) {
+        await write(NAMESPACES.SYNC, { uid: newUid })
+        return newUid
     }
 
     init()
@@ -191,6 +226,10 @@ export function createDB (storage) {
             local: {
                 read: getLocalSettings,
                 set: writeLocalSettings
+            },
+            uid: {
+                read: readUid,
+                write: writeUid
             }
         },
         isDirty,

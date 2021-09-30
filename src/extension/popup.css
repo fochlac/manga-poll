@@ -1,3 +1,28 @@
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 400;
+  src: url('chrome-extension://fdmboijadaabmpkdfikffbgpmibholfo/fonts/Montserrat-Medium.ttf') format('ttf');
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: italic;
+  font-weight: 400;
+  src: url('chrome-extension://fdmboijadaabmpkdfikffbgpmibholfo/fonts/Montserrat-MediumItalic.ttf') format('ttf');
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 600;
+  src: url('chrome-extension://fdmboijadaabmpkdfikffbgpmibholfo/fonts/Montserrat-SemiBold.ttf') format('ttf');
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  src: url('chrome-extension://fdmboijadaabmpkdfikffbgpmibholfo/fonts/Montserrat-Bold.ttf') format('ttf');
+}
+
 #sources,
 #urls {
   list-style: none;
@@ -11,6 +36,8 @@
 }
 body {
   width: 500px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
 }
 #sources {
   display: none;
@@ -80,7 +107,7 @@ h5 {
   font-size: 1rem;
 }
 h5 span.action {
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   letter-spacing: 0.1px;
 }
 .list {
@@ -117,7 +144,7 @@ body {
   display: none;
 }
 .old {
-  opacity: 0.5;
+  opacity: 0.8;
 }
 html {
   width: 100%;
@@ -165,6 +192,9 @@ html {
   z-index: 1;
   outline: white solid 2px;
   padding: 0 5px;
+  margin-bottom: 4px;
+  padding-top: 4px;
+  padding-bottom: 1px;
 }
 .source .data .title {
   font-weight: 700;
@@ -514,6 +544,26 @@ h6 {
   }
 }
 
+a {
+  text-decoration: none;
+  color: #1e6bf7;
+}
+a:hover {
+  color: #407ef1;
+}
+a:active {
+  color: #0e46af;
+}
+a:visited {
+  color: #5e28cc;
+}
+a:visited:hover {
+  color: #855adb;
+}
+a:visited:active {
+  color: #511fb6;
+}
+
 html.dark {
   color: #f4f7ff;
   background: #333;
@@ -542,8 +592,20 @@ html.dark {
 .dark a {
   color: #6590ff;
 }
+.dark a:hover {
+  color: #4f81ff;
+}
+.dark a:active {
+  color: #3971ff;
+}
 .dark a:visited {
   color: #a97eff;
+}
+.dark a:visited:hover {
+  color: #a070ff;
+}
+.dark a:visited:active {
+  color: #935dfd;
 }
 .dark .slider {
   background-color: #444;
@@ -553,9 +615,6 @@ html.dark {
   outline: #222 solid 2px;
   background: #222;
   color: inherit;
-}
-.dark .old {
-  opacity: 0.8;
 }
 .dark #impressum {
   background: #333;

@@ -82,7 +82,7 @@ th {
   top: -1px;
   font-size: 21px;
   line-height: 21px;
-  font-weight: bold;
+  font-weight: 700;
 }
 @media (max-width: 650px) {
   td:nth-child(3),
@@ -227,6 +227,7 @@ tr:nth-child(2n) td {
   width: 100%;
   text-align: center;
 }
+#active-users:hover:before,
 #globalDiagramm .percentage:hover:after,
 #warningsDiagramm .bar:hover:after {
   content: attr(data-title);
@@ -240,6 +241,11 @@ tr:nth-child(2n) td {
   border: black solid 1px;
   text-align: center;
   padding: 2px;
+}
+#active-users:hover:before {
+  font-size: 14px;
+  white-space: nowrap;
+  right: 0;
 }
 #globalDiagramm,
 #warningsDiagramm {
@@ -468,6 +474,8 @@ button:hover {
   margin-left: auto;
   font-size: 1rem;
   font-weight: 600;
+  position: relative;
+  cursor: default;
 }
 h3 {
   display: flex;

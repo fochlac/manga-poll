@@ -27,4 +27,8 @@ const storage = {
     read, write, addListener
 }
 
-export const db = createDB(storage)
+const db = createDB(storage)
+
+export {
+    db
+}

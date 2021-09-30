@@ -33,7 +33,7 @@
   },
   "web_accessible_resources": [
     { 
-      "resources": ["images/*"],
+      "resources": ["images/*", "fonts/*"],
       "extension_ids": ["fdmboijadaabmpkdfikffbgpmibholfo"]
     }
   ]

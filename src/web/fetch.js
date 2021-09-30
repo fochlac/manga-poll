@@ -5,7 +5,7 @@ import { API } from '../common/api'
 
 import { getLinkHelpers } from '../common/settings'
 
-const Api = API('')
+const Api = API('', db)
 
 const Links = getLinkHelpers(db, Api)
 

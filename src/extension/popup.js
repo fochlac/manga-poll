@@ -14,7 +14,7 @@ import { initIntro } from './intro'
 import { renderHostList } from '../common/hosts'
 import { fetchUrls } from './fetch-urls'
 
-const api = API(API_ADDRESS)
+const Api = API(API_ADDRESS, db)
 
 db.urls.setMaxOld(100)
 
@@ -30,12 +30,12 @@ db.onChange((changes) => {
     }
 })
 
-fetchUrls(db, api)
+fetchUrls(db, Api)
 markRefreshed()
 
 const interval = createSchedule({
     callback: () => {
-        fetchUrls(db, api)
+        fetchUrls(db, Api)
         markRefreshed()
     },
     interval: 60 * 1000,
@@ -46,9 +46,9 @@ const interval = createSchedule({
 initIntro()
 resisterProgressHandler(() => interval.triggerInstantly())
 addImportHandlers(db)
-addSettingsHandlers(db, api)
-registerMenuListeners(db, api)
-renderHostList(db, api)
+addSettingsHandlers(db, Api)
+registerMenuListeners(db, Api)
+renderHostList(db, Api)
 
 Urls.render()
 Sources.render()

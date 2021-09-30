@@ -36,7 +36,7 @@
     "default_title": "No new chapters available.",
     "default_popup": "popup.html"
   },
-  "web_accessible_resources": ["images/*"]
+  "web_accessible_resources": ["images/*", "fonts/*"]
 }
 
 

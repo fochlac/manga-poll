@@ -17,7 +17,7 @@ import { fetchUrls } from '../fetch'
 import { addImpressumListeners } from './impressum'
 import { renderHostList } from '../../common/hosts'
 
-const Api = API('')
+const Api = API('', db)
 const Links = getLinkHelpers(db, Api)
 
 firebase.initializeApp({
@@ -29,7 +29,7 @@ firebase.initializeApp({
 })
 
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('../sw/sw.js')
+    navigator.serviceWorker.register('/sw.js')
 }
 db.urls.setMaxOld(100)
 
@@ -73,9 +73,9 @@ db.onChange(async (changes) => {
 addImportHandlers(db)
 addSettingsHandlers(db, Api)
 renderHostList(db, Api)
-addBookmarkListener()
+addBookmarkListener(db, Api)
 registerMenuListeners(db, Api)
-registerNotificationHandlers()
+registerNotificationHandlers(db, Api)
 resisterProgressHandler(() => interval.triggerInstantly())
 addImpressumListeners()
 

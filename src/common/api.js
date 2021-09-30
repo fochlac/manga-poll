@@ -1,32 +1,38 @@
-export const API = (baseUrl = '') => {
-    function postSource (source) {
+function createApi (baseUrl, db) {
+    let uid
+    const getHeader = async () => {
+        if (!uid) {
+            uid = await db.settings.uid.read()
+        }
+
+        return {
+            msuid: uid,
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+        }
+    }
+    async function postSource (source) {
         return fetch(`${baseUrl}/api/sources`, {
             method: 'post',
             body: JSON.stringify(source),
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            }
+            headers: await getHeader()
         })
             .then((res) => res.json())
             .catch((error) => ({ valid: false, error }))
             .then((data) => data.payload)
     }
 
-    function addSourceFromUrl (url) {
+    async function addSourceFromUrl (url) {
         return fetch(`${baseUrl}/api/sources/addFromUrl`, {
             method: 'post',
             body: JSON.stringify({ url }),
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            }
+            headers: await getHeader()
         })
             .then((res) => res.json())
             .catch((error) => ({ valid: false, error }))
     }
 
-    function readUrls (sources = [], limit = '', date = '') {
+    async function readUrls (sources = [], limit = '', date = '') {
         return fetch(
             `${baseUrl}/api/urls/fetch`,
             {
@@ -36,93 +42,72 @@ export const API = (baseUrl = '') => {
                     date,
                     limit
                 }),
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                }
+                headers: await getHeader()
             }
         )
             .then((res) => res.json())
             .then((data) => data.payload || [])
     }
 
-    function addSubscriptions (topics = [], key) {
+    async function addSubscriptions (topics = [], key) {
         return fetch(`${baseUrl}/api/subscriptions`, {
             method: 'post',
             body: JSON.stringify({
                 topics,
                 key: key
             }),
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            }
+            headers: await getHeader()
         })
             .then((res) => res.json())
             .catch((error) => ({ valid: false, error }))
     }
 
-    function deleteSubscriptions (topics = [], key) {
+    async function deleteSubscriptions (topics = [], key) {
         return fetch(`${baseUrl}/api/subscriptions`, {
             method: 'delete',
             body: JSON.stringify({
                 topics,
                 key: key
             }),
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            }
+            headers: await getHeader()
         })
             .then((res) => res.json())
             .catch((error) => ({ valid: false, error }))
     }
 
-    function readLink (key, changedSince) {
+    async function readLink (key, changedSince) {
         return fetch(`${baseUrl}/api/links/${key}${changedSince ? `?changedSince=${changedSince}` : ''}`, {
             method: 'get',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            }
+            headers: await getHeader()
         })
             .then((res) => res.status === 304 ? ({ valid: true, payload: null }) : res.json())
             .catch((error) => ({ valid: false, error }))
     }
 
-    function readHosts () {
+    async function readHosts () {
         return fetch(`${baseUrl}/api/sources/hosts`, {
             method: 'get',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            }
+            headers: await getHeader()
         })
             .then((res) => res.status === 304 ? ({ valid: true, payload: null }) : res.json())
             .catch((error) => ({ valid: false, error }))
     }
 
-    function updateLink (key, updateSet) {
+    async function updateLink (key, updateSet) {
         return fetch(`${baseUrl}/api/links/${key}`, {
             method: 'put',
             body: JSON.stringify(updateSet),
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            }
+            headers: await getHeader()
         })
             .then((res) => res.json())
             .catch((error) => ({ valid: false, error }))
     }
 
-    function createLink (initSet) {
+    async function createLink (initSet) {
         return fetch(`${baseUrl}/api/links`, {
             method: 'post',
             body: JSON.stringify(initSet),
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            }
+            headers: await getHeader()
         })
             .then((res) => res.json())
             .catch((error) => ({ valid: false, error }))
@@ -149,4 +134,13 @@ export const API = (baseUrl = '') => {
             read: readHosts
         }
     }
+}
+
+const apis = {}
+
+export const API = (baseUrl = '', db) => {
+    if (!apis[baseUrl]) {
+        apis[baseUrl] = createApi(baseUrl, db)
+    }
+    return apis[baseUrl]
 }

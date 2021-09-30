@@ -1,9 +1,4 @@
-import { db } from '../storage'
-import { API } from '../../common/api'
-
-const { Source } = API('')
-
-export function addBookmarkListener () {
+export function addBookmarkListener (db, Api) {
     const input = document.getElementById('bookmark')
     const button = document.getElementById('bookmark-button')
 
@@ -13,7 +8,7 @@ export function addBookmarkListener () {
             input.disabled = true
             button.disabled = true
             input.classList.remove('error')
-            Source.fromUrl(url)
+            Api.Source.fromUrl(url)
                 .catch(() => ({ valid: false }))
                 .then(({valid, payload: source}) => {
                     input.disabled = false

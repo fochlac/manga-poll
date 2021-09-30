@@ -57,36 +57,62 @@ function write() {
 }
 
 export function createStatsEndpoints (app) {
-    let history = [{}]
+    let history = {
+        daily: [{}],
+        allTime: {}
+    }
     try {
         history = JSON.parse(readFileSync(ipStatsPath, { encoding: 'utf-8' }))
+        if (Array.isArray(history)) {
+            history = {
+                daily: history,
+                allTime: Object.assign({}, ...history)
+            }
+        }
     }
     catch (e) {
         console.log(e)
     }
 
     setInterval(() => {
-        if (history.length >= 10) {
-            history.shift()
+        if (history.daily.length >= 24) {
+            history.daily.shift()
         }
-        history.push({})
+        history.daily.push({})
         writeFile(ipStatsPath, JSON.stringify(history, null, 2), () => null)  
-    }, 30 * 60 * 1000)
+    }, 60 * 60 * 1000)
 
     app.use((req, _res, next) => {
-        const ip = String(req.headers.proxy_ip || req.connection.remoteAddress).replace('::ffff:', '')
+        const uid = req.headers.msuid
         next()
-        if (!history[history.length - 1][ip]) {
-            history[history.length - 1][ip] = true
+        const daily = history.daily
+
+        if (uid && !daily[daily.length - 1][uid]) {
+            daily[daily.length - 1][uid] = true
+            history.allTime[uid] = true
             writeFile(ipStatsPath, JSON.stringify(history, null, 2), () => null)  
         }
     })
+
+    function evaluateHistory (stats) {
+        return Object.keys(stats)
+            .reduce((stats, uid) => {
+                const isAnon = uid.slice(0, 4) === 'anon'
+                stats[isAnon ? 'anon' : 'linked']++
+
+                return stats
+            }, { 
+                anon: 0, 
+                linked:0 
+            })
+    }
 
     app.get('/api/stats/users', (req, res) => {
         res.status(200).json({
             valid: true,
             payload: {
-                ipCount: Object.keys(history.reduce((historicIpStats, ipStats) => Object.assign(historicIpStats, ipStats), {})).length
+                daily: evaluateHistory(Object.assign({}, ...history.daily)),
+                allTime: evaluateHistory(history.allTime)
             }
         })
     })

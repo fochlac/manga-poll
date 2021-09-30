@@ -5,7 +5,26 @@ import { API_ADDRESS } from './constants'
 import { fetchUrls } from './fetch-urls'
 import { db } from './storage'
 
-const Api = API(API_ADDRESS)
+const Api = API(API_ADDRESS, db)
+
+if (!localStorage.getItem('uid')) {
+    const uid = String(Date.now() * (Math.random() + 0.5) * Math.PI)
+        .slice(20, 40)
+        .split('')
+        .map((ind) => 'acwetrsdqp'.charAt(Number(ind)))
+        .join('')
+
+    localStorage.setItem('uid', uid)
+    db.link.read()
+        .then((link) => {
+            if (link?.key) {
+                localStorage.setItem('uid', link.key)
+                Api.setUid(link.key)
+            }
+        })
+}
+const uid = localStorage.getItem('uid')
+Api.setUid(uid)
 
 const ALARMS = {
     URLS: 'urls'

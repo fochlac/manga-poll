@@ -196,8 +196,9 @@ function renderHostList (stats, hosts) {
 function renderUserCount () {
     fetch('/api/stats/users')
         .then((r) => r.json())
-        .then((r) => r.payload.ipCount)
-        .then((ipcount) => {
-            activeUsers.innerHTML = ipcount === 1 ? '1 active User' : `${ipcount} active Users`
+        .then((r) => r.payload || {daily: {linked: 0, anon: 0}, allTime: {linked: 0, anon: 0}})
+        .then(({daily, allTime}) => {
+            activeUsers.innerHTML = daily.linked === 1 ? `1 User (${daily.anon} anon)` : `${daily.linked} Users (${daily.anon} anon)`
+            activeUsers.dataset.title = `All-Time: ${allTime.linked} (${allTime.anon} anon)`
         })
 }

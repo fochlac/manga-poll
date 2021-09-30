@@ -10,7 +10,7 @@ const bookmark = document.getElementById('bookmark')
 const bookmarkTrack = document.getElementById('bookmark-track')
 const bookmarkTitle = document.getElementById('bookmark-title')
 
-const { Source } = API(API_ADDRESS)
+const { Source } = API(API_ADDRESS, db)
 
 bookmarkTrack.addEventListener('click', () => {
     bookmark.classList.remove('error')
