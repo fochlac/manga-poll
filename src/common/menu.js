@@ -62,7 +62,12 @@ export function registerMenuListeners (db, Api) {
 
     settings.addEventListener('click', openSettings)
 
-    if (getLinkQuery()) {
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.has('pages')) {
+        openSettings()
+        setTimeout(() => document.getElementById('hosts').scrollIntoView(true), 200)
+    }
+    else if (getLinkQuery()) {
         openSettings()
         linkIfUnlinked(db, Api)
     }
