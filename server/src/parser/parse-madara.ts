@@ -73,7 +73,7 @@ function parseDates(urlList) {
 
 async function parseMadara(source: Source, body) {
     const $ = cheerio.load(body)
-    const host = source.url.split('/')[2].split('.').slice(-2).join('.')
+    const host = getHost(source.url)
 
     const urlList = $('li.wp-manga-chapter > a').toArray().map((elem) => {
         const url = $(elem).attr('href')
@@ -190,7 +190,7 @@ async function fetchMadara(source: Source) {
         return []
     }
     catch (err) {
-        const host = source.url.split('/')[2].split('.').slice(-2).join('.')
+        const host = getHost(source.url)
         logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0)
         return []
     }

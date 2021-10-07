@@ -3,11 +3,12 @@ import fetch from 'node-fetch'
 import { createSource, createUrlFilter, registerParser, headers } from '../parser'
 import { logWarning } from '../stats'
 import { parseStringPromise } from 'xml2js'
+import { getHost } from '../utils/parse'
 
 const TYPE = 'webtoon'
 
 async function fetchWebtoons(source: Source) {
-    const host = source.url.split('/')[2].split('.').slice(-2).join('.')
+    const host = getHost(source.url)
     try {
         const rssXml = await fetch(`${source.url}/rss?title_no=${source.mangaId}`, { headers }).then((res) => res.text())
         const rssJson = await parseStringPromise(rssXml)

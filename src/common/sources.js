@@ -1,3 +1,5 @@
+import { getHost } from './utils'
+
 export function sourceRenderer (db) {
     const sources = document.getElementById('sources')
 
@@ -18,7 +20,7 @@ export function sourceRenderer (db) {
                 if (!source) {
                     return ''
                 }
-                const url = String(source.url).replace(/https?:\/\//, '').split('/')[0].split('.').slice(-2).join('.')
+                const url = getHost(source.url)
                 return (
                     `<li class="row source">
                         <div class="data" title="${`${source.title} (${url})`}">

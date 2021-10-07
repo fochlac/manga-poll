@@ -10,3 +10,7 @@ export function parse (string, fallback) {
 export function pad (no) {
     return ('00' + no).slice(-2)
 }
+
+export function getHost (url) {
+    return url.replace(/https?:\/\//, '').split('/')[0]?.split('.').slice(-2).join('.')
+}

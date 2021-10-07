@@ -4,6 +4,7 @@ import { sendTopicMessage } from './subscriptions-controller'
 import { fetchChapterList } from './parser'
 import { getSources } from './source-storage'
 import { updateHosts } from './stats'
+import { getHost } from './utils/parse'
 
 async function fetchUrls(source, isNew = false) {
     let urls = []
@@ -13,7 +14,7 @@ async function fetchUrls(source, isNew = false) {
     if (urls.length) {
         let page = source.url
         try {
-            page = source.url.split('/')[2].split('.').slice(-2).join('.')
+            page = getHost(source.url)
         }
         catch (e) { }
         console.log(`${urls.length} new urls for ${source.title} on "${page}".`)
@@ -27,7 +28,7 @@ async function fetchAllUrls(isNew?: boolean) {
     const start = Date.now()
     const fetchPromiseMap = Object.values(getSources())
         .reduce((promiseMap, source) => {
-            const host = source.url.replace(/https?:\/\//, '').split('/')[0]
+            const host = getHost(source.url)
             const previousFetch = promiseMap[host] || Promise.resolve()
             promiseMap[host] = previousFetch.then(() => {
                 const fetchPromise = fetchUrls(source, isNew)

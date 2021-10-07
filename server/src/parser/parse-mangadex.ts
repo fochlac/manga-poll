@@ -7,7 +7,7 @@ const TYPE = 'mangadex'
 const pageSize = 100
 
 async function fetchMangadex(source: Source) {
-    const host = source.url.split('/')[2].split('.').slice(-2).join('.')
+    const host = getHost(source.url)
     try {
         const result = await fetch(`${source.url}/feed?limit=${pageSize}`, { method: 'get' }).then((res) => res.json())
 

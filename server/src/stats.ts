@@ -2,6 +2,7 @@ import { readFileSync, writeFile } from "fs"
 import { resolve } from "path"
 import { getSources } from "./source-storage"
 import { getUrlKey, getUrls } from "./url-storage"
+import { getHost } from "./utils/parse"
 declare global {
     interface Warning {
         date: number;
@@ -201,7 +202,7 @@ export async function getStats(): Promise<Stats> {
     const sources = await getSources()
 
     const stats = Object.values(sources).reduce((stats, source) => {
-        const host = source.url.split('/')[2].split('.').slice(-2).join('.')
+        const host = getHost(source.url)
         const url = source.url.split('/').slice(0, 3).join('/')
         stats[host] = stats[host] || emptyStats(url, source.type, warnings[host])
         const sourceChapters = Object.values(urls).filter((url) => url.sourceId === source.id)

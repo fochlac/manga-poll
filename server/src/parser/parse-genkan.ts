@@ -2,6 +2,7 @@ import cheerio from 'cheerio'
 import fetch from 'node-fetch'
 import { registerParser, headers, getResponseBody, createSource, createUrlFilter } from '../parser'
 import { logWarning } from '../stats'
+import { getHost } from '../utils/parse'
 
 const TYPE = 'genkan'
 
@@ -56,7 +57,7 @@ async function fetchGenkan(source: Source) {
         const body = await getResponseBody(response)
 
         const $ = cheerio.load(body)
-        const host = source.url.split('/')[2].split('.').slice(-2).join('.')
+        const host = getHost(source.url)
     
         const urlList = $('#content > .container > .row > .col-lg-9 .card .list-item').toArray().map((elem) => {
             const chapter = $(elem).find('span').text().trim()
@@ -76,7 +77,7 @@ async function fetchGenkan(source: Source) {
         return urlList.filter(createUrlFilter(source))
     }
     catch (err) {
-        const host = source.url.split('/')[2].split('.').slice(-2).join('.')
+        const host = getHost(source.url)
         logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0)
         return []
     }

@@ -2,12 +2,13 @@ import cheerio from 'cheerio'
 import fetch from 'node-fetch'
 import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, createUrlFilter, joinUrl } from '../parser'
 import { logWarning } from '../stats'
+import { getHost } from '../utils/parse'
 
 const TYPE = 'leviathan'
 
 function parseLeviathan(source: Source, body, url) {
     const $ = cheerio.load(body)
-    const host = source.url.split('/')[2].split('.').slice(-2).join('.')
+    const host = getHost(source.url)
     const baseDate = new Date()
     baseDate.setHours(0, 0, 0, 0)
 
@@ -73,7 +74,7 @@ async function fetchLeviathan(source: Source) {
         return parseLeviathan(source, body, url)
     }
     catch (err) {
-        const host = source.url.split('/')[2].split('.').slice(-2).join('.')
+        const host = getHost(source.url)
         logWarning(host, `Error fetching chapterlist for ${source.title} from ${url}: ${err?.message || 'Unknown Error.'}`, 0)
         return []
     }

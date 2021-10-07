@@ -2,6 +2,7 @@ import cheerio from 'cheerio'
 import fetch from 'node-fetch'
 import { registerParser, headers, getResponseBody, createSource, createUrlFilter, checkNewUrlAvailability } from '../parser'
 import { logWarning } from '../stats'
+import { getHost } from '../utils/parse'
 
 const TYPE = 'mangastream'
 
@@ -24,7 +25,7 @@ function parseMangastream(source: Source, body) {
     const $ = cheerio.load(body)
     const baseDate = new Date()
     baseDate.setHours(0, 0, 0, 0)
-    const host = source.url.split('/')[2].split('.').slice(-2).join('.')
+    const host = getHost(source.url)
 
     const urlList = $('#chapterlist li').toArray().map((elem) => {
         const rawDate = new Date($(elem).find('.chapterdate').text())
@@ -65,7 +66,7 @@ async function fetchMangastream(source: Source) {
         return parseMangastream(source, body)
     }
     catch (err) {
-        const host = source.url.split('/')[2].split('.').slice(-2).join('.')
+        const host = getHost(source.url)
         logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0)
         return []
     }

@@ -1,4 +1,5 @@
 import { API } from '../../common/api'
+import { getHost } from '../../common/utils'
 import { API_ADDRESS } from '../shared/constants'
 import { db } from '../shared/storage'
 
@@ -34,7 +35,7 @@ controller.runtime.onMessage.addListener(async (request) => {
     if (request.id && request.title && request.url) {
         const sources = await db.sources.read()
 
-        if (!sources.some((source) => source.url.split('/')[2] === request.url.split('/')[2] && String(source.mangaId) === String(request.id))) {
+        if (!sources.some((source) => getHost(source.url) === getHost(request.url) && String(source.mangaId) === String(request.id))) {
             bookmark.style.display = 'flex'
             bookmarkTitle.innerText = `Do you want to start tracking "${request.title}"?`
             currentSource = {
