@@ -16,7 +16,7 @@ function test () {
                 renderBookmark(result)
             }
             else if (response?.action === 'TRACK_PROGRESS') {
-                trackProgress(result.chapter, response.source)
+                trackProgress(response.url, response.source)
             }
         })
     }

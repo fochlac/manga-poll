@@ -3,19 +3,31 @@ import { hideChapter } from '../../common/urls'
 const controller = chrome || browser
 
 export function initMessageHandler (db, Api) {
-    controller.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+    controller.runtime.onMessage.addListener((request, _sender, sendResponseRaw) => {
         console.log('request', request)
+        const sendResponse = (response) => {
+            console.log('response', response)
+            sendResponseRaw(response)
+        }
 
         if (request?.action === 'PAGE_MATCH') {
             if (request?.source?.id && request.source.title && request.source.url) {
-                db.sources.read().then((sources) => {
+                db.sources.read().then(async (sources) => {
                     const source = sources.find((source) => source.url.split('/')[2] === request.source.url.split('/')[2] && String(source.mangaId) === String(request.source.id))
                     if (!source) {
-                        sendResponse({ action: 'SHOW_BOOKMARK' })
+                        return sendResponse({ action: 'SHOW_BOOKMARK' })
                     }
                     else if (request.source.chapter) {
-                        sendResponse({ action: 'TRACK_PROGRESS', source })
+                        const { newUrls } = await db.urls.read()
+                        const url = newUrls.find((url) => url.sourceId === source.id && url.chapter === request.source.chapter)
+
+                        if (url) {
+                            return sendResponse({ action: 'TRACK_PROGRESS', url, source })
+                        }
                     }
+
+                    // close message channel by sending empty response
+                    sendResponse({})
                 })
                 return true
             }
@@ -36,14 +48,12 @@ export function initMessageHandler (db, Api) {
             sendResponse({ action: 'SAVE_BOOKMARK_ERROR' })
         }
         else if (request?.action === 'MARK_READ') {
-            if (request.source?.id && request.chapter) {
-                db.urls.read().then(({newUrls}) => {
-                    const url = newUrls.find((url) => url.sourceId === request.source?.id && url.chapter === request.chapter)
-                    if (url) {
-                        hideChapter(db, url.id)
-                    }
-                })
+            if (request.url) {
+                hideChapter(db, request.url.id)
+                sendResponse({ action: 'MARK_READ_SUCCESS' })
+                return true
             }
+            sendResponse({ action: 'MARK_READ_ERROR' })
         }
     })
 }

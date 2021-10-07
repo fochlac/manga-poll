@@ -36,3 +36,13 @@ export function extractMostFrequentValue (valueList) {
     return Object.keys(valueMap)
         .sort((v1, v2) => valueMap[v1] - valueMap[v2])[0]
 }
+
+export function executeOnce (cb) {
+    let marked = false
+    return () => {
+        if (!marked) {
+            marked = true
+            return cb()
+        }
+    }
+}

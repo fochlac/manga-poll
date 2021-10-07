@@ -55,3 +55,4 @@ db.onChange(async (changes) => {
 })
 
 initMessageHandler(db, Api)
+refreshBadge()

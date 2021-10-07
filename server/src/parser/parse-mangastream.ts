@@ -50,6 +50,9 @@ function parseMangastream(source: Source, body) {
         if ($('#readerarea img').length > 3) {
             return true
         }
+        else if ($('#readerarea-loading').length) {
+            return true
+        }
         return false
     })
 }
