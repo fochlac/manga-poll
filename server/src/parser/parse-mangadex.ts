@@ -1,6 +1,7 @@
 import fetch from 'node-fetch'
 import { createSource, createUrlFilter, registerParser } from '../parser'
 import { logWarning } from '../stats'
+import { getHost } from '../utils/parse'
 
 const TYPE = 'mangadex'
 

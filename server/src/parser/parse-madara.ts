@@ -3,6 +3,7 @@ import FormData from 'form-data'
 import fetch from 'node-fetch'
 import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, createUrlFilter, checkNewUrlAvailability, joinUrl } from '../parser'
 import { logWarning } from '../stats'
+import { getHost } from '../utils/parse'
 
 const TYPE = 'madara'
 

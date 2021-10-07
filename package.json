@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack && npm run build --prefix server",
     "watch": "webpack -w",
-    "package": "rm -rf ./dist && webpack --config webpack.config.prod.js && node ./zip-files.js"
+    "package": "rm -rf ./dist && webpack --config webpack.config.prod.js && npm run build --prefix server && node ./zip-files.js"
   },
   "author": "",
   "license": "UNLICENSED",
