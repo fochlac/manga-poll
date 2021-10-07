@@ -1,6 +1,6 @@
-import { API } from '../common/api'
-import { API_ADDRESS } from './constants'
-import { db } from './storage'
+import { API } from '../../common/api'
+import { API_ADDRESS } from '../shared/constants'
+import { db } from '../shared/storage'
 
 const controller = chrome || browser
 

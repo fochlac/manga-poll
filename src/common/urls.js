@@ -1,21 +1,23 @@
 import { pad } from './utils'
 
+export async function hideChapter (db, id) {
+    const { newUrls, oldUrls } = await db.urls.read()
+    if (newUrls.length <= 1 && (!newUrls[0] || newUrls[0].id === id)) {
+        const latestChapterDate = oldUrls.concat(newUrls)
+            .reduce((lcd, url) => url.created > lcd ? url.created : lcd, 0)
+
+        db.urls.hideAll(latestChapterDate + 1)
+    }
+    else {
+        db.urls.hide(id)
+    }
+}
+
 export function urlRenderer (db) {
     const urls = document.getElementById('urls')
     const intro = document.getElementById('intro')
 
-    async function hide (id) {
-        const { newUrls, oldUrls } = await db.urls.read()
-        if (newUrls.length <= 1 && (!newUrls[0] || newUrls[0].id === id)) {
-            const latestChapterDate = oldUrls.concat(newUrls)
-                .reduce((lcd, url) => url.created > lcd ? url.created : lcd, 0)
-
-            db.urls.hideAll(latestChapterDate + 1)
-        }
-        else {
-            db.urls.hide(id)
-        }
-    }
+    const hide = (id) => hideChapter(db, id)
 
     urls.addEventListener('click', async (event) => {
         const closestHide = event.target.closest('.row .hide')

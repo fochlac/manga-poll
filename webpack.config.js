@@ -15,24 +15,32 @@ const config = {
             import: './src/extension/test-bookmark.js',
             filename: chromeExtensionPath + 'test-bookmark.js'
         },
+        content: {
+            import: './src/extension/content-script.js',
+            filename: chromeExtensionPath + 'content-script.js'
+        },
         popup: {
-            import: './src/extension/popup.js',
+            import: './src/extension/popup/popup.js',
             filename: chromeExtensionPath + 'popup.js'
         },
         'ext-sw': {
-            import: './src/extension/sw.js',
+            import: './src/extension/service-worker/sw.js',
             filename: chromeExtensionPath + 'sw.js'
         },
         'bookmark-firefox': {
             import: './src/extension/test-bookmark.js',
             filename: firefoxExtensionPath + 'test-bookmark.js'
         },
+        'content-firefox': {
+            import: './src/extension/content-script.js',
+            filename: firefoxExtensionPath + 'content-script.js'
+        },
         'popup-firefox': {
-            import: './src/extension/popup.js',
+            import: './src/extension/popup/popup.js',
             filename: firefoxExtensionPath + 'popup.js'
         },
         'ext-ff-sw': {
-            import: './src/extension/sw.js',
+            import: './src/extension/service-worker/sw.js',
             filename: firefoxExtensionPath + 'sw.js'
         },
         'page-sw': {
@@ -75,24 +83,12 @@ const config = {
                     to: webappPath + "[name][ext]"
                 },
                 {
-                    from: "./src/extension/*.{html,css}",
-                    to: chromeExtensionPath + "[name][ext]"
-                },
-                {
                     from: "./{src/extension,src/common,static/extension,static/extension_firefox}/**/*",
                     to: firefoxSourcePath
                 },
                 {
                     from: "./*",
                     to: firefoxSourcePath
-                },
-                {
-                    from: "./src/extension/popup.html",
-                    to: firefoxExtensionPath + "[name][ext]"
-                },
-                {
-                    from: "./src/extension/*.{html,css}",
-                    to: firefoxExtensionPath + "[name][ext]"
                 },
                 {
                     from: "./static/web/*",

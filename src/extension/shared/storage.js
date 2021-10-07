@@ -1,4 +1,4 @@
-import { createDB } from '../common/db'
+import { createDB } from '../../common/db'
 
 const browserStorage = chrome?.storage || browser?.storage
 
