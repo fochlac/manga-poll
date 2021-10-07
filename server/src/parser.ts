@@ -167,16 +167,18 @@ export async function checkNewUrlAvailability (source: Source, newUrls: Partial<
     }
     const warned = warnedRaw[hour]
     if (newUrls.length < 5) {
-        await newUrls.reduce((promise, url: Url, index) => {
-            return promise.then(async () => {              
-                const resp = await fetch(url.url, { headers })
-                const body = await getResponseBody(resp)
+        await newUrls.reduce((promise, url: Url, index) => 
+            promise
+                .then(() => new Promise(resolve => setTimeout(() => resolve(null), 5000)))
+                .then(async () => {              
+                    const resp = await fetch(url.url, { headers })
+                    const body = await getResponseBody(resp)
 
-                if (!validateBody(body)) {
-                    invalidIndexes.push(index)
-                }
-            })
-        }, Promise.resolve())
+                    if (!validateBody(body)) {
+                        invalidIndexes.push(index)
+                    }
+                })
+        , Promise.resolve())
 
         if (invalidIndexes.length) {
             invalidIndexes.forEach((index) => {
@@ -190,7 +192,7 @@ export async function checkNewUrlAvailability (source: Source, newUrls: Partial<
             })
             const pl = invalidIndexes.length !== 1
             const invalidChapters = invalidIndexes.map((index) => newUrls[index].chapter).join(', ')
-            logWarning(`Found url${pl ? 's': ''} for chapter${pl ? 's': ''} "${invalidChapters}" but ${pl ? 'those urls are': 'that url is'} not published.`, -1)
+            logWarning(newUrls[0].host, `Found url${pl ? 's': ''} for chapter${pl ? 's': ''} "${invalidChapters}" but ${pl ? 'those urls are': 'that url is'} not published.`, -1)
             newUrls = newUrls.filter((url, index) => !invalidIndexes.includes(index))
         }
     }

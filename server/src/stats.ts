@@ -165,7 +165,6 @@ const emptyStats = (url, type, warnings = []) => ({
     }
 })
 
-
 const hourInMs = 60 * 60 * 1000
 const dayInMs = 24 * hourInMs
 const weekInMs = 7 * dayInMs
@@ -173,11 +172,15 @@ const fetchesPerHour = 60 / 5
 const fetchesPerDay = 24 * fetchesPerHour
 const fetchesPerWeek = 7 * fetchesPerDay
 
-setInterval(() => {
+function cleanWarnings() {
     let removedNumber = 0
     Object.keys(warnings).filter((key) => {
-        const newWarnings = warnings[key].filter((warning) => (Date.now() - warning.date) > 2 * weekInMs)
-        if (newWarnings.length !== warnings[key].length) {
+        const newWarnings = warnings[key].filter((warning) => (Date.now() - warning.date) < 2 * weekInMs)
+        if (!newWarnings.length) {
+            removedNumber += warnings[key].length - newWarnings.length
+            delete warnings[key]
+        }
+        else if (newWarnings.length !== warnings[key].length) {
             removedNumber += warnings[key].length - newWarnings.length
             warnings[key] = newWarnings
         }
@@ -187,7 +190,11 @@ setInterval(() => {
         console.log(`Removed ${removedNumber} old warnings.`)
         write()
     }
-}, dayInMs)
+}
+
+setInterval(() => cleanWarnings(), 60 * 1000)
+
+cleanWarnings()
 
 export async function getStats(): Promise<Stats> {
     const urls = await getUrls()
