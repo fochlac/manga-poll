@@ -1,4 +1,4 @@
-import { parse } from './utils'
+import { parse, randomId } from './utils'
 
 const NAMESPACES = {
     SYNC: 'sync',
@@ -113,18 +113,14 @@ export function createDB (storage) {
             today.setHours(0, 0, 0, 0)
             write(NAMESPACES.SYNC, { hide: today.getTime() })
         }
-        if (!uid) {
+        if (!uid || uid === 'anon_') {
             let newUid
             const link = await getLink()
             if (link?.key) {
                 newUid = link.key
             }
             else {
-                newUid = 'anon_' + String(Date.now() * (Math.random() + 0.5) * Math.PI)
-                    .slice(20, 40)
-                    .split('')
-                    .map((ind) => 'acwetrsdqp'.charAt(Number(ind)))
-                    .join('')
+                newUid = 'anon_' + randomId()
             }
             write(NAMESPACES.SYNC, { uid: newUid })
         }
