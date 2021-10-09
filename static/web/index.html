@@ -5,19 +5,26 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manga Scout</title>
-    <meta name="Description" content="Manga Scout is a web app to keep track of manga/manhua chapter updates across multiple webpages and will notify you, if a new chapter is available.">
+    <meta
+      name="Description"
+      content="Manga Scout is a web app to keep track of manga/manhua chapter updates across multiple webpages and will notify you, if a new chapter is available."
+    />
     <link rel="stylesheet" href="index.css" />
     <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
     <meta name="msapplication-TileColor" content="#da532c" />
     <meta name="theme-color" content="#ffffff" />
   </head>
   <body>
+    <div id="extension" class="hidden"></div>
     <h5>
       <span id="popupTitle">Chapters</span>
       <span id="progress" data-before="(Refresh now!)"
@@ -56,15 +63,21 @@
       <div id="intro">
         <h5 data-title="Welcome to Manga Scout"></h5>
         <p>
-          Manga Scout is a web app to keep track of manga/manhua chapter updates across
-          multiple webpages and will notify you as soon as a new chapter is available.
+          Manga Scout is a web app to keep track of manga/manhua chapter updates
+          across multiple webpages and will notify you as soon as a new chapter
+          is available.
         </p>
         <h5 data-title="How to get started"></h5>
         <p>
           The easiest way to start tracking mangas is by using the
-          <a href="https://chrome.google.com/webstore/detail/fdmboijadaabmpkdfikffbgpmibholfo/" >Chrome extension</a>
-          or the <a href="https://addons.mozilla.org/de/firefox/addon/manga-scout/" >Firefox extension</a>,
-          but you can do without.
+          <a
+            href="https://chrome.google.com/webstore/detail/fdmboijadaabmpkdfikffbgpmibholfo/"
+            >Chrome Extension</a
+          >
+          or the
+          <a href="https://addons.mozilla.org/de/firefox/addon/manga-scout/"
+            >Firefox Extension</a
+          >, but you can do without.
         </p>
         <p>
           First click the "Bookmarks"-link in the top right corner of this page.
@@ -174,8 +187,8 @@
                 <div class="unlink">
                   <label for="new-link-button" class="label">
                     If you click "Remove Linking" the connection to the linked
-                    account will be removed. The locally stored state will
-                    remain, but your changes will no longer be synced to other
+                    account will be removed. Everything will remain as it is
+                    now, but your changes will no longer be synced to other
                     locations and you will no longer recieve updates from the
                     account.
                   </label>
@@ -189,9 +202,17 @@
           <h6>Support</h6>
           <p>
             If this extension and website is helpful to you, please consider
-            <a href="https://paypal.me/fochlac/5" target="_blank" rel="noopener">donating to help with the server costs</a>.
-            If you want me to add a not yet supported page, make sure it catches my attention by adding a message with
-            the missing page to your <a href="https://paypal.me/fochlac/20" target="_blank" rel="noopener">donation</a>.
+            <a href="https://paypal.me/fochlac/5" target="_blank" rel="noopener"
+              >donating to help with the server costs</a
+            >. If you want me to add a not yet supported page, make sure it
+            catches my attention by adding a message with the missing page to
+            your
+            <a
+              href="https://paypal.me/fochlac/20"
+              target="_blank"
+              rel="noopener"
+              >donation</a
+            >.
           </p>
         </div>
         <div id="hosts"></div>
@@ -375,6 +396,7 @@
     </div>
     <div id="impressum-bar">
       <span> Designed and developed by Florian Riedel. &copy; 2020 </span>
+      <span id="extension-footer"></span>
       <span class="action"> Legal Disclosure </span>
     </div>
   </body>

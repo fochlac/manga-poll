@@ -22,4 +22,8 @@ function test () {
     }
 }
 
+if (window?.sessionStorage) {
+    sessionStorage.setItem('hasMangaScout', 1)
+}
+
 test()

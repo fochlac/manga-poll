@@ -79,10 +79,6 @@ const config = {
         new CopyPlugin({
             patterns: [
                 {
-                    from: "./src/web/**/*.{html,css}",
-                    to: webappPath + "[name][ext]"
-                },
-                {
                     from: "./{src/extension,src/common,static/extension,static/extension_firefox}/**/*",
                     to: firefoxSourcePath
                 },

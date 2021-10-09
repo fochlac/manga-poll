@@ -12,6 +12,12 @@ export function createRateLimiter(amount: number, seconds: number) {
         }
         requests[ip] += 1
         if (requests[ip] >= amount) {
+            if (requests[ip] === amount) {
+                console.log(`IP ${ip} exceeded rate limit with ${requests[ip]} requests in ${seconds} seconds. Slowing down.`)
+            }
+            setTimeout(() => next(), 5000)
+        }
+        else if (requests[ip] >= amount * 2) {
             if (requests[ip] % amount === 0) {
                 console.log(`IP ${ip} exceeded rate limit. ${requests[ip]} requests in ${seconds} seconds.`)
             }

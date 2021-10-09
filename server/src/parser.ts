@@ -110,7 +110,7 @@ export function joinUrl(...str) {
     const raw = str.join('/') + '/'
     const [protocol, ...urlSegments] = raw.split(/\/+/g)
 
-    return `${protocol}//${urlSegments.join('/')}`
+    return `${protocol}//${urlSegments.filter((seg) => seg?.length).join('/')}`
 }
 
 export function createSource(type: string, mangaId: string, title: string, url: string) {

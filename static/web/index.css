@@ -598,14 +598,16 @@ h6 {
   cursor: default;
   display: none;
 }
-
+#extension a:visited,
 a {
   text-decoration: none;
   color: #1e6bf7;
 }
+#extension a:visited:hover,
 a:hover {
   color: #407ef1;
 }
+#extension a:visited:active,
 a:active {
   color: #0e46af;
 }
@@ -711,4 +713,19 @@ html.dark {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #b1b1b1;
+}
+#extension.hidden {
+  display: none;
+}
+#extension {
+  display: flex;
+  width: calc(100% + 20px);
+  padding: 8px 16px;
+  background: #ffff8d;
+  box-sizing: border-box;
+  margin: 0 -10px;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  font-style: normal;
 }
