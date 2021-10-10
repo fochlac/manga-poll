@@ -1,5 +1,5 @@
-import { parse } from '../../common/utils'
-import { decodeHTMLEntities, extractMostFrequentValue } from './utils'
+
+import { parse, decodeHTMLEntities, extractMostFrequentValue } from '../../common/utils'
 
 export function testLeviathan () {
     const header = document.querySelector('.post-title h1')

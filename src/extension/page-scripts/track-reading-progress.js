@@ -1,4 +1,4 @@
-import { executeOnce, randomID } from './utils'
+import { executeOnce, randomId } from '../../common/utils'
 
 const controller = chrome || browser
 
@@ -76,7 +76,7 @@ export function trackProgress (url, source) {
 
 function showSuccessBadge (title, chapter) {
     const div = document.createElement('div')
-    const id = randomID()
+    const id = randomId()
     div.innerHTML = `
         <style>
             .${id} {

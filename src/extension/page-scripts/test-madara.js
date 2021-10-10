@@ -1,4 +1,4 @@
-import { decodeHTMLEntities, extractMostFrequentValue } from './utils'
+import { decodeHTMLEntities, extractMostFrequentValue } from '../../common/utils'
 
 export function testMadara () {
     const id = extractMostFrequentValue([

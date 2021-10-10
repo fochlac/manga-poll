@@ -1,15 +1,15 @@
-import { randomID } from './utils'
+import { randomId } from '../../common/utils'
 
 const controller = chrome || browser
 
 export function renderBookmark (result) {
     const div = document.createElement('div')
-    const id = randomID()
-    const id2 = randomID()
-    const id3 = randomID()
-    const id4 = randomID()
-    const id5 = randomID()
-    const id6 = randomID()
+    const id = 'c_' + randomId(5)
+    const id2 = 'c_' + randomId(5)
+    const id3 = 'c_' + randomId(5)
+    const id4 = 'c_' + randomId(5)
+    const id5 = 'c_' + randomId(5)
+    const id6 = 'c_' + randomId(5)
     div.innerHTML = `
     <style>
         .${id} {
