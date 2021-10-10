@@ -25,6 +25,9 @@ export function randomID () {
 export function extractMostFrequentValue (valueList) {
     const valueMap = valueList
         .reduce((valueMap, value) => {
+            if (!value?.length) {
+                return valueMap
+            }
             if (!valueMap[value]) {
                 valueMap[value] = 0
             }

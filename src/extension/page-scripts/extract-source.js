@@ -9,7 +9,7 @@ import { testWebtoons } from './test-webtoon'
 export function extractSource () {
     let result
     try {
-        if (window.location.host === 'fanfox.net') {
+        if (window.location.host.includes('fanfox.net')) {
             result = testFanFox()
         }
         else if (window.location.host.includes('webtoons.com')) {
@@ -24,7 +24,7 @@ export function extractSource () {
         else if (window.location.host.includes('leviatanscans.com') || window.location.host.includes('immortalupdates.com')) {
             result = testLeviathan()
         }
-        else if (window.location.host === 'mangadex.org') {
+        else if (window.location.host.includes('mangadex.org')) {
             result = testMangadex()
         }
         else {

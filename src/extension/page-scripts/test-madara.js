@@ -1,16 +1,7 @@
 import { decodeHTMLEntities, extractMostFrequentValue } from './utils'
 
 export function testMadara () {
-    function parse (string, fallback) {
-        try {
-            return JSON.parse(string)
-        }
-        catch (e) {
-            return fallback
-        }
-    }
-
-    const ids = [
+    const id = extractMostFrequentValue([
         window?.manga?.manga_id,
         document.querySelector('.rating-post-id')?.value,
         document.querySelector('.wp-manga-action-button')?.dataset?.['post'],
@@ -19,29 +10,17 @@ export function testMadara () {
         document.querySelector('.bookmark')?.dataset?.['id'],
         document.getElementById('manga-reading-nav-head')?.dataset?.['id'],
         document.getElementById('manga-reading-nav-foot')?.dataset?.['id']
-    ]
-        .filter((title) => title)
-        .reduce((map, id) => {
-            map[id] = typeof map[id] === 'number' ? map[id] + 1 : 1
-            return map
-        }, {})
-    const id = Object.keys(ids).sort((id1, id2) => ids[id1] - ids[id2])[0]
+    ])
 
     const header = document.querySelector('.post-title h1') || document.querySelector('h1.entry-title')
-    const titles = [
+    let title = extractMostFrequentValue([
+        document.querySelector('ol.breadcrumb > li:nth-child(2)')?.innerText,
         Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
-            .map((script) => parse(script.innerText)?.headline).find((h) => h),
+            .map((script) => /"headline":\s*"([^"]*)"/.exec(script.innerText)?.[1]).find((h) => h),
         document.getElementById('chapter-heading')?.innerText?.split(' - ')[0],
         header && Array.from(header.childNodes).reduce((title, node) => title + (node.nodeType === 3 ? node.textContent : ''), ''),
         document.querySelector('.rate-title')?.title
-    ]
-        .filter((title) => title)
-        .reduce((map, title) => {
-            const clean = decodeHTMLEntities(title).trim()
-            map[clean] = typeof map[clean] === 'number' ? map[clean] + 1 : 1
-            return map
-        }, {})
-    let title = Object.keys(titles).sort((title1, title2) => titles[title1] - titles[title2])[0]
+    ].map((title) => typeof title === 'string' && decodeHTMLEntities(title).trim()))
 
     let url = null
     if (document?.location?.href) {

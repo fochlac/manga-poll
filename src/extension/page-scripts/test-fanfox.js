@@ -1,7 +1,8 @@
 export function testFanFox () {
     const url = window.location.pathname.match(/^\/manga\/[^/]*\//)?.[0]
     const name = document.querySelector('.reader-header-title-1 a:first-child')?.innerText ||
-        document.querySelector('.detail-info-right-title-font')?.innerText
+        document.querySelector('.detail-info-right-title-font')?.innerText ||
+        document.querySelector('.manga-detail p.title')?.innerText
     const chapter = /Ch\.0*(\d)$/.exec(document.querySelector('.reader-header-title-2')?.innerText || '')?.[1]
 
     return {
