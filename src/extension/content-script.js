@@ -7,12 +7,12 @@ const controller = chrome || browser
 function test () {
     const result = extractSource()
 
-    if (result && localStorage.getItem(result.url) !== 'hidden') {
+    if (result) {
         controller.runtime.sendMessage({
             action: 'PAGE_MATCH',
             source: result
         }, (response) => {
-            if (response?.action === 'SHOW_BOOKMARK') {
+            if (response?.action === 'SHOW_BOOKMARK' && localStorage.getItem(result.url) !== 'hidden') {
                 renderBookmark(result)
             }
             else if (response?.action === 'TRACK_PROGRESS') {
