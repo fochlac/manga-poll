@@ -104,7 +104,7 @@ function showSuccessBadge (title, chapter) {
 
     div.className = id
 
-    document.body.prepend(div)
+    document.documentElement.prepend(div)
 
     return () => div.remove()
 }

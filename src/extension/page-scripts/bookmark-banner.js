@@ -10,6 +10,7 @@ export function renderBookmark (result) {
     const id4 = 'c_' + randomId(5)
     const id5 = 'c_' + randomId(5)
     const id6 = 'c_' + randomId(5)
+    const id7 = 'c_' + randomId(5)
     div.innerHTML = `
     <style>
         .${id} {
@@ -114,10 +115,10 @@ export function renderBookmark (result) {
           }
         </style>
       <p class="${id2}">
-        <span id="bookmark-title">You can bookmark "<span class="${id3}">${result.title}</span>" with Manga-Scout.</span>
+        <span id="${id7}">You can bookmark "<span class="${id3}">${result.title}</span>" with Manga-Scout.</span>
         <span class="${id5}">
-            <span class="${id4} submit">Bookmark</span>
-            <span class="${id4} hide">Hide</span>
+            <span class="${id4} ${id4}-submit">Bookmark</span>
+            <span class="${id4} ${id4}-hide">Hide</span>
         </span>
         </p>
         `
@@ -125,8 +126,8 @@ export function renderBookmark (result) {
     div.className = id
 
     div.addEventListener('click', (e) => {
-        const closestSubmit = e.target.closest('.submit')
-        const closestHide = e.target.closest('.hide')
+        const closestSubmit = e.target.closest(`.${id4}-submit`)
+        const closestHide = e.target.closest(`.${id4}-hide`)
         if (closestSubmit) {
             div.classList.add(id6)
 
@@ -145,7 +146,7 @@ export function renderBookmark (result) {
                 else if (result?.action === 'SAVE_BOOKMARK_ERROR') {
                     div.classList.remove(id6)
                     closestSubmit.innerText = 'Retry'
-                    div.querySelector('#bookmark-title').innerText =
+                    div.getElementById(id7).innerText =
                         'Unable to create bookmark, please retry later and if it keeps failing,' +
                         ' send an email with the time + url to "info@fochlac.com".'
                 }
@@ -156,5 +157,5 @@ export function renderBookmark (result) {
             localStorage.setItem(result.url, 'hidden')
         }
     })
-    document.body.prepend(div)
+    document.documentElement.prepend(div)
 }
