@@ -1,9 +1,10 @@
-import { checkSourceType, parseSourceLink } from "./parser"
+import { checkSourceType, createSource, parseSourceLink } from "./parser"
 import { fetchSource } from "./scheduler"
 import { getHosts, updateHosts } from "./stats"
-import { addSource, getSources, removeSource } from "./source-storage"
+import { addSource, getSources, removeSource, updateSource } from "./source-storage"
 import { deleteUrlBySource } from "./url-storage"
-import { deleteSourceFromLinks } from "./link-controller"
+import { deleteSourceFromLinks, markLinksWithSourceChanged } from "./link-controller"
+import { adminUrl } from "./utils/authentication"
 
 async function createSourceIfNeeded(rawSource) {
     const { title, url, mangaId, type } = rawSource
@@ -42,8 +43,8 @@ export function sourceController(app) {
             }
         }
         catch(err) {
-            console.log(err?.message)
-            res.status(400).json({ valid: false })
+            console.log('Unexpected Error while creating source:', err?.message, req?.body)
+            res.status(500).json({ valid: false })
         }
     })
 
@@ -74,22 +75,56 @@ export function sourceController(app) {
         }
     })
 
-    app.delete('/api/sources/:id', async (req, res) => {
+    app.put('/api/sources/:id', adminUrl, async (req, res) => {
         const { id } = req.params
-        const { authentication } = req.headers
-        if (authentication === 'Ich darf das!') {
+        try {
             const sources = await getSources()
-            console.log(`Deleting source with id "${id}": ${JSON.stringify(sources[id])}`)
-            const success = removeSource(id)
-            deleteUrlBySource(id)
-            deleteSourceFromLinks(id)
+            if (sources[id]) {
+                console.log(`Deleting source with id "${id}": ${JSON.stringify(sources[id])}`)
+                try {
+                    const { title, type, url, mangaId } = req?.body || {}
+                    const rawSource = createSource(type, mangaId, title, url)
+                    const changedSource = updateSource(id, rawSource)
+                    markLinksWithSourceChanged(id)
 
-            updateHosts()
-            res.status(200).json({ valid: success, payload: id })
+                    res.status(200).json({ valid: true, payload: changedSource })
+                }
+                catch(e) {
+                    res.status(500).json({ valid: false, payload: 'Internal Server Error'})
+                }
+
+            }
+            else {
+                res.status(400).send({ valid: false, payload: 'Bad Request' })
+            }
         }
-        else {
-            console.log(`Rejected delete request for source with id "${id}" - bad password.`)
-            res.status(401).json({ valid: false })
+        catch(e) {
+            res.status(500).send({ valid: false, payload: 'Internal Server Error' })
+            console.log('Unexpected Error while updating source:', e)
+        }
+    })
+
+    app.delete('/api/sources/:id', adminUrl, async (req, res) => {
+        const { id } = req.params
+        try {
+            const sources = await getSources()
+            if (sources[id]) {
+                console.log(`Deleting source with id "${id}": ${JSON.stringify(sources[id])}`)
+                const success = removeSource(id)
+                deleteUrlBySource(id)
+                deleteSourceFromLinks(id)
+    
+                updateHosts()
+                res.status(200).json({ valid: success, payload: id })
+            }
+            else {
+                console.log(`Cannot delete source with id "${id}": Doesn't exist.`)
+                res.status(400).send({ valid: false, payload: 'Bad Request' })
+            }
+        }
+        catch(e) {
+            res.status(500).send({ valid: false, payload: 'Internal Server Error' })
+            console.log('Unexpected Error while deleting source:', e)
         }
     })
 

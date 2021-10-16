@@ -1,7 +1,9 @@
 import cheerio from 'cheerio'
 import FormData from 'form-data'
 import fetch from 'node-fetch'
+import { markLinksWithSourceChanged } from '../link-controller'
 import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, createUrlFilter, checkNewUrlAvailability, joinUrl } from '../parser'
+import { updateSource } from '../source-storage'
 import { logWarning } from '../stats'
 import { getHost } from '../utils/parse'
 
@@ -108,8 +110,10 @@ async function parseMadara(source: Source, body) {
 
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g
 
-async function parseMadaraPage(rawUrl: string) {
-    const sourcehtml: string = await fetch(rawUrl, { headers }).then(res => res.text())
+const fetchPage:(rawUrl: string) => Promise<string> = 
+    async (rawUrl) => await fetch(rawUrl, { headers }).then(res => res.text())
+
+function parseMadaraPage(sourcehtml: string, rawUrl: string) {
     const $ = cheerio.load(sourcehtml)
 
     const ids = [
@@ -162,6 +166,17 @@ async function fetchMadara(source: Source) {
         }
         
         if (body && cheerio.load(body)('li.wp-manga-chapter > a')?.length) {
+            try {
+                const rawSource = parseMadaraPage(body, source.url)
+                if (rawSource && ['mangaId', 'url', 'title'].some((prop) => rawSource[prop] !== source[prop])) {
+                    console.log(`Source has changed - updating from "${JSON.stringify(source)}" to "${JSON.stringify(rawSource)}".`)
+                    updateSource(source.id, rawSource)
+                    markLinksWithSourceChanged(source.id)
+                }
+            }
+            catch(e) {
+                console.log(`Error updating source: ${source.title} (${source.id}): ${e?.message}`)
+            }
             return parseMadara(source, body)
         }
         else {
@@ -200,7 +215,10 @@ async function fetchMadara(source: Source) {
 const madara = {
     fetchFunction: fetchMadara,
     type: TYPE,
-    parseLink: parseMadaraPage,
+    parseLink: async (rawUrl: string ) => {
+        const sourcehtml = await fetchPage(rawUrl)
+        return parseMadaraPage(sourcehtml, rawUrl)
+    },
     parseCondition: () => false
 }
 

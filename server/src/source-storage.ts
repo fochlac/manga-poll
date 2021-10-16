@@ -50,11 +50,24 @@ export async function addSource(title, url, mangaId, type) {
     return entry
 }
 
+export async function updateSource(id, { title, url, mangaId }) {
+    const entry = sources[id]
+    if (entry) {
+        entry.title = title
+        entry.url = url
+        entry.mangaId = mangaId
+        sources[id] = entry
+        fs.writeFile(sourcesPath, JSON.stringify(sources, null, 2), () => null)
+        return entry
+    }
+    throw new Error(`Cannot update. Source with ${id} doesn't exist.`)
+}
+
 export function removeSource(id) {
     if (sources[id]) {
         delete sources[id]
         fs.writeFile(sourcesPath, JSON.stringify(sources, null, 2), () => null)
         return true
     }
-    return false
+    throw new Error(`Cannot delete. Source with ${id} doesn't exist.`)
 }

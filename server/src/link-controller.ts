@@ -107,11 +107,20 @@ export function deleteSourceFromLinks(sourceId) {
     Object.keys(links).forEach((key) => {
         if (links[key].sources?.includes(sourceId)) {
             links[key].sources = links[key].sources.filter((sourceKey) => sourceKey && sourceKey !== sourceId)
+            links[key].lastModified = Date.now()
         }
     })
     write()
 }
 
+export function markLinksWithSourceChanged(sourceId) {
+    Object.keys(links).forEach((key) => {
+        if (links[key].sources?.includes(sourceId)) {
+            links[key].lastModified = Date.now()
+        }
+    })
+    write()
+}
 
 export function linksController(app) {
     app.post('/api/links', (req, res) => {
