@@ -24,7 +24,7 @@ export function getLinkHelpers (db, Api) {
 
             if (Object.keys(update).length && link.key) {
                 await Api.Link.update(link.key, update)
-                    .then((res) => res.valid && db.link.set({ key: res.payload.key }))
+                    .then((res) => res.valid && db.link.set(res.payload))
             }
         }
     }
@@ -36,7 +36,9 @@ export function getLinkHelpers (db, Api) {
             Api.Link.read(link.key, link.lastModified)
                 .then((res) => {
                     if (res.valid && res.payload) {
-                        db.link.setLocal(res.payload)
+                        const link = res.payload
+                        db.link.setLocal(link)
+                        db.link.set(link)
                     }
                 })
         }
@@ -126,14 +128,14 @@ async function connectToLink (key, api, db) {
     linkProgress.style.display = 'none'
     if (linkResult?.valid) {
         const link = linkResult.payload
-        await db.link.set({ key: link.key })
+        await db.link.set(link)
         await db.link.setLocal(link)
 
         return link
     }
-    else {
-        linkError.style.display = 'flex'
-    }
+
+    linkError.style.display = 'flex'
+
     const linkLinkWarn = document.getElementById('link-link-warning')
 
     if (linkLinkWarn) {
@@ -237,7 +239,7 @@ export async function addSettingsHandlers (db, api) {
             const newLinkResult = await Link.insert(linkData)
             if (newLinkResult?.valid) {
                 const link = newLinkResult.payload
-                await db.link.set({ key: link.key })
+                await db.link.set(link)
                 writeStateToDom(link)
             }
         }

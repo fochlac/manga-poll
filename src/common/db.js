@@ -120,7 +120,7 @@ export function createDB (storage) {
                 newUid = link.key
             }
             else {
-                newUid = 'anon_' + randomId()
+                newUid = `anon_${randomId()}`
             }
             write(NAMESPACES.SYNC, { uid: newUid })
         }
@@ -137,7 +137,11 @@ export function createDB (storage) {
 
     async function setLink (link) {
         const update = { link }
-        if (!link) {
+        if (link) {
+            const { key, lastModified } = link
+            update.link = {key, lastModified}
+        }
+        else {
             update.uid = null
         }
 

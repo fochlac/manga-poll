@@ -4,14 +4,21 @@ const controller = chrome || browser
 
 export function renderBookmark (result) {
     const div = document.createElement('div')
-    const id = 'c_' + randomId(5)
-    const id2 = 'c_' + randomId(5)
-    const id3 = 'c_' + randomId(5)
-    const id4 = 'c_' + randomId(5)
-    const id5 = 'c_' + randomId(5)
-    const id6 = 'c_' + randomId(5)
-    const id7 = 'c_' + randomId(5)
+    const id = `c_${randomId(5)}`
+    const id2 = `c_${randomId(5)}`
+    const id3 = `c_${randomId(5)}`
+    const id4 = `c_${randomId(5)}`
+    const id5 = `c_${randomId(5)}`
+    const id6 = `c_${randomId(5)}`
+    const id7 = `c_${randomId(5)}`
     div.innerHTML = `
+    <style>
+        ${window.location.href.includes('fanfox.net') ? `
+            .topbar {
+                padding-top: 30px;
+            }
+        ` : ''}
+    </style>
     <style>
         .${id} {
             position: sticky;

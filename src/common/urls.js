@@ -6,10 +6,10 @@ export async function hideChapter (db, id) {
         const latestChapterDate = oldUrls.concat(newUrls)
             .reduce((lcd, url) => url.created > lcd ? url.created : lcd, 0)
 
-        db.urls.hideAll(latestChapterDate + 1)
+        await db.urls.hideAll(latestChapterDate + 1)
     }
     else {
-        db.urls.hide(id)
+        await db.urls.hide(id)
     }
 }
 
