@@ -19,7 +19,7 @@ async function fetchMangadex(source: Source) {
 
         if (result.total > pageSize) {
             for (let offset = pageSize; offset <= result.total; offset += pageSize) {
-                const offsetResult = await fetch(`${source.url}?limit=${pageSize}&offset=${offset}`, { method: 'get' })
+                const offsetResult = await fetch(`https://api.mangadex.org/manga/${source.mangaId}/feed?limit=${pageSize}&offset=${offset}`, { method: 'get' })
                     .then((res) => res.json())
                 list = list.concat(offsetResult.data)
             }
