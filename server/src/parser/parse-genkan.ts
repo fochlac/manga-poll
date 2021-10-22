@@ -1,7 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, getResponseBody, createSource, createUrlFilter } from '../parser'
-import { logWarning } from '../stats'
+import { registerParser, headers, getResponseBody, createSource, createUrlFilter, joinUrl } from '../parser'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'genkan'
@@ -68,18 +67,31 @@ async function fetchGenkan(source: Source) {
                 created: parseDate($(elem).find('.item-company').text()) + (!isNaN(Number(chapter)) ? Number(chapter) : 0)
             }
         })
-    
+
+        const rawImageUrl = $('.media-comic-card a.media-content').attr('style')?.match(/background-image:\s*url\(([^)]*)\)/)?.[1]
+        const imageUrl = rawImageUrl.includes(getHost(source.url)) ? rawImageUrl : joinUrl(source.url.split('/').slice(0,3).join('/') , rawImageUrl)
+        const description =  $('meta[name="description"]').attr('content')
+
+        let sourceInfo
+        if (imageUrl?.length && description?.length && (!source.imageUrl || !source.description)) {
+            sourceInfo = {
+                imageUrl,
+                description
+            }
+        }
+
         if (!urlList?.length) {
-            logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0)
-            return []
+            return { urls: [], warning: [host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0] }
         }
     
-        return urlList.filter(createUrlFilter(source))
+        return {
+            urls: urlList.filter(createUrlFilter(source)),
+            sourceInfo
+        }
     }
     catch (err) {
         const host = getHost(source.url)
-        logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0)
-        return []
+        return { urls: [], warning: [host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0] }
     }
 }
 

@@ -1,7 +1,5 @@
-import cheerio from 'cheerio'
 import fetch from 'node-fetch'
 import { createSource, createUrlFilter, registerParser, headers } from '../parser'
-import { logWarning } from '../stats'
 import { parseStringPromise } from 'xml2js'
 import { getHost } from '../utils/parse'
 
@@ -13,6 +11,17 @@ async function fetchWebtoons(source: Source) {
         const rssXml = await fetch(`${source.url}/rss?title_no=${source.mangaId}`, { headers }).then((res) => res.text())
         const rssJson = await parseStringPromise(rssXml)
 
+        const description = rssJson?.rss?.channel?.[0]?.description[0]
+        const imageUrl = rssJson?.rss?.channel?.[0]?.image?.[0]?.url?.[0]
+
+        let sourceInfo
+        if (imageUrl?.length && description?.length && (!source.imageUrl || !source.description)) {
+            sourceInfo = {
+                imageUrl,
+                description
+            }
+        }
+
         const urlList = rssJson?.rss?.channel?.[0]?.item
             ?.map((item) => {
                 const url = item.link[0]
@@ -21,11 +30,13 @@ async function fetchWebtoons(source: Source) {
                 return { url, chapter, host, created: new Date(item.pubDate[0]).getTime() }
             })
 
-        return urlList.filter(createUrlFilter(source))
+        return {
+            urls: urlList.filter(createUrlFilter(source)),
+            sourceInfo
+        }
     }
     catch (err) {
-        logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0)
-        return []
+        return { urls: [], warning: [host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0] }
     }
 }
 
@@ -36,8 +47,10 @@ async function parseWebtoonsLink (rawUrl: string) {
     const rssXml = await fetch(`${url}/rss?title_no=${id}`, { headers }).then(r => r.text())
     const rssJson = await parseStringPromise(rssXml)
     const title = rssJson?.rss?.channel?.[0]?.title[0]
+    const description = rssJson?.rss?.channel?.[0]?.description[0]
+    const imageUrl = rssJson?.rss?.channel?.[0]?.image?.link
 
-    return createSource(TYPE, id, title, url)
+    return createSource(TYPE, id, title, url, imageUrl, description)
 }
 
 

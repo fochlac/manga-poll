@@ -1,6 +1,8 @@
-import fs from 'fs'
+import { readFileSync } from 'fs'
 import { customAlphabet, urlAlphabet } from 'nanoid'
 import { resolve } from 'path'
+import { markLinksWithSourceChanged } from './link-controller'
+import { createWrite } from './utils/db'
 
 declare global {
     interface Source {
@@ -9,24 +11,27 @@ declare global {
         type: string;
         url: string;
         mangaId: string;
+        description?: string;
+        imageUrl?: string;
     }
 }
 
 const nanoid = customAlphabet(urlAlphabet, 10)
 const sourcesPath = resolve(__dirname, '../db/sources.json')
+const writeSources = createWrite(sourcesPath)
 
 let sources: Record<string, Source> = {}
 try {
-    sources = JSON.parse(fs.readFileSync(sourcesPath, { encoding: 'utf-8' }))
+    sources = JSON.parse(readFileSync(sourcesPath, { encoding: 'utf-8' }))
     let hasChanges = false
     Object.keys(sources).forEach((key) => {
-        if (sources[key].type === "asura") {
-            sources[key].type = "mangastream"
+        if (sources[key].type === 'mangadex' && sources[key].url.includes('api.mangadex')) {
+            sources[key].url = `https://mangadex.org/title/${sources[key].id}`
             hasChanges = true
         }
     })
     if (hasChanges) {
-        fs.writeFile(sourcesPath, JSON.stringify(sources, null, 2), () => null)        
+        writeSources(sources)        
     }
 }
 catch (e) {
@@ -37,27 +42,36 @@ export function getSources() {
     return sources
 }
 
-export async function addSource(title, url, mangaId, type) {
+export async function addSource(title, url, mangaId, type, imageUrl = '', description = '') {
     const entry = {
         title,
         url,
+        imageUrl,
+        description,
         id: nanoid(),
         mangaId,
         type
     }
     sources[entry.id] = entry
-    fs.writeFile(sourcesPath, JSON.stringify(sources, null, 2), () => null)
+    writeSources(sources)
     return entry
 }
 
-export async function updateSource(id, { title, url, mangaId }) {
+export async function updateSource(id, { title, url, mangaId, imageUrl, description }: Partial<Source>) {
     const entry = sources[id]
     if (entry) {
         entry.title = title
         entry.url = url
         entry.mangaId = mangaId
+        if (imageUrl) {
+            entry.imageUrl = imageUrl
+        }
+        if (description) {
+            entry.description = description
+        }
         sources[id] = entry
-        fs.writeFile(sourcesPath, JSON.stringify(sources, null, 2), () => null)
+        markLinksWithSourceChanged(id)
+        writeSources(sources)
         return entry
     }
     throw new Error(`Cannot update. Source with ${id} doesn't exist.`)
@@ -66,7 +80,7 @@ export async function updateSource(id, { title, url, mangaId }) {
 export function removeSource(id) {
     if (sources[id]) {
         delete sources[id]
-        fs.writeFile(sourcesPath, JSON.stringify(sources, null, 2), () => null)
+        writeSources(sources)
         return true
     }
     throw new Error(`Cannot delete. Source with ${id} doesn't exist.`)

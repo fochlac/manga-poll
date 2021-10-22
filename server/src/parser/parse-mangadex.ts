@@ -1,6 +1,5 @@
 import fetch from 'node-fetch'
 import { createSource, createUrlFilter, registerParser } from '../parser'
-import { logWarning } from '../stats'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'mangadex'
@@ -10,13 +9,12 @@ const pageSize = 100
 async function fetchMangadex(source: Source) {
     const host = getHost(source.url)
     try {
-        const result = await fetch(`${source.url}/feed?limit=${pageSize}`, { method: 'get' }).then((res) => res.json())
+        const result = await fetch(`https://api.mangadex.org/manga/${source.id}/feed?limit=${pageSize}`, { method: 'get' }).then((res) => res.json())
 
         let list = result.data
 
         if (!list?.length) {
-            logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0)
-            return []
+            return { urls: [], warning: [host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0] }
         }
 
         if (result.total > pageSize) {
@@ -24,6 +22,23 @@ async function fetchMangadex(source: Source) {
                 const offsetResult = await fetch(`${source.url}?limit=${pageSize}&offset=${offset}`, { method: 'get' })
                     .then((res) => res.json())
                 list = list.concat(offsetResult.data)
+            }
+        }
+
+        let sourceInfo
+        if (!source.imageUrl || !source.description) {
+            const mangaInfo = await fetch(`https://api.mangadex.org/manga/${source.id}`, { method: 'get' }).then((res) => res.json())
+            const coverId = mangaInfo.data?.relationships?.find((rel) => rel.type === 'cover_art')?.id
+            const coverInfo = coverId && await fetch(`https://api.mangadex.org/cover/${coverId}`, { method: 'get' }).then((res) => res.json())
+            const coverFileName = coverInfo?.data?.attributes?.fileName
+            const imageUrl = coverFileName && `https://mangadex.org/cover/${coverId}/${coverFileName}`
+            const description = mangaInfo?.data?.attributes?.description?.en
+
+            if (imageUrl?.length && description?.length && (!source.imageUrl || !source.description)) {
+                sourceInfo = {
+                    imageUrl,
+                    description
+                }
             }
         }
 
@@ -38,11 +53,13 @@ async function fetchMangadex(source: Source) {
                 }
             })
 
-        return urlList.filter(createUrlFilter(source))
+        return {
+            urls: urlList.filter(createUrlFilter(source)),
+            sourceInfo
+        }
     }
     catch (err) {
-        logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0)
-        return []
+        return { urls: [], warning: [host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0] }
     }
 }
 
@@ -61,7 +78,7 @@ async function parseMangadexPage(rawUrl: string) {
             return null
         }
 
-        return createSource(TYPE, id, mangaInfo.data.attributes?.title?.en, `https://api.mangadex.org/manga/${id}`)
+        return createSource(TYPE, id, mangaInfo.data.attributes?.title?.en, `https://mangadex.org/title/${id}`)
     }
     else if (/chapter\/[\d-\w]*(\/\d*)?/.test(rawUrl)) {
         const id = rawUrl.split('/chapter/')?.[1]?.split('/')[0]

@@ -1,7 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
 import { registerParser, headers, getResponseBody, createSource, createUrlFilter, checkNewUrlAvailability } from '../parser'
-import { logWarning } from '../stats'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'mangastream'
@@ -21,7 +20,7 @@ let warned = {}
 setTimeout(() => {
     warned = {}
 }, 1000 * 3600)
-function parseMangastream(source: Source, body) {
+async function parseMangastream(source: Source, body) {
     const $ = cheerio.load(body)
     const baseDate = new Date()
     baseDate.setHours(0, 0, 0, 0)
@@ -39,13 +38,22 @@ function parseMangastream(source: Source, body) {
     })
 
     if (!urlList?.length) {
-        logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0)
-        return []
+        return { urls: [], warning: [host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0] }
+    }
+
+    const imageUrl = $('.thumb img').attr('src')
+    const description =  $('meta[name="description"],meta[property="og:description"]').attr('content')
+    let sourceInfo
+    if (imageUrl?.length && description?.length && (!source.imageUrl || !source.description)) {
+        sourceInfo = {
+            imageUrl,
+            description
+        }
     }
 
     let newUrls = urlList.filter(createUrlFilter(source))
 
-    return checkNewUrlAvailability(source, newUrls, (body) => {
+    const urls = await checkNewUrlAvailability(source, newUrls, (body) => {
         const $ = cheerio.load(body)
 
         if ($('#readerarea img').length > 3) {
@@ -56,6 +64,11 @@ function parseMangastream(source: Source, body) {
         }
         return false
     })
+
+    return {
+        urls,
+        sourceInfo
+    }
 }
 
 async function fetchMangastream(source: Source) {
@@ -67,8 +80,7 @@ async function fetchMangastream(source: Source) {
     }
     catch (err) {
         const host = getHost(source.url)
-        logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0)
-        return []
+        return { urls: [], warning: [host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0] }
     }
 }
 

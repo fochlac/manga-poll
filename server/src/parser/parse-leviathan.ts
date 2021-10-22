@@ -1,7 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
 import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, createUrlFilter, joinUrl } from '../parser'
-import { logWarning } from '../stats'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'leviathan'
@@ -27,13 +26,15 @@ function parseLeviathan(source: Source, body, url) {
             created
         }
     })
-
+    
     if (!urlList?.length) {
-        logWarning(host, `Invalid chapterlist found for ${source.title} from ${url}: Recieved empty URL-List`, 0)
-        return []
+        return { urls: [], warning: [host, `Invalid chapterlist found for ${source.title} from ${url}: Recieved empty URL-List`, 0] }
     }
-
-    return urlList.filter(createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)))
+    
+    return {
+        urls: urlList.filter(createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url))),
+        sourceInfo: null
+    }
 }
 
 
@@ -71,12 +72,30 @@ async function fetchLeviathan(source: Source) {
         url = joinUrl(baseUrl, 'manga', source.url.split('/manga/')[1],'ajax/chapters')
         const response = await fetch(url, { method: 'post', headers })
         body = await getResponseBody(response)
-        return parseLeviathan(source, body, url)
+        
+        let sourceInfo
+        if (!source.imageUrl || !source.description) {
+            const response = await fetch(joinUrl(baseUrl, 'manga', source.url.split('/manga/')[1]), { method: 'get', headers })        
+            const body = await getResponseBody(response)
+            const $ = cheerio.load(body)
+            const imageUrl = $('.summary_image img').attr('data-src')
+            const description =  $('meta[name="description"]').attr('content')
+
+            if (imageUrl?.length && description?.length && (!source.imageUrl || !source.description)) {
+                sourceInfo = {
+                    imageUrl,
+                    description
+                }
+            }
+        }
+
+        const result = parseLeviathan(source, body, url)
+        result.sourceInfo = sourceInfo
+        return result
     }
     catch (err) {
         const host = getHost(source.url)
-        logWarning(host, `Error fetching chapterlist for ${source.title} from ${url}: ${err?.message || 'Unknown Error.'}`, 0)
-        return []
+        return { urls: [], warning: [host, `Error fetching chapterlist for ${source.title} from ${url}: ${err?.message || 'Unknown Error.'}`, 0] }
     }
 }
 

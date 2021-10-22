@@ -4,9 +4,19 @@ import { logWarning } from './stats'
 import { getUrlKey, getUrls, updateUrl } from './url-storage'
 
 declare global {
+    interface ChapterResult {
+        urls: Partial<Url>[];
+        sourceInfo?: {
+            imageUrl?: string;
+            description?: string;
+            update?: Partial<Source>;
+        },
+        warning?: string|number[]
+    }
+
     interface Parser {
         type: string;
-        fetchFunction: (source: Source) => Promise<Partial<Url>[]>;
+        fetchFunction: (source: Source) => Promise<ChapterResult>;
         parseLink: (body: string) => Promise<Partial<Source>>;
         parseCondition: (body: string) => boolean|Promise<boolean>;
     }
@@ -25,7 +35,7 @@ export function registerParser({ type, fetchFunction, parseLink, parseCondition 
     }
 }
 
-export function fetchChapterList(source: Source) {
+export function fetchChapterList(source: Source): Promise<ChapterResult> {
     const type = source.type || defaultType
     const fetchFunction = parserMap[source.type]
     if (!fetchFunction) {
@@ -113,7 +123,7 @@ export function joinUrl(...str) {
     return `${protocol}//${urlSegments.filter((seg) => seg?.length).join('/')}`
 }
 
-export function createSource(type: string, mangaId: string, title: string, url: string) {
+export function createSource(type: string, mangaId: string, title: string, url: string, imageUrl?: string, description?: string) {
     const missingFields = []
     if (!title) {
         missingFields.push('title')
@@ -134,7 +144,9 @@ export function createSource(type: string, mangaId: string, title: string, url: 
         type,
         mangaId,
         title,
-        url
+        url,
+        imageUrl,
+        description
     }
 }
 

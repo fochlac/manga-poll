@@ -1,8 +1,11 @@
-import { readFileSync, writeFile } from "fs"
+import { readFileSync } from "fs"
 import { resolve } from "path"
 import { getSources } from "./source-storage"
 import { getUrlKey, getUrls } from "./url-storage"
+import { createWrite } from "./utils/db"
 import { getHost } from "./utils/parse"
+
+
 declare global {
     interface Warning {
         date: number;
@@ -53,9 +56,8 @@ catch (e) {
     console.log(e)
 }
 
-function write() {
-    writeFile(warningsPath, JSON.stringify(warnings, null, 2), () => null)
-}
+const writeWarnings = createWrite(warningsPath)
+const writeIpHistory = createWrite(ipStatsPath)
 
 export function createStatsEndpoints (app) {
     let history = {
@@ -80,7 +82,7 @@ export function createStatsEndpoints (app) {
             history.daily.shift()
         }
         history.daily.push({})
-        writeFile(ipStatsPath, JSON.stringify(history, null, 2), () => null)  
+        writeIpHistory(history)
     }, 60 * 60 * 1000)
 
     app.use((req, _res, next) => {
@@ -91,7 +93,7 @@ export function createStatsEndpoints (app) {
         if (uid && !daily[daily.length - 1][uid]) {
             daily[daily.length - 1][uid] = true
             history.allTime[uid] = true
-            writeFile(ipStatsPath, JSON.stringify(history, null, 2), () => null)  
+            writeIpHistory(history)
         }
     })
 
@@ -125,8 +127,6 @@ export function createStatsEndpoints (app) {
 
 }
 
-
-
 export function shouldWarn(key, limit) {
     return !warnings[key] || !limit || warnings[key].filter((warning) => Date.now() - warning.date <= 48 * 3600 * 1000).length < limit
 }
@@ -145,7 +145,7 @@ export function logWarning(key, message, limit = 3) {
         return
     }
 
-    write()
+    writeWarnings(warnings)
 
     updateHosts()
     console.log(message)
@@ -189,7 +189,7 @@ function cleanWarnings() {
 
     if (removedNumber > 0) {
         console.log(`Removed ${removedNumber} old warnings.`)
-        write()
+        writeWarnings(warnings)
     }
 }
 

@@ -1,12 +1,11 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
 import { registerParser, headers, getResponseBody, createSource, createUrlFilter, joinUrl } from '../parser'
-import { logWarning } from '../stats'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'fanfox'
 
-function parseFanfox(source: Source, body) {
+function parseFanfox (source: Source, body) {
     const $ = cheerio.load(body)
     const baseDate = new Date()
     baseDate.setHours(0, 0, 0, 0)
@@ -24,15 +23,28 @@ function parseFanfox(source: Source, body) {
         }
     })
 
-    if (!urlList?.length) {
-        logWarning(host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0)
-        return []
+    const imageUrl = $('.detail-info-cover-img').attr('src')
+    const description =  $('.detail-info-right .fullcontent').text()
+
+    let sourceInfo
+    if (imageUrl?.length && description?.length && (!source.imageUrl || !source.description)) {
+        sourceInfo = {
+            imageUrl,
+            description
+        }
     }
 
-    return urlList.filter(createUrlFilter(source, (url) => /^https:\/\/fanfox.net\/manga\/.*\/c([\d.]*)\/1.html$/.test(url)))
+    if (!urlList?.length) {
+        return { urls: [], warning: [host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0] }
+    }
+
+    return {
+        urls: urlList.filter(createUrlFilter(source, (url) => /^https:\/\/fanfox.net\/manga\/.*\/c([\d.]*)\/1.html$/.test(url))),
+        sourceInfo
+    }
 }
 
-async function fetchFanFox(source: Source) {
+async function fetchFanFox (source: Source) {
     try {
         const response = await fetch(source.url, { method: 'get', headers: { ...headers, cookie: 'isAdult=1;' } })
         const body = await getResponseBody(response)
@@ -41,14 +53,12 @@ async function fetchFanFox(source: Source) {
     }
     catch (err) {
         const host = getHost(source.url)
-        logWarning(host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0)
-        return []
+        return { urls: [], warning: [host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0] }
     }
 }
 
-
-async function parseFanfoxPage(rawUrl: string) {
-    const sourcehtml: string = await fetch(rawUrl, { headers: { ...headers, cookie: 'isAdult=1;' } }).then(res => res.text())
+async function parseFanfoxPage (rawUrl: string) {
+    const sourcehtml: string = await fetch(rawUrl, { headers: { ...headers, cookie: 'isAdult=1;' } }).then((res) => res.text())
 
     const $ = cheerio.load(sourcehtml)
 
