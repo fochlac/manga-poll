@@ -25,8 +25,8 @@ try {
     sources = JSON.parse(readFileSync(sourcesPath, { encoding: 'utf-8' }))
     let hasChanges = false
     Object.keys(sources).forEach((key) => {
-        if (sources[key].type === 'mangadex' && sources[key].url.includes('api.mangadex')) {
-            sources[key].url = `https://mangadex.org/title/${sources[key].id}`
+        if (sources[key].type === 'mangadex' && (sources[key].url.includes('api.mangadex') || !sources[key].url.includes(sources[key].mangaId))) {
+            sources[key].url = `https://mangadex.org/title/${sources[key].mangaId}`
             hasChanges = true
         }
     })

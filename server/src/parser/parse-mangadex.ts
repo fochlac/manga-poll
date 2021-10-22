@@ -9,7 +9,7 @@ const pageSize = 100
 async function fetchMangadex(source: Source) {
     const host = getHost(source.url)
     try {
-        const result = await fetch(`https://api.mangadex.org/manga/${source.id}/feed?limit=${pageSize}`, { method: 'get' }).then((res) => res.json())
+        const result = await fetch(`https://api.mangadex.org/manga/${source.mangaId}/feed?limit=${pageSize}`, { method: 'get' }).then((res) => res.json())
 
         let list = result.data
 
@@ -27,7 +27,7 @@ async function fetchMangadex(source: Source) {
 
         let sourceInfo
         if (!source.imageUrl || !source.description) {
-            const mangaInfo = await fetch(`https://api.mangadex.org/manga/${source.id}`, { method: 'get' }).then((res) => res.json())
+            const mangaInfo = await fetch(`https://api.mangadex.org/manga/${source.mangaId}`, { method: 'get' }).then((res) => res.json())
             const coverId = mangaInfo.data?.relationships?.find((rel) => rel.type === 'cover_art')?.id
             const coverInfo = coverId && await fetch(`https://api.mangadex.org/cover/${coverId}`, { method: 'get' }).then((res) => res.json())
             const coverFileName = coverInfo?.data?.attributes?.fileName
