@@ -2,6 +2,7 @@ import { readFileSync } from 'fs'
 import { customAlphabet, urlAlphabet } from 'nanoid'
 import { resolve } from 'path'
 import { markLinksWithSourceChanged } from './link-controller'
+import { resetStatsCache } from './stats'
 import { createWrite } from './utils/db'
 
 declare global {
@@ -10,6 +11,7 @@ declare global {
         title: string;
         type: string;
         url: string;
+        created: number;
         mangaId: string;
         description?: string;
         imageUrl?: string;
@@ -49,10 +51,12 @@ export async function addSource(title, url, mangaId, type, imageUrl = '', descri
         imageUrl,
         description,
         id: nanoid(),
+        created: Date.now(),
         mangaId,
         type
     }
     sources[entry.id] = entry
+    resetStatsCache()
     writeSources(sources)
     return entry
 }
@@ -72,6 +76,7 @@ export async function updateSource(id, { title, url, mangaId, imageUrl, descript
         sources[id] = entry
         markLinksWithSourceChanged(id)
         writeSources(sources)
+        resetStatsCache()
         return entry
     }
     throw new Error(`Cannot update. Source with ${id} doesn't exist.`)
@@ -81,6 +86,7 @@ export function removeSource(id) {
     if (sources[id]) {
         delete sources[id]
         writeSources(sources)
+        resetStatsCache()
         return true
     }
     throw new Error(`Cannot delete. Source with ${id} doesn't exist.`)

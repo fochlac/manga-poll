@@ -2,7 +2,7 @@ import Worker from 'tiny-worker'
 import { addUrl } from './url-storage'
 import { sendTopicMessage } from './subscriptions-controller'
 import { getSources, updateSource } from './source-storage'
-import { logWarning } from './stats'
+import { logWarning, resetStatsCache } from './stats'
 import { getHost } from './utils/parse'
 import { markLinksWithSourceChanged } from './link-controller'
 import { storeImage } from './utils/images'
@@ -77,6 +77,7 @@ async function fetchForSources(sources: Record<string, Source>, isNew?: boolean)
                 }
                 catch (e) { }
                 console.log(`${urls.length} new urls for ${source.title} on "${page}".`)
+                resetStatsCache()
                 sendTopicMessage(source.id)
             }
             urls.forEach(addUrl(source, isNew))
@@ -99,5 +100,5 @@ export function init() {
     fetchAllUrls(true)
 }
 
-export const fetchAll = () => fetchAllUrls()
+export const fetchAll = (isNew) => fetchAllUrls(isNew)
 export const fetchSource = (source, isNew) => fetchForSources({[source.id]: source}, isNew)

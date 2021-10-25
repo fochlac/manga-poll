@@ -197,7 +197,25 @@ setInterval(() => cleanWarnings(), 60 * 1000)
 
 cleanWarnings()
 
-export async function getStats(): Promise<Stats> {
+const makeCached = <T=any>(fn:() => T):{cachedFn: () => T, resetCache: () => void} => {
+    let isValid = false
+    let cache = null
+
+    return {
+        cachedFn: (...args) => {
+            if (!isValid) {
+                cache = fn(...args)
+                isValid = true
+            }
+            return cache
+        },
+        resetCache: () => {
+            isValid = false
+        }
+    }
+}
+
+async function getStatsDefault(): Promise<Stats> {
     const urls = await getUrls()
     const sources = await getSources()
 
@@ -225,6 +243,8 @@ export async function getStats(): Promise<Stats> {
         stats[host].sources[source.id] = {
             id: source.id,
             title: source.title,
+            url: source.url,
+            created: source.created,
             latest,
             count: sourceChapters.length,
             warnings: chapterWarnings,
@@ -258,6 +278,12 @@ export async function getStats(): Promise<Stats> {
 }
 
 let hosts: { stable: HostInfo[], unstable: HostInfo[] } = { stable: [], unstable: [] }
+
+const statsCache = makeCached(getStatsDefault)
+
+export const getStats = () => statsCache.cachedFn()
+
+export const resetStatsCache = () => statsCache.resetCache()
 
 export function getHosts() {
     return hosts
