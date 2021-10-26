@@ -29,7 +29,7 @@ let defaultLinkParser
 
 export function registerParser({ type, fetchFunction, parseLink, parseCondition }: Parser) {
     parserMap[type] = fetchFunction
-    linkParserList.push({ parseLink, parseCondition })
+    linkParserList.push({ parseLink, parseCondition, type })
     if (type === defaultType) {
         defaultLinkParser = parseLink
     }
@@ -55,6 +55,9 @@ export async function parseSourceLink(link) {
 
     if (!parser) {
         console.log(`Could not find parser for url "${link}", using default parser.`)
+    }
+    else {
+        console.log(`Parsing with parser "${parser.type}".`)
     }
 
     return parser ? parser.parseLink(link) : defaultLinkParser(link)

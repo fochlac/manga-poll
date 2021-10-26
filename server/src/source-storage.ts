@@ -1,9 +1,8 @@
-import { readFileSync } from 'fs'
 import { customAlphabet, urlAlphabet } from 'nanoid'
 import { resolve } from 'path'
 import { markLinksWithSourceChanged } from './link-controller'
 import { resetStatsCache } from './stats'
-import { createWrite } from './utils/db'
+import { createWrite, readFile } from './utils/db'
 
 declare global {
     interface Source {
@@ -22,9 +21,7 @@ const nanoid = customAlphabet(urlAlphabet, 10)
 const sourcesPath = resolve(__dirname, '../db/sources.json')
 const writeSources = createWrite(sourcesPath)
 
-let sources: Record<string, Source> = {}
-try {
-    sources = JSON.parse(readFileSync(sourcesPath, { encoding: 'utf-8' }))
+const sources: Record<string, Source> = readFile<Source>(sourcesPath, (sources) => {
     let hasChanges = false
     Object.keys(sources).forEach((key) => {
         if (sources[key].type === 'mangadex' && (sources[key].url.includes('api.mangadex') || !sources[key].url.includes(sources[key].mangaId))) {
@@ -32,13 +29,8 @@ try {
             hasChanges = true
         }
     })
-    if (hasChanges) {
-        writeSources(sources)        
-    }
-}
-catch (e) {
-    console.log(e)
-}
+    return hasChanges
+}, writeSources)
 
 export function getSources() {
     return sources

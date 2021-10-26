@@ -1,8 +1,7 @@
-import { readFileSync } from "fs"
 import { resolve } from "path"
 import { getSources } from "./source-storage"
 import { getUrlKey, getUrls } from "./url-storage"
-import { createWrite } from "./utils/db"
+import { createWrite, readFile } from "./utils/db"
 import { getHost } from "./utils/parse"
 
 
@@ -46,36 +45,26 @@ declare global {
 
 }
 
-let warnings: Record<string, Warning[]> = {}
 const warningsPath = resolve(__dirname, '../db/warnings.json')
 const ipStatsPath = resolve(__dirname, '../db/ip-history.json')
-try {
-    warnings = JSON.parse(readFileSync(warningsPath, { encoding: 'utf-8' }))
-}
-catch (e) {
-    console.log(e)
-}
+const warnings = readFile<Warning[]>(warningsPath)
 
 const writeWarnings = createWrite(warningsPath)
 const writeIpHistory = createWrite(ipStatsPath)
 
 export function createStatsEndpoints (app) {
-    let history = {
-        daily: [{}],
-        allTime: {}
-    }
-    try {
-        history = JSON.parse(readFileSync(ipStatsPath, { encoding: 'utf-8' }))
-        if (Array.isArray(history)) {
-            history = {
-                daily: history,
-                allTime: Object.assign({}, ...history)
-            }
+    let history = readFile(ipStatsPath, (history) => {
+        let hasChanges = false
+        if (!history.daily) {
+            history.daily = [{}]
+            hasChanges = true
         }
-    }
-    catch (e) {
-        console.log(e)
-    }
+        if (!history.allTime) {
+            history.allTime = {}
+            hasChanges = true
+        }
+        return hasChanges
+    }, writeIpHistory)
 
     setInterval(() => {
         if (history.daily.length >= 24) {

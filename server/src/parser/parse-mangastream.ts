@@ -9,7 +9,7 @@ async function testMangastream(rawUrl) {
     const sourcehtml: string = await fetch(rawUrl, { headers }).then(res => res.text())
 
     const $ = cheerio.load(sourcehtml)
-    const breadcrumpLink = $('ol[itemtype="http://schema.org/BreadcrumbList"] li:has(meta[itemprop="position"][content="2"]) a[itemprop="item"][href*="/comics/"]')
+    const breadcrumpLink = $('ol[itemtype="http://schema.org/BreadcrumbList"] meta[itemprop="position"][content="2"]').closest('li').find('a')
     const url = breadcrumpLink.attr('href')
     const name = breadcrumpLink.find('span').text()
 

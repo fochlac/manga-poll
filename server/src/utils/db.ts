@@ -1,4 +1,4 @@
-import { promises } from "fs"
+import { promises, readFileSync, copyFileSync } from "fs"
 
 const { writeFile, copyFile } = promises
 
@@ -28,4 +28,25 @@ export function createWrite(path) {
             dataRef.current = data
         }
     }
+}
+
+export function readFile<T=any>(path: string, modificationCallback?:(data:Record<string, T>) => boolean, write?: Function):Record<string, T> {
+    let data: Record<string, T> = {}
+    try {
+        data = JSON.parse(readFileSync(path, { encoding: 'utf-8' }))
+    }
+    catch (e) {
+        console.log(`Error reading file "${path}". Trying to use backup...`)
+        try {
+            data = JSON.parse(readFileSync(`${path}.backup`, { encoding: 'utf-8' }))
+        }
+        catch (e) {
+            console.log(`Error reading file "${path}.backup". Reinitializing DB`)
+            copyFileSync(`${path}.backup`, `${path}.backup_${Date.now()}`)
+        }   
+    }
+    if (typeof modificationCallback === 'function' && modificationCallback(data) && typeof write === 'function') {
+        write(data)        
+    }
+    return data
 }

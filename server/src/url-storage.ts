@@ -1,5 +1,5 @@
-import fs from 'fs'
 import { resolve } from 'path'
+import { createWrite, readFile } from './utils/db'
 
 const urlsPath = resolve(__dirname, '../db/urls.json')
 
@@ -15,15 +15,9 @@ declare global {
     }
 }
 
-let urls: Record<string, Url> = {}
-try {
-    urls = JSON.parse(fs.readFileSync(urlsPath, { encoding: 'utf-8' }))
-}
-catch (e) {
-    console.log(e)
-}
+const writeUrls = createWrite(urlsPath)
 
-let writeUrlsTimeout = null
+const urls = readFile<Url>(urlsPath)
 
 export function getUrlKey(url: Partial<Url>, sourceId) {
     const { chapter, host } = url
@@ -37,10 +31,7 @@ export function updateUrl(source: Source, newUrl: Partial<Url>) {
         urls[key].url = newUrl.url
         urls[key].chapter = newUrl.chapter
         urls[key].host = newUrl.host
-        clearTimeout(writeUrlsTimeout)
-        writeUrlsTimeout = setTimeout(() => {
-            fs.writeFile(urlsPath, JSON.stringify(urls, null, 2), () => null)
-        }, 100)
+        writeUrls(urls)
     }
     return urls[key]
 }
@@ -56,11 +47,8 @@ export function addUrl(source: Source, isNew = false) {
             title: source.title,
             sourceId: source.id
         }
-        urls[getUrlKey(entry, source.id)] = entry
-        clearTimeout(writeUrlsTimeout)
-        writeUrlsTimeout = setTimeout(() => {
-            fs.writeFile(urlsPath, JSON.stringify(urls, null, 2), () => null)
-        }, 100)
+        urls[entry.id] = entry
+        writeUrls(urls)
         return entry
     }
 }
@@ -75,8 +63,5 @@ export function deleteUrlBySource(sourceId) {
             delete urls[key]
         }
     })
-    clearTimeout(writeUrlsTimeout)
-    writeUrlsTimeout = setTimeout(() => {
-        fs.writeFile(urlsPath, JSON.stringify(urls, null, 2), () => null)
-    }, 100)
+    writeUrls(urls)
 }
