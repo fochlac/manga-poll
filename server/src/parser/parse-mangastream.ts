@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, getResponseBody, createSource, createUrlFilter, checkNewUrlAvailability } from '../parser'
+import { registerParser, headers, getResponseBody, createSource, checkNewUrlAvailability, categorizeRemoteUrls } from '../parser'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'mangastream'
@@ -20,7 +20,7 @@ let warned = {}
 setTimeout(() => {
     warned = {}
 }, 1000 * 3600)
-async function parseMangastream(source: Source, body) {
+async function parseMangastream(source: Source, urls: Record<string, Url>, body: string): Promise<ChapterResult> {
     const $ = cheerio.load(body)
     const baseDate = new Date()
     baseDate.setHours(0, 0, 0, 0)
@@ -38,7 +38,7 @@ async function parseMangastream(source: Source, body) {
     })
 
     if (!urlList?.length) {
-        return { urls: [], warning: [host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0] }
+        return { urls: [], warnings: [[host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0]] }
     }
 
     const imageUrl = $('.thumb img').attr('src')
@@ -51,9 +51,9 @@ async function parseMangastream(source: Source, body) {
         }
     }
 
-    let newUrls = urlList.filter(createUrlFilter(source))
+    const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(urlList, source, urls)
 
-    const urls = await checkNewUrlAvailability(source, newUrls, (body) => {
+    const { newUrls: availableNewUrls, warnings: availabilityWarnings } = await checkNewUrlAvailability(source, newUrls, (body) => {
         const $ = cheerio.load(body)
 
         if ($('#readerarea img').length > 3) {
@@ -66,21 +66,23 @@ async function parseMangastream(source: Source, body) {
     })
 
     return {
-        urls,
+        urls: availableNewUrls,
+        warnings: warnings.concat(availabilityWarnings),
+        oldUrls,
         sourceInfo
     }
 }
 
-async function fetchMangastream(source: Source) {
+async function fetchMangastream(source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     try {
         const response = await fetch(source.url, { method: 'get', headers })
         const body = await getResponseBody(response)
 
-        return parseMangastream(source, body)
+        return parseMangastream(source, urls, body)
     }
     catch (err) {
         const host = getHost(source.url)
-        return { urls: [], warning: [host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0] }
+        return { urls: [], warnings: [[host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0]] }
     }
 }
 

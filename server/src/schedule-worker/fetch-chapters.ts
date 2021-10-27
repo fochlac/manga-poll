@@ -9,14 +9,14 @@ import '../parser/parse-genkan'
 import '../parser/parse-leviathan'
 import '../parser/parse-webtoons'
 
-async function fetchAllUrls(sources:Record<string, Source>) {
+async function fetchAllUrls(sources:Record<string, Source>, urls:Record<string, Url>) {
     let results = []
     const fetchPromiseMap = Object.values(sources)
         .reduce((promiseMap, source) => {
             const host = getHost(source.url)
             const previousFetch = promiseMap[host] || Promise.resolve()
             promiseMap[host] = previousFetch.then(() => {
-                const fetchPromise = fetchChapterList(source)
+                const fetchPromise = fetchChapterList(source, urls)
                     .then((result) => ({ hasError: false, source, error: null, result }))
                     .catch((error) => ({ hasError: true, error, source }))
                     .then((result) => results.push(result))
@@ -34,7 +34,7 @@ async function fetchAllUrls(sources:Record<string, Source>) {
 
 onmessage = async function (e) {
     if (e.data.sources) {
-        const data = await fetchAllUrls(e.data.sources)
+        const data = await fetchAllUrls(e.data.sources, e.data.urls)
         postMessage(data);
     }
 }

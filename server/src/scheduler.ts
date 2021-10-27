@@ -1,12 +1,11 @@
 import Worker from 'tiny-worker'
-import { addUrl } from './url-storage'
+import { addUrl, getUrls, updateUrl } from './url-storage'
 import { sendTopicMessage } from './subscriptions-controller'
 import { getSources, updateSource } from './source-storage'
 import { logWarning, resetStatsCache } from './stats'
 import { getHost } from './utils/parse'
 import { markLinksWithSourceChanged } from './link-controller'
 import { storeImage } from './utils/images'
-import { resolve } from 'path'
 
 interface WorkerResult {
     hasError: boolean;
@@ -16,7 +15,7 @@ interface WorkerResult {
     result: ChapterResult;
 }
 
-function fetchChapterListData (sources): Promise<WorkerResult[]> {
+function fetchChapterListData (sources, urls): Promise<WorkerResult[]> {
     return new Promise(async (res, reject) => {
         const worker = new Worker('../../../dist/schedule-worker/fetch-chapters.js', [], { esm: true })
         const timeout = setTimeout(() => worker.terminate(), 300000)
@@ -33,7 +32,7 @@ function fetchChapterListData (sources): Promise<WorkerResult[]> {
             clearTimeout(timeout)
         }
 
-        worker.postMessage({ type: 'FETCH', sources })
+        worker.postMessage({ type: 'FETCH', sources, urls })
     })
 
 }
@@ -41,7 +40,8 @@ function fetchChapterListData (sources): Promise<WorkerResult[]> {
 async function fetchForSources(sources: Record<string, Source>, isNew?: boolean) {
     const start = Date.now()
     console.log('Fetching new chapters...')
-    const results = await fetchChapterListData(sources)
+    const urls = getUrls()
+    const results = await fetchChapterListData(sources, urls)
     console.log('Fetching chapters took ' + Math.floor((Date.now() - start) / 1000) + ' seconds.')
 
     results.forEach(({hasError, result, error, source}) => {
@@ -49,11 +49,8 @@ async function fetchForSources(sources: Record<string, Source>, isNew?: boolean)
             console.log(`Error fetching urls for source ${source?.title}:\n`, error)
             logWarning(getHost(source.url), 'Unknown Error while fetching chapters.', 0)
         }
-        else if (result.warning) {
-            logWarning(result.warning[0], result.warning[1], result.warning[2] as number)
-        }
-        else if (result) {
-            const { sourceInfo, urls } = result
+        else if (result?.urls) {
+            const { sourceInfo, urls, oldUrls } = result
             const shouldUpdateDescription = !source.description || !source.imageUrl
             if (sourceInfo?.update && !shouldUpdateDescription) {
                 console.log(`Source has changed - updating from "${JSON.stringify(source)}" to "${JSON.stringify(sourceInfo.update)}".`)
@@ -70,6 +67,15 @@ async function fetchForSources(sources: Record<string, Source>, isNew?: boolean)
                         imageUrl,
                     }))
             }
+            if (oldUrls?.length) {
+                console.log(`Updating ${oldUrls.length} urls for source ${source.title}.`)
+                try {
+                    oldUrls.forEach((url) => updateUrl(source, url))
+                }
+                catch(e) {
+                    console.log(`Error updating url for source ${source.title}.`)
+                }
+            }
             if (urls.length) {
                 let page = source.url
                 try {
@@ -81,6 +87,17 @@ async function fetchForSources(sources: Record<string, Source>, isNew?: boolean)
                 sendTopicMessage(source.id)
             }
             urls.forEach(addUrl(source, isNew))
+        }
+        if (result.warnings?.length) {
+            result.warnings.forEach((rawWarning) => {
+                if (rawWarning[0] === null) {
+                    rawWarning.shift()
+                    console.log(...rawWarning)
+                }
+                else {
+                    logWarning(rawWarning[0], rawWarning[1], rawWarning[2] as number)
+                }
+            })
         }
     })
 }

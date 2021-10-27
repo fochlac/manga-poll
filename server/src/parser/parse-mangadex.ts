@@ -1,12 +1,12 @@
 import fetch from 'node-fetch'
-import { createSource, createUrlFilter, registerParser } from '../parser'
+import { categorizeRemoteUrls, createSource, registerParser } from '../parser'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'mangadex'
 
 const pageSize = 100
 
-async function fetchMangadex(source: Source) {
+async function fetchMangadex(source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     const host = getHost(source.url)
     try {
         const result = await fetch(`https://api.mangadex.org/manga/${source.mangaId}/feed?limit=${pageSize}`, { method: 'get' }).then((res) => res.json())
@@ -14,7 +14,7 @@ async function fetchMangadex(source: Source) {
         let list = result.data
 
         if (!list?.length) {
-            return { urls: [], warning: [host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0] }
+            return { urls: [], warnings: [[host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0]] }
         }
 
         if (result.total > pageSize) {
@@ -53,13 +53,17 @@ async function fetchMangadex(source: Source) {
                 }
             })
 
+        const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(urlList, source, urls)
+
         return {
-            urls: urlList.filter(createUrlFilter(source)),
+            urls: newUrls,
+            oldUrls,
+            warnings,
             sourceInfo
         }
     }
     catch (err) {
-        return { urls: [], warning: [host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0] }
+        return { urls: [], warnings: [[host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0]] }
     }
 }
 

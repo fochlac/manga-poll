@@ -1,31 +1,32 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { logWarning } from './stats'
-import { getUrlKey, getUrls, updateUrl } from './url-storage'
+import { getUrlKey } from './utils/keys'
 
 declare global {
     interface ChapterResult {
         urls: Partial<Url>[];
+        oldUrls?: Partial<Url>[];
         sourceInfo?: {
             imageUrl?: string;
             description?: string;
             update?: Partial<Source>;
         },
-        warning?: string|number[]
+        warnings?: (string|number)[][];
+        warning?: never;
     }
 
     interface Parser {
         type: string;
-        fetchFunction: (source: Source) => Promise<ChapterResult>;
+        fetchFunction: (source: Source, urls: Record<string, Url>) => Promise<ChapterResult>;
         parseLink: (body: string) => Promise<Partial<Source>>;
         parseCondition: (body: string) => boolean|Promise<boolean>;
     }
 }
 
 const defaultType = 'madara'
-const parserMap = {}
-const linkParserList = []
-let defaultLinkParser
+const parserMap: Record<string, Parser['fetchFunction']> = {}
+const linkParserList: Partial<Parser>[] = []
+let defaultLinkParser: Parser['parseLink']
 
 export function registerParser({ type, fetchFunction, parseLink, parseCondition }: Parser) {
     parserMap[type] = fetchFunction
@@ -35,13 +36,13 @@ export function registerParser({ type, fetchFunction, parseLink, parseCondition 
     }
 }
 
-export function fetchChapterList(source: Source): Promise<ChapterResult> {
+export function fetchChapterList(source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     const type = source.type || defaultType
     const fetchFunction = parserMap[source.type]
     if (!fetchFunction) {
         throw Error(`No fetch function for parser type ${type}.`)
     }
-    return fetchFunction(source)
+    return fetchFunction(source, urls)
 }
 
 export async function parseSourceLink(link) {
@@ -67,7 +68,7 @@ export function checkSourceType(type) {
     return !!parserMap[type]
 }
 
-export async function getResponseBody(response) {
+export async function getResponseBody(response): Promise<string> {
     const body = await response.text()
 
     if (body.includes('Access denied') && body.includes('Cloudflare')) {
@@ -153,27 +154,38 @@ export function createSource(type: string, mangaId: string, title: string, url: 
     }
 }
 
-export function createUrlFilter(source, validateUrl?: (url: string) => boolean) {
-    return (url: Url) => {
+
+interface RemoteUrlCategorizationResult {
+    oldUrls: Partial<Url>[], 
+    newUrls: Partial<Url>[], 
+    warnings: ((string | number)[])[]
+}
+export function categorizeRemoteUrls(urlList: Partial<Url>[], source: Source, urls:Record<string, Url>, validateUrl?: (url: string) => boolean): RemoteUrlCategorizationResult {
+    const collection: RemoteUrlCategorizationResult = {oldUrls: [], newUrls: [], warnings: []}
+    return urlList.reduce((collector: {newUrls: Partial<Url>[], oldUrls: Partial<Url>[], warnings: (string | number)[][]}, url: Partial<Url>) => {
         const isValid = url.url && (typeof validateUrl !== 'function' || validateUrl(url.url)) &&
-            /^[\d\.-]*$/.test(String(url.chapter)) && url.host && url.host.length > 0
+            /^[\d\.-]+$/.test(String(url.chapter)) && url.host && url.host.length > 0
         const key = getUrlKey(url, source.id)
-        const stored = getUrls()[key]
+        const stored = urls[key]
 
-        if (!isValid && !stored) {
-            logWarning(key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`)
+        if (isValid && !stored) {
+            collector.newUrls.push(url)
         }
-        if (isValid && stored) {
-            updateUrl(source, url)
+        else if (isValid && stored && urls[key].url !== url.url || !urls[key].chapter) {
+            collector.oldUrls.push(url)
+        }
+        else {
+            collector.warnings.push([key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`, -1])
         }
 
-        return isValid && !stored
-    }
+        return collector
+    }, collection)
 }
 
 let warnedRaw = {}
 export async function checkNewUrlAvailability (source: Source, newUrls: Partial<Url>[], validateBody: (body: string) => boolean) {
     const invalidIndexes = []
+    const warnings = []
     const hour = Math.floor(Date.now() / (60 * 60 * 1000))
     if (!warnedRaw[hour]) {
         warnedRaw = {
@@ -199,7 +211,7 @@ export async function checkNewUrlAvailability (source: Source, newUrls: Partial<
             invalidIndexes.forEach((index) => {
                 const url = newUrls[index]
                 if (!warned[url.url]) {
-                    logWarning(getUrlKey(url, source.id), `Found url for "${source.title} - Chapter ${url.chapter}" but link doesnt lead to chapter: ${url.url}`, 0)
+                    warnings.push([getUrlKey(url, source.id), `Found url for "${source.title} - Chapter ${url.chapter}" but link doesnt lead to chapter: ${url.url}`, 0])
                     warned[url.url] = true
                     warned[source.id] = true
                 }
@@ -207,7 +219,7 @@ export async function checkNewUrlAvailability (source: Source, newUrls: Partial<
             })
             const pl = invalidIndexes.length !== 1
             const invalidChapters = invalidIndexes.map((index) => newUrls[index].chapter).join(', ')
-            logWarning(newUrls[0].host, `Found url${pl ? 's': ''} for chapter${pl ? 's': ''} "${invalidChapters}" but ${pl ? 'those urls are': 'that url is'} not published.`, -1)
+            warnings.push([newUrls[0].host, `Found url${pl ? 's': ''} for chapter${pl ? 's': ''} "${invalidChapters}" but ${pl ? 'those urls are': 'that url is'} not published.`, -1])
             newUrls = newUrls.filter((url, index) => !invalidIndexes.includes(index))
         }
     }
@@ -215,9 +227,9 @@ export async function checkNewUrlAvailability (source: Source, newUrls: Partial<
         newUrls.forEach((url) => {
             if (warned[url.url]) {
                 delete warned[url.url]
-                console.log(`Previously invalid url for "${source.title} - Chapter ${url.chapter}" is now available.`)
+                warnings.push([null, `Previously invalid url for "${source.title} - Chapter ${url.chapter}" is now available.`])
             }
         })
     }
-    return newUrls
+    return { newUrls, warnings }
 }

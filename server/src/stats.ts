@@ -1,7 +1,8 @@
 import { resolve } from "path"
 import { getSources } from "./source-storage"
-import { getUrlKey, getUrls } from "./url-storage"
+import { getUrls } from "./url-storage"
 import { createWrite, readFile } from "./utils/db"
+import { getUrlKey } from "./utils/keys"
 import { getHost } from "./utils/parse"
 
 

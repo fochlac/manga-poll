@@ -1,7 +1,7 @@
 import cheerio from 'cheerio'
 import FormData from 'form-data'
 import fetch from 'node-fetch'
-import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, createUrlFilter, checkNewUrlAvailability, joinUrl } from '../parser'
+import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, checkNewUrlAvailability, joinUrl, categorizeRemoteUrls } from '../parser'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'madara'
@@ -71,7 +71,7 @@ function parseDates(urlList) {
     }
 }
 
-async function parseMadara(source: Source, body, sourceInfo) {
+async function parseMadara(source: Source, urls: Record<string, Url>, body, sourceInfo): Promise<ChapterResult> {
     const $ = cheerio.load(body)
     const host = getHost(source.url)
 
@@ -87,14 +87,17 @@ async function parseMadara(source: Source, body, sourceInfo) {
     })
 
     if (!urlList?.length) {
-        return { urls: [], warning: [host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0] }
+        return { urls: [], warnings: [[host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0]] }
     }
+    
+    const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(
+            urlList.map(parseDates(urlList)), 
+            source,
+            urls, 
+            (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|ch[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)
+        )
 
-    let newUrls = urlList
-        .map(parseDates(urlList))
-        .filter(createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|ch[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)))
-
-    const urls = await checkNewUrlAvailability(source, newUrls, (body) => {
+    const { newUrls: availableNewUrls, warnings: availabilityWarnings } = await checkNewUrlAvailability(source, newUrls, (body) => {
         const $ = cheerio.load(body)
 
         if ($('#image-0').length && $('#image-1').length || $('#wp-manga-current-chap').length) {
@@ -104,7 +107,9 @@ async function parseMadara(source: Source, body, sourceInfo) {
     })
 
     return {
-        urls,
+        urls: availableNewUrls,
+        oldUrls,
+        warnings: [].concat(warnings, availabilityWarnings),
         sourceInfo
     }
 }
@@ -154,7 +159,7 @@ function parseMadaraPage(sourcehtml: string, rawUrl: string) {
     return createSource(TYPE, mangaId, title, url)
 }
 
-async function fetchMadara(source: Source) {
+async function fetchMadara(source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     let body
     let errortext
     try {
@@ -190,7 +195,7 @@ async function fetchMadara(source: Source) {
             catch(e) {
                 console.log(`Error updating source: ${source.title} (${source.id}): ${e?.message}`)
             }
-            return parseMadara(source, body, sourceInfo)
+            return parseMadara(source, urls, body, sourceInfo)
         }
         else {
             const formData = new FormData()
@@ -200,7 +205,7 @@ async function fetchMadara(source: Source) {
             try {
                 const response = await fetch(joinUrl(baseurl, 'wp-admin/admin-ajax.php'), { method: 'post', body: formData, headers })
                 const body = await getResponseBody(response)
-                return parseMadara(source, body, sourceInfo)
+                return parseMadara(source, urls, body, sourceInfo)
             }
             catch(err) {
                 errortext = `${errortext || 'Could not find chapter list in body.'} + ${err}`
@@ -210,7 +215,7 @@ async function fetchMadara(source: Source) {
             const resp = await fetch(joinUrl(source.url, '/ajax/chapters/'), { headers, method: 'post' })
             try {
                 body = await getResponseBody(resp)
-                return parseMadara(source, body, sourceInfo)
+                return parseMadara(source, urls, body, sourceInfo)
             }
             catch(err) {
                 throw new Error(`${errortext} + ${err}`)
@@ -220,7 +225,7 @@ async function fetchMadara(source: Source) {
     }
     catch (err) {
         const host = getHost(source.url)
-        return { urls: [], warning: [host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0] }
+        return { urls: [], warnings: [[host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0]] }
     }
 }
 

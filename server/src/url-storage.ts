@@ -1,5 +1,6 @@
 import { resolve } from 'path'
 import { createWrite, readFile } from './utils/db'
+import { getUrlKey } from './utils/keys'
 
 const urlsPath = resolve(__dirname, '../db/urls.json')
 
@@ -18,12 +19,6 @@ declare global {
 const writeUrls = createWrite(urlsPath)
 
 const urls = readFile<Url>(urlsPath)
-
-export function getUrlKey(url: Partial<Url>, sourceId) {
-    const { chapter, host } = url
-
-    return `${host}--${sourceId}--${chapter}`
-}
 
 export function updateUrl(source: Source, newUrl: Partial<Url>) {
     const key = getUrlKey(newUrl, source.id)

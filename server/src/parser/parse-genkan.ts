@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, getResponseBody, createSource, createUrlFilter, joinUrl } from '../parser'
+import { registerParser, headers, getResponseBody, createSource, joinUrl, categorizeRemoteUrls } from '../parser'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'genkan'
@@ -50,7 +50,7 @@ function parseDate(dateString) {
     return baseDate.getTime()
 }
 
-async function fetchGenkan(source: Source) {
+async function fetchGenkan(source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     try {
         const response = await fetch(source.url, { method: 'get', headers })
         const body = await getResponseBody(response)
@@ -81,17 +81,20 @@ async function fetchGenkan(source: Source) {
         }
 
         if (!urlList?.length) {
-            return { urls: [], warning: [host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0] }
+            return { urls: [], warnings: [[host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0]] }
         }
     
+        const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(urlList, source, urls)
         return {
-            urls: urlList.filter(createUrlFilter(source)),
+            urls: newUrls,
+            oldUrls,
+            warnings,
             sourceInfo
         }
     }
     catch (err) {
         const host = getHost(source.url)
-        return { urls: [], warning: [host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0] }
+        return { urls: [], warnings: [[host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0]] }
     }
 }
 

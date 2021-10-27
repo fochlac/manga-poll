@@ -1,11 +1,11 @@
 import fetch from 'node-fetch'
-import { createSource, createUrlFilter, registerParser, headers } from '../parser'
+import { createSource, categorizeRemoteUrls, registerParser, headers } from '../parser'
 import { parseStringPromise } from 'xml2js'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'webtoon'
 
-async function fetchWebtoons(source: Source) {
+async function fetchWebtoons(source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     const host = getHost(source.url)
     try {
         const rssXml = await fetch(`${source.url}/rss?title_no=${source.mangaId}`, { headers }).then((res) => res.text())
@@ -30,13 +30,16 @@ async function fetchWebtoons(source: Source) {
                 return { url, chapter, host, created: new Date(item.pubDate[0]).getTime() }
             })
 
+        let { newUrls, oldUrls, warnings } = categorizeRemoteUrls(urlList, source, urls)
         return {
-            urls: urlList.filter(createUrlFilter(source)),
+            urls: newUrls,
+            oldUrls,
+            warnings,
             sourceInfo
         }
     }
     catch (err) {
-        return { urls: [], warning: [host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0] }
+        return { urls: [], warnings: [[host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0]] }
     }
 }
 

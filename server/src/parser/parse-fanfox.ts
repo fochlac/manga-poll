@@ -1,11 +1,11 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, getResponseBody, createSource, createUrlFilter, joinUrl } from '../parser'
+import { registerParser, headers, getResponseBody, createSource, joinUrl, categorizeRemoteUrls } from '../parser'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'fanfox'
 
-function parseFanfox (source: Source, body) {
+function parseFanfox (source: Source, urls: Record<string, Url>, body): ChapterResult {
     const $ = cheerio.load(body)
     const baseDate = new Date()
     baseDate.setHours(0, 0, 0, 0)
@@ -35,25 +35,33 @@ function parseFanfox (source: Source, body) {
     }
 
     if (!urlList?.length) {
-        return { urls: [], warning: [host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0] }
+        return { urls: [], warnings: [[host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0]] }
     }
 
+    const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(
+        urlList, 
+        source,
+        urls, 
+        (url) => /^https:\/\/fanfox.net\/manga\/.*\/c([\d.]*)\/1.html$/.test(url)
+    )
     return {
-        urls: urlList.filter(createUrlFilter(source, (url) => /^https:\/\/fanfox.net\/manga\/.*\/c([\d.]*)\/1.html$/.test(url))),
+        urls: newUrls,
+        oldUrls,
+        warnings,
         sourceInfo
     }
 }
 
-async function fetchFanFox (source: Source) {
+async function fetchFanFox (source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     try {
         const response = await fetch(source.url, { method: 'get', headers: { ...headers, cookie: 'isAdult=1;' } })
         const body = await getResponseBody(response)
 
-        return parseFanfox(source, body)
+        return parseFanfox(source, urls, body)
     }
     catch (err) {
         const host = getHost(source.url)
-        return { urls: [], warning: [host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0] }
+        return { urls: [], warnings: [[host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0]] }
     }
 }
 

@@ -1,11 +1,11 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, createUrlFilter, joinUrl } from '../parser'
+import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, joinUrl, categorizeRemoteUrls } from '../parser'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'leviathan'
 
-function parseLeviathan(source: Source, body, url) {
+function parseLeviathan(source: Source, urls: Record<string, Url>, body, url): ChapterResult {
     const $ = cheerio.load(body)
     const host = getHost(source.url)
     const baseDate = new Date()
@@ -28,11 +28,21 @@ function parseLeviathan(source: Source, body, url) {
     })
     
     if (!urlList?.length) {
-        return { urls: [], warning: [host, `Invalid chapterlist found for ${source.title} from ${url}: Recieved empty URL-List`, 0] }
+        return { urls: [], warnings: [[host, `Invalid chapterlist found for ${source.title} from ${url}: Recieved empty URL-List`, 0]] }
     }
     
+    
+    const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(
+        urlList, 
+        source,
+        urls, 
+        (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)
+    )
+
     return {
-        urls: urlList.filter(createUrlFilter(source, (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url))),
+        urls: newUrls,
+        oldUrls,
+        warnings,
         sourceInfo: null
     }
 }
@@ -64,7 +74,7 @@ async function parseLeviathanPage(rawUrl: string) {
     return createSource(TYPE, mangaId, title, `${baseUrl}${mangaId}`)
 }
 
-async function fetchLeviathan(source: Source) {
+async function fetchLeviathan(source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     let body
     let url
     try {
@@ -89,13 +99,13 @@ async function fetchLeviathan(source: Source) {
             }
         }
 
-        const result = parseLeviathan(source, body, url)
+        const result = parseLeviathan(source, urls, body, url)
         result.sourceInfo = sourceInfo
         return result
     }
     catch (err) {
         const host = getHost(source.url)
-        return { urls: [], warning: [host, `Error fetching chapterlist for ${source.title} from ${url}: ${err?.message || 'Unknown Error.'}`, 0] }
+        return { urls: [], warnings: [[host, `Error fetching chapterlist for ${source.title} from ${url}: ${err?.message || 'Unknown Error.'}`, 0]] }
     }
 }
 
