@@ -88,7 +88,7 @@ async function fetchForSources(sources: Record<string, Source>, isNew?: boolean)
             }
             urls.forEach(addUrl(source, isNew))
         }
-        if (result.warnings?.length) {
+        if (result?.warnings?.length) {
             result.warnings.forEach((rawWarning) => {
                 if (rawWarning[0] === null) {
                     rawWarning.shift()

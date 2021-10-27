@@ -164,7 +164,7 @@ export function categorizeRemoteUrls(urlList: Partial<Url>[], source: Source, ur
     const collection: RemoteUrlCategorizationResult = {oldUrls: [], newUrls: [], warnings: []}
     return urlList.reduce((collector: {newUrls: Partial<Url>[], oldUrls: Partial<Url>[], warnings: (string | number)[][]}, url: Partial<Url>) => {
         const isValid = url.url && (typeof validateUrl !== 'function' || validateUrl(url.url)) &&
-            /^[\d\.-]+$/.test(String(url.chapter)) && url.host && url.host.length > 0
+            /^[\d\.-]+(\s\(Vol.\s\d+\))?$/.test(String(url.chapter)) && url.host && url.host.length > 0
         const key = getUrlKey(url, source.id)
         const stored = urls[key]
 

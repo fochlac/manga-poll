@@ -1,3 +1,4 @@
+import { url } from 'inspector'
 import { resolve } from 'path'
 import { createWrite, readFile } from './utils/db'
 import { getUrlKey } from './utils/keys'
@@ -18,14 +19,25 @@ declare global {
 
 const writeUrls = createWrite(urlsPath)
 
-const urls = readFile<Url>(urlsPath)
+const urls = readFile<Url>(urlsPath, (urls) => {
+    let modified = false
+    Object.keys(urls).forEach((urlKey) => {
+        if (urlKey.includes('fanfox')) {
+            delete urls[urlKey]
+            modified = true
+        }
+    })
+    return modified
+}, writeUrls)
 
 export function updateUrl(source: Source, newUrl: Partial<Url>) {
     const key = getUrlKey(newUrl, source.id)
-    if (urls[key] && urls[key].url !== newUrl.url || !urls[key].chapter) {
-        urls[key].url = newUrl.url
-        urls[key].chapter = newUrl.chapter
-        urls[key].host = newUrl.host
+    const stored = urls[key]
+    if (stored && (stored.url !== newUrl.url || !stored.chapter)) {
+        console.log(source.title, ':', newUrl.url, stored.url, '--', newUrl.chapter, stored.chapter)
+        stored.url = newUrl.url
+        stored.chapter = newUrl.chapter
+        stored.host = newUrl.host
         writeUrls(urls)
     }
     return urls[key]

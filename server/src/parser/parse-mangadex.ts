@@ -42,7 +42,10 @@ async function fetchMangadex(source: Source, urls: Record<string, Url>): Promise
             }
         }
 
+        const chapterIncluded = {}
         const urlList = list
+            .slice()
+            .reverse()
             .filter((chapter) => chapter?.type === 'chapter' && chapter.attributes?.translatedLanguage === 'en')
             .map((chapter) => {
                 return {
@@ -51,6 +54,13 @@ async function fetchMangadex(source: Source, urls: Record<string, Url>): Promise
                     host,
                     created: new Date(chapter.attributes.publishAt).getTime()
                 }
+            })
+            .filter((chapter) => {
+                if (!chapterIncluded[chapter.chapter]) {
+                    chapterIncluded[chapter.chapter] = true
+                    return true
+                }
+                return false
             })
 
         const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(urlList, source, urls)

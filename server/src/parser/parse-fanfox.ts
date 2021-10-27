@@ -14,10 +14,12 @@ function parseFanfox (source: Source, urls: Record<string, Url>, body): ChapterR
     const urlList = $('#chapterlist .detail-main-list li').toArray().map((elem) => {
         const rawDate = new Date($(elem).find('.title2').text())
         const url = $(elem).find('a').attr('href')
+        const chapterNumber = $(elem).find('.title3, .title3a').text().replace(/^.*Ch\./, '').replace(/ - .*/, '')
+        const volumeNumber = $(elem).find('.title3, .title3a').text().replace(/^.*Vol\./, '').replace(/\sCh\..*/, '')
 
         return {
             url: url.includes('https://fanfox.net') ? url : joinUrl('https://fanfox.net', url),
-            chapter: $(elem).find('.title3, .title3a').text().replace(/^.*Ch\./, '').replace(/ - .*/, ''),
+            chapter: `${chapterNumber}${volumeNumber ? ` (Vol. ${Number(volumeNumber)})` : ''}`,
             host,
             created: !isNaN(rawDate.getTime()) ? rawDate.getTime() : baseDate.getTime()
         }

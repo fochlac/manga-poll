@@ -1,6 +1,7 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
 import { getResponseBody, registerParser, headers, decodeHTMLEntities, parse, createSource, joinUrl, categorizeRemoteUrls } from '../parser'
+import { getUrlKey } from '../utils/keys'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'leviathan'
@@ -41,12 +42,30 @@ function parseLeviathan(source: Source, urls: Record<string, Url>, body, url): C
 
     return {
         urls: newUrls,
-        oldUrls,
+        oldUrls: oldUrls.filter((update) => {
+            const stored = urls[getUrlKey(url, source.id)]
+            if (!stored || !update) {
+                return false
+            }
+            if (Number(extractChapterRevisionSegment(update.url) || 0) > Number(extractChapterRevisionSegment(stored.url) || 0)) {
+                return true
+            }
+            if (!stored.chapter) {
+                return true
+            }
+            if (update.url.split('/').slice(0, -2).join('/') !== stored.url.split('/').slice(0, -2).join('/')) {
+                return true
+            }
+            return false
+        }),
         warnings,
         sourceInfo: null
     }
 }
 
+function extractChapterRevisionSegment (url) {
+    return url.split('/').slice(-2)[0]?.split('_')?.[1]
+}
 
 async function parseLeviathanPage(rawUrl: string) {
     const sourcehtml: string = await fetch(rawUrl, { headers }).then(res => res.text())
