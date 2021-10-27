@@ -18,7 +18,10 @@ interface WorkerResult {
 function fetchChapterListData (sources, urls): Promise<WorkerResult[]> {
     return new Promise(async (res, reject) => {
         const worker = new Worker('../../../dist/schedule-worker/fetch-chapters.js', [], { esm: true })
-        const timeout = setTimeout(() => worker.terminate(), 300000)
+        const timeout = setTimeout(() => {
+            console.log('Fetch-Timeout: Terminating worker!')
+            worker.terminate()
+        }, 600000)
 
         worker.onmessage = (e) => {
             res(e.data)
@@ -27,6 +30,7 @@ function fetchChapterListData (sources, urls): Promise<WorkerResult[]> {
         }
         
         worker.onerror = (e) => {
+            console.log(`Worker failed due to error: ${e?.message}`)
             reject(e)
             worker.terminate()
             clearTimeout(timeout)
