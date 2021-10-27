@@ -26,7 +26,12 @@ const urls = readFile<Url>(urlsPath, (urls) => {
             delete urls[urlKey]
             modified = true
         }
-        if (!/^[\d\.-]+(\s\(Vol.\s\d+\))?$/.test(String(urls[urlKey]?.chapter))) {
+        const url = urls[urlKey]
+        if (!/^[\d\.-]+(\s\(Vol.\s\d+\))?$/.test(String(url?.chapter))) {
+            delete urls[urlKey]
+            modified = true
+        }
+        if (url.created > 1635375451023 && url.created < 1635375741424) {
             delete urls[urlKey]
             modified = true
         }

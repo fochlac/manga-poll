@@ -80,7 +80,7 @@ async function parseMadara(source: Source, urls: Record<string, Url>, body, sour
         const result = String(url).match(/^https?:\/\/([^/]*)\/.*\/([^/\d]*hapter[^/\d]*|ch[^/\d]*|)([\d-_.]*\d)[^\d/]*[^/]*\/$/) || []
         return {
             host,
-            chapter: result[3].replace(/[-_]*/g, '.').replace(/\.\./g, '.').replace(/\.$/, ''),
+            chapter: result[3].replace(/[-_]+/g, '.').replace(/\.\./g, '.').replace(/(^\.|\.$)/, ''),
             url,
             date: $(elem).closest('.wp-manga-chapter').find('.chapter-release-date').text()
         }
