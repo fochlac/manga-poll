@@ -21,7 +21,7 @@ function fetchChapterListData (sources, urls): Promise<WorkerResult[]> {
         const timeout = setTimeout(() => {
             console.log('Fetch-Timeout: Terminating worker!')
             worker.terminate()
-        }, 600000)
+        }, 590000)
 
         worker.onmessage = (e) => {
             res(e.data)
@@ -40,7 +40,7 @@ function fetchChapterListData (sources, urls): Promise<WorkerResult[]> {
     })
 
 }
-
+let isRunning = false
 async function fetchForSources(sources: Record<string, Source>, isNew?: boolean) {
     const start = Date.now()
     console.log('Fetching new chapters...')
@@ -106,9 +106,17 @@ async function fetchForSources(sources: Record<string, Source>, isNew?: boolean)
     })
 }
 
-const fetchAllUrls = async (isNew?: boolean) => {    
-    const sources = await getSources()
-    fetchForSources(sources, isNew)
+const fetchAllUrls = async (isNew?: boolean) => {
+    isRunning = true
+    try {
+        const sources = await getSources()
+        await fetchForSources(sources, isNew)
+        isRunning = false
+    }
+    catch(e) {
+        isRunning = false
+        throw e
+    }
 }
 
 let timer
@@ -116,7 +124,9 @@ let timer
 export function init() {
     clearInterval(timer)
     timer = setInterval(() => {
-        fetchAllUrls()
+        if (!isRunning) {
+            fetchAllUrls()
+        }
     }, 60000 * 5)
     fetchAllUrls(true)
 }
