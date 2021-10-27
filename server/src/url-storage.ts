@@ -22,16 +22,20 @@ const writeUrls = createWrite(urlsPath)
 const urls = readFile<Url>(urlsPath, (urls) => {
     let modified = false
     Object.keys(urls).forEach((urlKey) => {
+        const url = urls[urlKey]
         if (urlKey.endsWith('.') || urlKey.endsWith('-') || urlKey.endsWith('_')) {
             delete urls[urlKey]
             modified = true
         }
-        const url = urls[urlKey]
-        if (!/^[\d\.-]+(\s\(Vol.\s\d+\))?$/.test(String(url?.chapter))) {
+        else if (!/^[\d\.-]+(\s\(Vol.\s\d+\))?$/.test(String(url?.chapter))) {
             delete urls[urlKey]
             modified = true
         }
-        if (url.created > 1635375451023 && url.created < 1635375741424) {
+        else if (url?.created > 1635375451023 && url.created < 1635375741424) {
+            delete urls[urlKey]
+            modified = true
+        }
+        else if (!url) {
             delete urls[urlKey]
             modified = true
         }
