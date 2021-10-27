@@ -23,7 +23,7 @@ const urls = readFile<Url>(urlsPath, (urls) => {
     let modified = false
     Object.keys(urls).forEach((urlKey) => {
         const url = urls[urlKey]
-        if (urlKey.endsWith('.') || urlKey.endsWith('-') || urlKey.endsWith('_')) {
+        if (urlKey.endsWith('.') || urlKey.endsWith('-') || urlKey.endsWith('_') || urlKey.startsWith('.') || urlKey.startsWith('-') || urlKey.startsWith('_')) {
             delete urls[urlKey]
             modified = true
         }
