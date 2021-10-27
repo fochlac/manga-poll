@@ -22,7 +22,11 @@ const writeUrls = createWrite(urlsPath)
 const urls = readFile<Url>(urlsPath, (urls) => {
     let modified = false
     Object.keys(urls).forEach((urlKey) => {
-        if (urlKey.endsWith('.')) {
+        if (urlKey.endsWith('.') || urlKey.endsWith('-') || urlKey.endsWith('_')) {
+            delete urls[urlKey]
+            modified = true
+        }
+        if (!/^[\d\.-]+(\s\(Vol.\s\d+\))?$/.test(String(urls[urlKey]?.chapter))) {
             delete urls[urlKey]
             modified = true
         }
