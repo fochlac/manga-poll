@@ -77,10 +77,10 @@ async function parseMadara(source: Source, urls: Record<string, Url>, body, sour
 
     const urlList = $('li.wp-manga-chapter > a').toArray().map((elem) => {
         const url = $(elem).attr('href')
-        const result = String(url).match(/^https?:\/\/([^/]*)\/.*\/([^/]*hapter[^/\d]*|ch[^/\d]*|)([\d-]*)[^\d/]*[^/]*\/$/) || []
+        const result = String(url).match(/^https?:\/\/([^/]*)\/.*\/([^/\d]*hapter[^/\d]*|ch[^/\d]*|)([\d-_.]*\d)[^\d/]*[^/]*\/$/) || []
         return {
             host,
-            chapter: result[3].replace('-', '.'),
+            chapter: result[3].replace(/[-_]*/g, '.').replace(/\.\./g, '.').replace(/\.$/, ''),
             url,
             date: $(elem).closest('.wp-manga-chapter').find('.chapter-release-date').text()
         }
