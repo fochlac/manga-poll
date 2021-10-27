@@ -19,16 +19,7 @@ declare global {
 
 const writeUrls = createWrite(urlsPath)
 
-const urls = readFile<Url>(urlsPath, (urls) => {
-    let modified = false
-    Object.keys(urls).forEach((urlKey) => {
-        if (urlKey.includes('fanfox')) {
-            delete urls[urlKey]
-            modified = true
-        }
-    })
-    return modified
-}, writeUrls)
+const urls = readFile<Url>(urlsPath)
 
 export function updateUrl(source: Source, newUrl: Partial<Url>) {
     const key = getUrlKey(newUrl, source.id)
