@@ -82,7 +82,6 @@ async function fetchForSources(sources: Record<string, Source>, isNew?: boolean)
                 }
             }
             if (urls.length) {
-                console.log(urls)
                 let page = getHost(source.url)
                 console.log(`${urls.length} new urls for ${source.title} on "${page}".`)
                 resetStatsCache()

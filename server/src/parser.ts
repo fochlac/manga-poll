@@ -160,6 +160,7 @@ interface RemoteUrlCategorizationResult {
     newUrls: Partial<Url>[], 
     warnings: ((string | number)[])[]
 }
+const invalidUrls = {}
 export function categorizeRemoteUrls(urlList: Partial<Url>[], source: Source, urls:Record<string, Url>, validateUrl?: (url: string) => boolean): RemoteUrlCategorizationResult {
     const collection: RemoteUrlCategorizationResult = {oldUrls: [], newUrls: [], warnings: []}
     return urlList.reduce((collector: {newUrls: Partial<Url>[], oldUrls: Partial<Url>[], warnings: (string | number)[][]}, url: Partial<Url>) => {
@@ -175,7 +176,10 @@ export function categorizeRemoteUrls(urlList: Partial<Url>[], source: Source, ur
             collector.oldUrls.push(url)
         }
         else if (!stored || !isValid) {
-            collector.warnings.push([key, `Invalid url found for ${source.title}: ${JSON.stringify({...url, created: undefined})}`, -1])
+            invalidUrls[url.url] = invalidUrls[url.url] ? invalidUrls[url.url] + 1 : 1 
+            if (invalidUrls[url.url] < 3 || !(invalidUrls[url.url] % 5)) {
+                collector.warnings.push([key, `Invalid url found for ${source.title}: ${JSON.stringify({...url, created: undefined})}`, -1])
+            }
         }
 
         return collector
