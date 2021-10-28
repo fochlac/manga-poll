@@ -31,7 +31,7 @@ async function parseMangastream(source: Source, urls: Record<string, Url>, body:
 
         return {
             url: $(elem).find('a').attr('href'),
-            chapter: $(elem).data('num') && String($(elem).data('num')).match(/^\d+/)?.[0],
+            chapter: String($(elem).data('num') && String($(elem).data('num')).match(/^\d+/)?.[0]),
             host,
             created: !isNaN(rawDate.getTime()) ? rawDate.getTime() : baseDate.getTime()
         }

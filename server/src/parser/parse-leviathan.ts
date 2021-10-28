@@ -27,18 +27,13 @@ function parseLeviathan(source: Source, urls: Record<string, Url>, body, url): C
             created
         }
     })
-    
+
     if (!urlList?.length) {
         return { urls: [], warnings: [[host, `Invalid chapterlist found for ${source.title} from ${url}: Recieved empty URL-List`, 0]] }
     }
-    
-    
-    const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(
-        urlList, 
-        source,
-        urls, 
-        (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)
-    )
+
+
+    const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(urlList, source, urls)
 
     return {
         urls: newUrls,
@@ -63,7 +58,7 @@ function parseLeviathan(source: Source, urls: Record<string, Url>, body, url): C
     }
 }
 
-function extractChapterRevisionSegment (url) {
+function extractChapterRevisionSegment(url) {
     return url.split('/').slice(-2)[0]?.split('_')?.[1]
 }
 
@@ -98,17 +93,17 @@ async function fetchLeviathan(source: Source, urls: Record<string, Url>): Promis
     let url
     try {
         const baseUrl = await fetch(source.url.split('/').slice(0, 3).join('/'), { headers }).then((res) => res.url)
-        url = joinUrl(baseUrl, 'manga', source.url.split('/manga/')[1],'ajax/chapters')
+        url = joinUrl(baseUrl, 'manga', source.url.split('/manga/')[1], 'ajax/chapters')
         const response = await fetch(url, { method: 'post', headers })
         body = await getResponseBody(response)
-        
+
         let sourceInfo
         if (!source.imageUrl || !source.description) {
-            const response = await fetch(joinUrl(baseUrl, 'manga', source.url.split('/manga/')[1]), { method: 'get', headers })        
+            const response = await fetch(joinUrl(baseUrl, 'manga', source.url.split('/manga/')[1]), { method: 'get', headers })
             const body = await getResponseBody(response)
             const $ = cheerio.load(body)
             const imageUrl = $('.summary_image img').attr('data-src')
-            const description =  $('meta[name="description"]').attr('content')
+            const description = $('meta[name="description"]').attr('content')
 
             if (imageUrl?.length && description?.length && (!source.imageUrl || !source.description)) {
                 sourceInfo = {

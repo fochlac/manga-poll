@@ -19,7 +19,7 @@ function parseFanfox (source: Source, urls: Record<string, Url>, body): ChapterR
 
         return {
             url: url.includes('https://fanfox.net') ? url : joinUrl('https://fanfox.net', url),
-            chapter: `${chapterNumber}${volumeNumber ? ` (Vol. ${Number(volumeNumber)})` : ''}`,
+            chapter: `${chapterNumber}${volumeNumber && !isNaN(Number(volumeNumber)) ? ` (Vol. ${Number(volumeNumber)})` : ''}`,
             host,
             created: !isNaN(rawDate.getTime()) ? rawDate.getTime() : baseDate.getTime()
         }

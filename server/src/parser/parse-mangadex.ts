@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import { categorizeRemoteUrls, createSource, registerParser } from '../parser'
+import { categorizeRemoteUrls, createSource, headers, registerParser } from '../parser'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'mangadex'
@@ -9,7 +9,7 @@ const pageSize = 100
 async function fetchMangadex(source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     const host = getHost(source.url)
     try {
-        const result = await fetch(`https://api.mangadex.org/manga/${source.mangaId}/feed?limit=${pageSize}`, { method: 'get' }).then((res) => res.json())
+        const result = await fetch(`https://api.mangadex.org/manga/${source.mangaId}/feed?limit=${pageSize}`, { method: 'get', headers: headers }).then((res) => res.json())
 
         let list = result.data
 
@@ -19,7 +19,7 @@ async function fetchMangadex(source: Source, urls: Record<string, Url>): Promise
 
         if (result.total > pageSize) {
             for (let offset = pageSize; offset <= result.total; offset += pageSize) {
-                const offsetResult = await fetch(`https://api.mangadex.org/manga/${source.mangaId}/feed?limit=${pageSize}&offset=${offset}`, { method: 'get' })
+                const offsetResult = await fetch(`https://api.mangadex.org/manga/${source.mangaId}/feed?limit=${pageSize}&offset=${offset}`, { method: 'get', headers: headers })
                     .then((res) => res.json())
                 list = list.concat(offsetResult.data)
             }
@@ -27,9 +27,9 @@ async function fetchMangadex(source: Source, urls: Record<string, Url>): Promise
 
         let sourceInfo
         if (!source.imageUrl || !source.description) {
-            const mangaInfo = await fetch(`https://api.mangadex.org/manga/${source.mangaId}`, { method: 'get' }).then((res) => res.json())
+            const mangaInfo = await fetch(`https://api.mangadex.org/manga/${source.mangaId}`, { method: 'get', headers: headers }).then((res) => res.json())
             const coverId = mangaInfo.data?.relationships?.find((rel) => rel.type === 'cover_art')?.id
-            const coverInfo = coverId && await fetch(`https://api.mangadex.org/cover/${coverId}`, { method: 'get' }).then((res) => res.json())
+            const coverInfo = coverId && await fetch(`https://api.mangadex.org/cover/${coverId}`, { method: 'get', headers: headers }).then((res) => res.json())
             const coverFileName = coverInfo?.data?.attributes?.fileName
             const imageUrl = coverFileName && `https://mangadex.org/cover/${coverId}/${coverFileName}`
             const description = mangaInfo?.data?.attributes?.description?.en

@@ -80,7 +80,7 @@ async function parseMadara(source: Source, urls: Record<string, Url>, body, sour
         const result = String(url).match(/^https?:\/\/([^/]*)\/.*\/([^/\d]*hapter[^/\d]*|ch[^/\d]*|)([\d-_.]*\d)[^\d/]*[^/]*\/$/) || []
         return {
             host,
-            chapter: result[3].replace(/[-_]+/g, '.').replace(/\.\./g, '.').replace(/(^\.|\.$)/, ''),
+            chapter: result[3]?.replace(/[-_]+/g, '.').replace(/\.\./g, '.').replace(/(^\.|\.$)/, ''),
             url,
             date: $(elem).closest('.wp-manga-chapter').find('.chapter-release-date').text()
         }
@@ -89,13 +89,8 @@ async function parseMadara(source: Source, urls: Record<string, Url>, body, sour
     if (!urlList?.length) {
         return { urls: [], warnings: [[host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0]] }
     }
-    
-    const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(
-            urlList.map(parseDates(urlList)), 
-            source,
-            urls, 
-            (url) => /^https?:\/\/.*\/([^/]*hapter[^/\d]*|ch[^/\d]*|)(\d*)[^\d/]*[^/]*\/$/.test(url)
-        )
+
+    const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(urlList.map(parseDates(urlList)), source, urls)
 
     const { newUrls: availableNewUrls, warnings: availabilityWarnings } = await checkNewUrlAvailability(source, newUrls, (body) => {
         const $ = cheerio.load(body)
@@ -116,7 +111,7 @@ async function parseMadara(source: Source, urls: Record<string, Url>, body, sour
 
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g
 
-const fetchPage:(rawUrl: string) => Promise<string> = 
+const fetchPage: (rawUrl: string) => Promise<string> =
     async (rawUrl) => await fetch(rawUrl, { headers }).then(res => res.text())
 
 function parseMadaraPage(sourcehtml: string, rawUrl: string) {
@@ -132,7 +127,7 @@ function parseMadaraPage(sourcehtml: string, rawUrl: string) {
         $('#manga-reading-nav-foot').data('id')
     ]
         .filter((id) => !!id && String(id).length)
-        .reduce((map, id: string|number) => {
+        .reduce((map, id: string | number) => {
             map[id] = typeof map[id] === 'number' ? map[id] + 1 : 1
             return map
         }, {})
@@ -167,7 +162,7 @@ async function fetchMadara(source: Source, urls: Record<string, Url>): Promise<C
         try {
             body = await getResponseBody(resp)
         }
-        catch(err) {
+        catch (err) {
             errortext = err
         }
 
@@ -175,7 +170,7 @@ async function fetchMadara(source: Source, urls: Record<string, Url>): Promise<C
         if (body) {
             const $ = cheerio.load(body)
             const imageUrl = $('.summary_image img').attr('data-src') || $('.summary_image img').attr('src')
-            const description =  $('meta[name="description"]').attr('content')
+            const description = $('meta[name="description"]').attr('content')
 
             if (imageUrl?.length && description?.length && (!source.imageUrl || !source.description)) {
                 sourceInfo = {
@@ -192,7 +187,7 @@ async function fetchMadara(source: Source, urls: Record<string, Url>): Promise<C
                     sourceInfo.update = rawSource
                 }
             }
-            catch(e) {
+            catch (e) {
                 console.log(`Error updating source: ${source.title} (${source.id}): ${e?.message}`)
             }
             return parseMadara(source, urls, body, sourceInfo)
@@ -207,7 +202,7 @@ async function fetchMadara(source: Source, urls: Record<string, Url>): Promise<C
                 const body = await getResponseBody(response)
                 return parseMadara(source, urls, body, sourceInfo)
             }
-            catch(err) {
+            catch (err) {
                 errortext = `${errortext || 'Could not find chapter list in body.'} + ${err}`
             }
         }
@@ -217,7 +212,7 @@ async function fetchMadara(source: Source, urls: Record<string, Url>): Promise<C
                 body = await getResponseBody(resp)
                 return parseMadara(source, urls, body, sourceInfo)
             }
-            catch(err) {
+            catch (err) {
                 throw new Error(`${errortext} + ${err}`)
             }
         }
@@ -232,7 +227,7 @@ async function fetchMadara(source: Source, urls: Record<string, Url>): Promise<C
 const madara = {
     fetchFunction: fetchMadara,
     type: TYPE,
-    parseLink: async (rawUrl: string ) => {
+    parseLink: async (rawUrl: string) => {
         const sourcehtml = await fetchPage(rawUrl)
         return parseMadaraPage(sourcehtml, rawUrl)
     },

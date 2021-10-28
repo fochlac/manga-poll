@@ -30,7 +30,7 @@ export function createWrite(path) {
     }
 }
 
-export function readFile<T=any>(path: string, modificationCallback?:(data:Record<string, T>) => boolean, write?: Function):Record<string, T> {
+export function readFile<T=any>(path: string, modificationCallback?:(data:Record<string, T>) => boolean|Promise<Boolean>, write?: Function):Record<string, T> {
     let data: Record<string, T> = {}
     try {
         data = JSON.parse(readFileSync(path, { encoding: 'utf-8' }))

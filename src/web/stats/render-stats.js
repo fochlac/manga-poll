@@ -13,11 +13,7 @@ export async function renderStats () {
         .sort((a, b) => String(a).localeCompare(b))
 
     renderHostList(stats, sortedHosts)
-    renderHostDiagram(stats, sortedHosts.filter((host) => {
-        return stats[host].warnings
-            .filter((warning) => Date.now() - warning.date <= 8 * 24 * 60 * 60 * 1000)
-            .length
-    }))
+    renderHostDiagram(stats, sortedHosts.filter((host) => Object.keys(stats[host].warnings || {}).length))
 }
 
 document.querySelector('#globalLegend').addEventListener('click', (e) => {
@@ -50,13 +46,13 @@ function getFetchIntervals (day) {
 function renderHostDiagram (stats, hosts) {
     const selectedHost = document.querySelector('#globalLegend .host.highlight')
     const dayWarningMap = hosts.reduce((dayWarningMap, host) => {
-        stats[host].warnings.forEach((warning) => {
-            const warningDay = date(warning.date)
-            if (Date.now() - warning.date <= 60 * 60 * 1000) {
+        Object.keys(stats[host].warnings).forEach((dateKey) => {
+            const warningDay = date(dateKey)
+            if (Date.now() - new Date(dateKey).getTime() <= 61 * 60 * 1000) {
                 if (!dayWarningMap['Last hour'][host]) {
                     dayWarningMap['Last hour'][host] = 0
                 }
-                dayWarningMap['Last hour'][host]++
+                dayWarningMap['Last hour'][host] += stats[host].warnings[dateKey].count
             }
             if (!dayWarningMap[warningDay]) {
                 dayWarningMap[warningDay] = {}
@@ -64,7 +60,7 @@ function renderHostDiagram (stats, hosts) {
             if (!dayWarningMap[warningDay][host]) {
                 dayWarningMap[warningDay][host] = 0
             }
-            dayWarningMap[warningDay][host]++
+            dayWarningMap[warningDay][host] += stats[host].warnings[dateKey].count
         })
 
         return dayWarningMap

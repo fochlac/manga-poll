@@ -54,8 +54,8 @@ async function fetchForSources(sources: Record<string, Source>, isNew?: boolean)
             console.log(`Error fetching urls for source ${source?.title}:\n`, error)
             logWarning(getHost(source.url), 'Unknown Error while fetching chapters.', 0)
         }
-        else if (result?.urls) {
-            const { sourceInfo, urls, oldUrls } = result
+        else if (result) {
+            const { sourceInfo, urls, oldUrls, warnings } = result
             const shouldUpdateDescription = !source.description || !source.imageUrl
             if (sourceInfo?.update && !shouldUpdateDescription) {
                 console.log(`Source has changed - updating from "${JSON.stringify(source)}" to "${JSON.stringify(sourceInfo.update)}".`)
@@ -82,27 +82,24 @@ async function fetchForSources(sources: Record<string, Source>, isNew?: boolean)
                 }
             }
             if (urls.length) {
-                let page = source.url
-                try {
-                    page = getHost(source.url)
-                }
-                catch (e) { }
+                console.log(urls)
+                let page = getHost(source.url)
                 console.log(`${urls.length} new urls for ${source.title} on "${page}".`)
                 resetStatsCache()
                 sendTopicMessage(source.id)
+                urls.forEach(addUrl(source, isNew))
             }
-            urls.forEach(addUrl(source, isNew))
-        }
-        if (result?.warnings?.length) {
-            result.warnings.forEach((rawWarning) => {
-                if (rawWarning[0] === null) {
-                    rawWarning.shift()
-                    console.log(...rawWarning)
-                }
-                else {
-                    logWarning(rawWarning[0], rawWarning[1], rawWarning[2] as number)
-                }
-            })
+            if (warnings?.length) {
+                result.warnings.forEach((rawWarning) => {
+                    if (rawWarning[0] === null) {
+                        rawWarning.shift()
+                        console.log(...rawWarning)
+                    }
+                    else {
+                        logWarning(rawWarning[0], rawWarning[1], rawWarning[2] as number)
+                    }
+                })
+            }
         }
     })
 }

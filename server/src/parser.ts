@@ -174,8 +174,8 @@ export function categorizeRemoteUrls(urlList: Partial<Url>[], source: Source, ur
         else if (isValid && stored && (stored.url !== url.url || !stored.chapter && url.chapter)) {
             collector.oldUrls.push(url)
         }
-        else {
-            collector.warnings.push([key, `Invalid url found for ${source.title}: ${JSON.stringify(url)}`, -1])
+        else if (!stored || !isValid) {
+            collector.warnings.push([key, `Invalid url found for ${source.title}: ${JSON.stringify({...url, created: undefined})}`, -1])
         }
 
         return collector

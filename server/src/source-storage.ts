@@ -1,7 +1,6 @@
 import { customAlphabet, urlAlphabet } from 'nanoid'
 import { resolve } from 'path'
 import { markLinksWithSourceChanged } from './link-controller'
-import { resetStatsCache } from './stats'
 import { createWrite, readFile } from './utils/db'
 
 declare global {
@@ -48,7 +47,7 @@ export async function addSource(title, url, mangaId, type, imageUrl = '', descri
         type
     }
     sources[entry.id] = entry
-    resetStatsCache()
+    triggerSourceChangeCallbacks()
     writeSources(sources)
     return entry
 }
@@ -68,7 +67,7 @@ export async function updateSource(id, { title, url, mangaId, imageUrl, descript
         sources[id] = entry
         markLinksWithSourceChanged(id)
         writeSources(sources)
-        resetStatsCache()
+        triggerSourceChangeCallbacks()
         return entry
     }
     throw new Error(`Cannot update. Source with ${id} doesn't exist.`)
@@ -78,8 +77,21 @@ export function removeSource(id) {
     if (sources[id]) {
         delete sources[id]
         writeSources(sources)
-        resetStatsCache()
+        triggerSourceChangeCallbacks()
         return true
     }
     throw new Error(`Cannot delete. Source with ${id} doesn't exist.`)
+}
+
+const callbacks = []
+
+export function registerSourceChangeCallback(cb) {
+    callbacks.push(cb)
+}
+
+function triggerSourceChangeCallbacks() {
+    try {
+        callbacks.forEach((fn) => typeof fn === 'function' && fn())
+    }
+    catch(e) {}
 }

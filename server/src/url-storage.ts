@@ -46,13 +46,11 @@ const urls = readFile<Url>(urlsPath, (urls) => {
 export function updateUrl(source: Source, newUrl: Partial<Url>) {
     const key = getUrlKey(newUrl, source.id)
     const stored = urls[key]
-    if (stored && (stored.url !== newUrl.url || !stored.chapter)) {
-        console.log(source.title, ':', newUrl.url, stored.url, '--', newUrl.chapter, stored.chapter)
-        stored.url = newUrl.url
-        stored.chapter = newUrl.chapter
-        stored.host = newUrl.host
-        writeUrls(urls)
-    }
+    stored.url = newUrl.url
+    stored.chapter = newUrl.chapter
+    stored.host = newUrl.host
+    stored.created = newUrl.created
+    writeUrls(urls)
     return urls[key]
 }
 
@@ -62,7 +60,7 @@ export function addUrl(source: Source, isNew = false) {
             url: newEntry.url,
             id: getUrlKey(newEntry, source.id),
             created: !isNew ? Date.now() : newEntry.created,
-            chapter: newEntry.chapter,
+            chapter: String(newEntry.chapter),
             host: newEntry.host,
             title: source.title,
             sourceId: source.id
