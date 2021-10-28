@@ -18,3 +18,27 @@ export function getIcon (classes = []) {
     classes.forEach((className) => className && icon.classList.add(className))
     return icon.outerHTML
 }
+
+export function mergeWarnings (w1 = {count: 0, warnings: []}, w2 = {count: 0, warnings: []}) {
+    return {
+        count: (w1.count || 0) + (w2.count || 0),
+        warnings: (w1.warnings || []).reduce((warnings, warning) => {
+            if (!warnings.includes(warning)) {
+                warnings.push(warning)
+            }
+            return warnings
+        }, [...w2.warnings] || [])
+    }
+}
+
+export function mergeWarningCollections (wc1 = {}, wc2 = {}) {
+    return Object.keys(wc1).reduce((combi, date) => {
+        if (combi[date]) {
+            combi[date] = mergeWarnings(wc1[date], combi[date])
+        }
+        else {
+            combi[date] = wc1[date]
+        }
+        return combi
+    }, {...wc2})
+}

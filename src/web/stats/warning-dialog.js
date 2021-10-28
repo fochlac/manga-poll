@@ -18,7 +18,15 @@ export function checkForWarningClick (event) {
         const warnings = JSON.parse(closestHost.dataset.warnings)
 
         let lastDay
-        const html = warnings.reduce((html, warning) => {
+        const html = Object.keys(warnings).reduce((list, key) => {
+            warnings[key].warnings.forEach((warning) => {
+                list.push({
+                    date: new Date(key).getTime(),
+                    message: warning
+                })
+            })
+            return list
+        }, []).sort((a, b) => b.date - a.date).reduce((html, warning) => {
             const day = date(warning.date)
             if (lastDay !== day) {
                 lastDay = day
@@ -35,12 +43,12 @@ export function checkForWarningClick (event) {
 
         const sourceCount = Number(closestHost.dataset.sources)
         document.querySelector('#warningsDiagramm').innerHTML = ''
-        const dayMap = warnings.reduce((dayMap, warning) => {
-            const key = date(warning.date)
+        const dayMap = Object.keys(warnings).reduce((dayMap, dateKey) => {
+            const key = date(dateKey)
             if (!dayMap[key]) {
-                dayMap[key] = []
+                dayMap[key] = 0
             }
-            dayMap[key].push(warning)
+            dayMap[key] += warnings[dateKey].count
             return dayMap
         }, {})
 
@@ -52,8 +60,8 @@ export function checkForWarningClick (event) {
                 if (day === today) {
                     fetchIntervallsPerDay = new Date().getHours() * 60 / 5
                 }
-                const height = Math.round((dayMap[day]?.length || 0) / sourceCount / fetchIntervallsPerDay * 100)
-                const title = `${height}% error rate (${(dayMap[day]?.length || 0)})`
+                const height = Math.round((dayMap[day] || 0) / sourceCount / fetchIntervallsPerDay * 100)
+                const title = `${height}% error rate (${(dayMap[day] || 0)})`
                 document.querySelector('#warningsDiagramm').innerHTML += `
                     <div class="bar" data-date="${day}" data-title="${title}" >
                         <div class="percentage" style="height: ${Math.min(height, 100)}%" />

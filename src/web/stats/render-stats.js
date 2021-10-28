@@ -1,4 +1,4 @@
-import { date, getIcon, time } from './utils'
+import { date, getIcon, mergeWarningCollections, time } from './utils'
 
 const deleteIcon = document.querySelector('svg.delete')
 const linkIcon = document.querySelector('svg.link').outerHTML
@@ -126,7 +126,7 @@ function renderHostList (stats, hosts) {
             .sort((a, b) => String(a.title).localeCompare(b.title))
             .map(({ title, latest, count, warnings, id }) => `
                             <td title="${title}" class="chtitle" data-warnings='${JSON.stringify(warnings).replace(/'/g, '`')}'>
-                                ${title}${warnings.length && getIcon('severe') || ''}
+                                ${title}${Object.keys(warnings).length && getIcon('severe') || ''}
                             </td>
                             <td>${count}</td>
                             <td>${date(latest)}</td>
@@ -140,10 +140,8 @@ function renderHostList (stats, hosts) {
         else if (stats[host].failureRate.day > 0.02) {
             weight = ''
         }
-        const warnings = [].concat(stats[host].warnings, stats[host].chapterWarnings)
-            .filter((warning) => Date.now() - warning.date <= 8 * 24 * 60 * 60 * 1000)
-            .sort((a, b) => b.date - a.date)
-        const warning = warnings.length ? getIcon(weight) : ''
+        const warnings = mergeWarningCollections(stats[host].warnings, stats[host].chapterWarnings)
+        const warning = Object.keys(warnings).length ? getIcon(weight) : ''
 
         const title = `${host}&nbsp;(${Object.keys(stats[host].sources).length})`
         document.querySelector('#stats').innerHTML += `
