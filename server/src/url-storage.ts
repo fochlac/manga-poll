@@ -21,9 +21,19 @@ const writeUrls = createWrite(urlsPath)
 
 const urls = readFile<Url>(urlsPath, (urls) => {
     let modified = false
+    const uniqueMap = Object.values(urls).reduce((uniqueMap, url) => {
+        const duplicateUrlId = uniqueMap[url.url]
+        uniqueMap[url.url] = duplicateUrlId && urls[duplicateUrlId].created > url.created ? duplicateUrlId : url.id
+
+        return uniqueMap
+    }, {})
     Object.keys(urls).forEach((urlKey) => {
         const url = urls[urlKey]
-        if (urlKey.endsWith('.') || urlKey.endsWith('-') || urlKey.endsWith('_') || String(url?.chapter).startsWith('.') || String(url?.chapter).startsWith('-') || String(url?.chapter).startsWith('_')) {
+        if (
+            uniqueMap[url.url] !== urlKey ||
+            urlKey.endsWith('.') || urlKey.endsWith('-') || urlKey.endsWith('_') ||
+            String(url?.chapter).startsWith('.') || String(url?.chapter).startsWith('-') || String(url?.chapter).startsWith('_')
+        ) {
             delete urls[urlKey]
             modified = true
         }

@@ -12,7 +12,7 @@ const Timer = styled(ActionLink)`
     text-align: right;
 `
 
-export function RefreshTimer () {
+export function RefreshTimer() {
     const dispatch = useDispatch()
     const [progress, setProgress] = useState('Next refresh: 0s')
     const fetchTime = useSelector((store) => store.fetchTime)

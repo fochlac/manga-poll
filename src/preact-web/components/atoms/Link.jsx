@@ -1,24 +1,25 @@
 import styled from 'styled-components'
+import { preventDefault } from '../../utils/events'
 
 const LinkRaw = styled.a`
     text-decoration: none;
     cursor: pointer;
-    color: ${({theme}) => theme.linkColor};
-    
+    color: ${({ theme }) => theme.linkColor};
+
     &:hover {
-        color: ${({theme}) => theme.linkColorHover};
+        color: ${({ theme }) => theme.linkColorHover};
     }
     &:active {
-        color: ${({theme}) => theme.linkColorActive};
+        color: ${({ theme }) => theme.linkColorActive};
     }
     &:visited {
-        color: ${({theme, hideVisit}) => hideVisit ? theme.linkColor : theme.linkColorVisited};
+        color: ${({ theme, hideVisit }) => (hideVisit ? theme.linkColor : theme.linkColorVisited)};
     }
     &:visited:hover {
-        color: ${({theme, hideVisit}) => hideVisit ? theme.linkColorHover : theme.linkColorVisitedHover};
+        color: ${({ theme, hideVisit }) => (hideVisit ? theme.linkColorHover : theme.linkColorVisitedHover)};
     }
     &:visited:active {
-        color: ${({theme, hideVisit}) => hideVisit ? theme.linkColorActive : theme.linkColorVisitedActive};
+        color: ${({ theme, hideVisit }) => (hideVisit ? theme.linkColorActive : theme.linkColorVisitedActive)};
     }
 `
 
@@ -33,6 +34,13 @@ LinkRaw.defaultProps = {
     }
 }
 
-export const Link = ({newTab, target, rel, ...props}) => {
-    return <LinkRaw {...props} target={newTab ? '_blank' : target} rel={newTab ? 'noreferrer' : rel} />
+export const Link = ({ newTab, target, rel, ...props }) => {
+    return (
+        <LinkRaw
+            {...props}
+            target={newTab ? '_blank' : target}
+            rel={newTab ? 'noreferrer' : rel}
+            onClick={preventDefault(props.onClick)}
+        />
+    )
 }

@@ -6,7 +6,6 @@ import { logWarning, resetStatsCache } from './stats'
 import { getHost } from './utils/parse'
 import { markLinksWithSourceChanged } from './link-controller'
 import { storeImage } from './utils/images'
-import { fetchAllUrls as fetchAllSourceChapters } from './schedule-worker/fetch-chapters'
 
 interface WorkerResult {
     hasError: boolean;
@@ -16,37 +15,37 @@ interface WorkerResult {
     result: ChapterResult;
 }
 
-// function fetchChapterListData (sources, urls): Promise<WorkerResult[]> {
-//     return new Promise(async (res, reject) => {
-//         const worker = new Worker('../../../dist/schedule-worker/fetch-chapters.js', [], { esm: true })
-//         const timeout = setTimeout(() => {
-//             console.log('Fetch-Timeout: Terminating worker!')
-//             worker.terminate()
-//         }, 590000)
+function fetchChapterListData (sources, urls): Promise<WorkerResult[]> {
+    return new Promise(async (res, reject) => {
+        const worker = new Worker('../../../dist/schedule-worker/fetch-chapters.js', [], { esm: true })
+        const timeout = setTimeout(() => {
+            console.log('Fetch-Timeout: Terminating worker!')
+            worker.terminate()
+        }, 590000)
 
-//         worker.onmessage = (e) => {
-//             res(e.data)
-//             worker.terminate()
-//             clearTimeout(timeout)
-//         }
+        worker.onmessage = (e) => {
+            res(e.data)
+            worker.terminate()
+            clearTimeout(timeout)
+        }
         
-//         worker.onerror = (e) => {
-//             console.log(`Worker failed due to error: ${e?.message}`)
-//             reject(e)
-//             worker.terminate()
-//             clearTimeout(timeout)
-//         }
+        worker.onerror = (e) => {
+            console.log(`Worker failed due to error: ${e?.message}`)
+            reject(e)
+            worker.terminate()
+            clearTimeout(timeout)
+        }
 
-//         worker.postMessage({ type: 'FETCH', sources, urls })
-//     })
+        worker.postMessage({ type: 'FETCH', sources, urls })
+    })
+}
 
-// }
 let isRunning = false
 async function fetchForSources(sources: Record<string, Source>, isNew?: boolean) {
     const start = Date.now()
     console.log('Fetching new chapters...')
     const urls = getUrls()
-    const results = await fetchAllSourceChapters(sources, urls)
+    const results = await fetchChapterListData(sources, urls)
     console.log('Fetching chapters took ' + Math.floor((Date.now() - start) / 1000) + ' seconds.')
 
     results.forEach(({hasError, result, error, source}) => {

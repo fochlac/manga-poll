@@ -8,7 +8,7 @@ export const CardImage = styled.div`
     justify-content: center;
     align-items: center;
     margin-right: 16px;
-    flex-shrink: 0;    
+    flex-shrink: 0;
     background-image: url(${(props) => props.src});
     background-position: center;
     background-size: cover;

@@ -9,7 +9,7 @@ import '../parser/parse-genkan'
 import '../parser/parse-leviathan'
 import '../parser/parse-webtoons'
 
-export async function fetchAllUrls(sources:Record<string, Source>, urls:Record<string, Url>) {
+async function fetchAllUrls(sources:Record<string, Source>, urls:Record<string, Url>) {
     let results = []
     const fetchPromiseMap = Object.values(sources)
         .reduce((promiseMap, source) => {
@@ -32,9 +32,9 @@ export async function fetchAllUrls(sources:Record<string, Source>, urls:Record<s
     return results
 }
 
-// onmessage = async function (e) {
-//     if (e.data.sources) {
-//         const data = await fetchAllUrls(e.data.sources, e.data.urls)
-//         postMessage(data);
-//     }
-// }
+onmessage = async function (e) {
+    if (e.data.sources) {
+        const data = await fetchAllUrls(e.data.sources, e.data.urls)
+        postMessage(data);
+    }
+}

@@ -10,62 +10,67 @@ import { db } from '../storage'
 const api = API('', db)
 const Links = getLinkHelpers(db, api)
 
-export const atom = createAtom({
-    isLoading: true,
-    route: { key: URL_LIST, params: null }
-}, {
-    async init ({set, swap, get}) {
-        try {
-            await Links.fetchLinkUpdate()
+export const atom = createAtom(
+    {
+        isLoading: true,
+        route: { key: URL_LIST, params: null }
+    },
+    {
+        async init({ set, swap, get }) {
+            try {
+                await Links.fetchLinkUpdate()
+            } catch (e) {}
+
+            const maxOld = await db.urls.getMaxOld()
+            const hide = await db.urls.getHide()
+            const sourceList = await db.sources.read()
+            const urls = await db.urls.read()
+            const link = await db.link.read()
+            const settings = await db.settings.local.read()
+
+            swap({
+                isLoading: false,
+                maxOld,
+                hide,
+                sources: sourceList.reduce((map, source) => ({ ...map, [source.id]: source }), {}),
+                urls,
+                link,
+                settings,
+                route: get().route
+            })
+
+            await api.Urls.read(
+                sourceList.map((source) => source.id),
+                maxOld,
+                hide
+            ).then(db.urls.import)
+
+            set({
+                urls: await db.urls.read()
+            })
+        },
+        navigate({ set }, key, params, query) {
+            set({
+                route: { key, params, query }
+            })
+        },
+        triggerFetch() {
+            interval.triggerInstantly()
+        },
+        async deleteSource({ set }, id) {
+            await db.sources.delete(id)
+            set({ sources: await db.sources.read() })
+        },
+        async hideChapter({ set }, id) {
+            await hideChapter(db, id)
+        },
+        async incrementMaxOld({ set }) {
+            const maxOld = await db.urls.getMaxOld()
+            db.urls.setMaxOld(maxOld + 100)
+            set({ maxOld: maxOld + 100 })
         }
-        catch (e) {}
-
-        const maxOld = await db.urls.getMaxOld()
-        const hide = await db.urls.getHide()
-        const sourceList = await db.sources.read()
-        const urls = await db.urls.read()
-        const link = await db.link.read()
-        const settings = await db.settings.local.read()
-
-        swap({
-            isLoading: false,
-            maxOld,
-            hide,
-            sources: sourceList.reduce((map, source) => ({...map, [source.id]: source}), {}),
-            urls,
-            link,
-            settings,
-            route: get().route
-        })
-
-        await api.Urls.read(sourceList.map((source) => source.id), maxOld, hide)
-            .then(db.urls.import)
-
-        set({
-            urls: await db.urls.read()
-        })
-    },
-    navigate ({ set }, key, params, query) {
-        set({
-            route: { key, params, query }
-        })
-    },
-    triggerFetch () {
-        interval.triggerInstantly()
-    },
-    async deleteSource ({ set }, id) {
-        await db.sources.delete(id)
-        set({ sources: await db.sources.read() })
-    },
-    async hideChapter ({ set }, id) {
-        await hideChapter(db, id)
-    },
-    async incrementMaxOld ({ set }) {
-        const maxOld = await db.urls.getMaxOld()
-        db.urls.setMaxOld(maxOld + 100)
-        set({ maxOld: maxOld + 100 })
     }
-})
+)
 
 atom.observe((atom) => {
     console.log('changed', atom.get())
@@ -80,8 +85,11 @@ const interval = createSchedule({
         const maxOld = await db.urls.getMaxOld()
         const hide = await db.urls.getHide()
         const sources = await db.sources.read()
-        await api.Urls.read(sources.map((source) => source.id), maxOld, hide)
-            .then(db.urls.import)
+        await api.Urls.read(
+            sources.map((source) => source.id),
+            maxOld,
+            hide
+        ).then(db.urls.import)
     },
     interval: 60 * 1000,
     isActive: true,
@@ -108,10 +116,13 @@ db.onChange(async (changes) => {
 
         if (settings.notifications) {
             const sources = await db.sources.read()
-            api.Subscription.subscribe(sources.map((source) => source.id), await getMessagingToken())
+            api.Subscription.subscribe(
+                sources.map((source) => source.id),
+                await getMessagingToken()
+            )
         }
         const sourceList = await db.sources.read()
-        atom.set({ sources: sourceList.reduce((map, source) => ({...map, [source.id]: source}), {}) })
+        atom.set({ sources: sourceList.reduce((map, source) => ({ ...map, [source.id]: source }), {}) })
         interval.triggerInstantly()
     }
     if (Object.prototype.hasOwnProperty.call(changes, 'maxOld')) {

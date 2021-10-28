@@ -3,8 +3,8 @@ import styled from 'styled-components'
 export const FlexRow = styled.div`
     display: flex;
     flex-direction: row;
-    justify-content: ${({justify = 'space-between'}) => justify};
-    align-items: ${({align = 'center'}) => align};
+    justify-content: ${({ justify = 'space-between' }) => justify};
+    align-items: ${({ align = 'center' }) => align};
 
     @media (max-width: ${(props) => props.flip || 0}px) {
         flex-direction: column;
@@ -14,8 +14,8 @@ export const FlexRow = styled.div`
 export const FlexColumn = styled.div`
     display: flex;
     flex-direction: column;
-    justify-content: ${({justify = 'space-between'}) => justify};
-    align-items: ${({align = 'center'}) => align};
+    justify-content: ${({ justify = 'space-between' }) => justify};
+    align-items: ${({ align = 'center' }) => align};
     width: 100%;
 
     @media (max-width: ${(props) => props.flip || 0}px) {

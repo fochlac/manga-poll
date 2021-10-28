@@ -12,7 +12,7 @@ deleteButton.addEventListener('click', (e) => {
         deleteButton.disabled = true
         deletePass.disabled = true
         deleteError.innerHTML = ''
-        fetch(`/api/sources/${deleteSource.value}`, {method: 'delete', headers: {authentication: deletePass.value}})
+        fetch(`/api/sources/${deleteSource.value}`, { method: 'delete', headers: { authentication: deletePass.value } })
             .then((res) => {
                 deleteButton.disabled = false
                 deletePass.disabled = false

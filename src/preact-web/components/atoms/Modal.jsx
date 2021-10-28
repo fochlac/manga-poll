@@ -10,7 +10,8 @@ export const Backdrop = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: ${(props) => props.visible ? '#00000040' : 'transparent'};
+    background-color: ${(props) => (props.visible ? '#00000040' : 'transparent')};
+    cursor: pointer;
 `
 
 export const DialogBox = styled.aside`
@@ -23,7 +24,7 @@ export const DialogBox = styled.aside`
     max-width: 90vw;
     overflow: hidden;
     max-height: 90vh;
-    box-shadow: 0px 3px 2px -1px rgb(0 0 0 / 20%), 0px 1px 2px 1px rgb(0 0 0 / 14%), 0px 1px 4px 1px rgb(0 0 0 / 12%);;
+    box-shadow: 0px 3px 2px -1px rgb(0 0 0 / 20%), 0px 1px 2px 1px rgb(0 0 0 / 14%), 0px 1px 4px 1px rgb(0 0 0 / 12%); ;
 `
 
 export const DialogTitle = styled.h5`
@@ -47,6 +48,7 @@ export const DialogHead = styled.header`
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
+    z-index: 1;
 `
 export const DialogBody = styled.main`
     width: calc(100% - 16px);

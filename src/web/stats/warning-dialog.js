@@ -18,28 +18,31 @@ export function checkForWarningClick (event) {
         const warnings = JSON.parse(closestHost.dataset.warnings)
 
         let lastDay
-        const html = Object.keys(warnings).reduce((list, key) => {
-            warnings[key].warnings.forEach((warning) => {
-                list.push({
-                    date: new Date(key).getTime(),
-                    message: warning
+        const html = Object.keys(warnings)
+            .reduce((list, key) => {
+                warnings[key].warnings.forEach((warning) => {
+                    list.push({
+                        date: new Date(key).getTime(),
+                        message: warning
+                    })
                 })
-            })
-            return list
-        }, []).sort((a, b) => b.date - a.date).reduce((html, warning) => {
-            const day = date(warning.date)
-            if (lastDay !== day) {
-                lastDay = day
-                html += `<h5 class="row date">${day}</h5>`
-            }
-            html += `
+                return list
+            }, [])
+            .sort((a, b) => b.date - a.date)
+            .reduce((html, warning) => {
+                const day = date(warning.date)
+                if (lastDay !== day) {
+                    lastDay = day
+                    html += `<h5 class="row date">${day}</h5>`
+                }
+                html += `
             <div class="row">
             <div class="date">${day}, ${time(warning.date)}</div>
             <div class="message">${warning.message}</div>
             </div>
             `
-            return html
-        }, '')
+                return html
+            }, '')
 
         const sourceCount = Number(closestHost.dataset.sources)
         document.querySelector('#warningsDiagramm').innerHTML = ''
@@ -53,15 +56,16 @@ export function checkForWarningClick (event) {
         }, {})
 
         const today = date(Date.now())
-        new Array(7).fill(0)
+        new Array(7)
+            .fill(0)
             .map((_v, index) => date(Date.now() - 3600000 * 24 * (6 - index)))
             .forEach((day) => {
-                let fetchIntervallsPerDay = 24 * 60 / 5
+                let fetchIntervallsPerDay = (24 * 60) / 5
                 if (day === today) {
-                    fetchIntervallsPerDay = new Date().getHours() * 60 / 5
+                    fetchIntervallsPerDay = (new Date().getHours() * 60) / 5
                 }
-                const height = Math.round((dayMap[day] || 0) / sourceCount / fetchIntervallsPerDay * 100)
-                const title = `${height}% error rate (${(dayMap[day] || 0)})`
+                const height = Math.round(((dayMap[day] || 0) / sourceCount / fetchIntervallsPerDay) * 100)
+                const title = `${height}% error rate (${dayMap[day] || 0})`
                 document.querySelector('#warningsDiagramm').innerHTML += `
                     <div class="bar" data-date="${day}" data-title="${title}" >
                         <div class="percentage" style="height: ${Math.min(height, 100)}%" />

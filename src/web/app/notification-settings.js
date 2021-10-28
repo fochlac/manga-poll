@@ -6,7 +6,7 @@ export async function registerNotificationHandlers (db, Api) {
     const settings = await db.settings.local.read()
     if (settings?.notifications) {
         notificationInput.checked = true
-        if (settings.key !== await getMessagingToken()) {
+        if (settings.key !== (await getMessagingToken())) {
             const sources = await db.sources.read()
             const sourceIdList = sources.map((source) => source.id)
             await Api.Subscription.unsubscribe(sourceIdList, settings.key)
@@ -38,7 +38,10 @@ export async function registerNotificationHandlers (db, Api) {
                 await requestPermission()
             }
             const sources = await db.sources.read()
-            await Api.Subscription.subscribe(sources.map((source) => source.id), await getMessagingToken())
+            await Api.Subscription.subscribe(
+                sources.map((source) => source.id),
+                await getMessagingToken()
+            )
             notificationInput.checked = true
         }
         catch (e) {
@@ -51,7 +54,10 @@ export async function registerNotificationHandlers (db, Api) {
         try {
             notificationInput.disabled = true
             const sources = await db.sources.read()
-            await Api.Subscription.unsubscribe(sources.map((source) => source.id), await getMessagingToken())
+            await Api.Subscription.unsubscribe(
+                sources.map((source) => source.id),
+                await getMessagingToken()
+            )
             notificationInput.checked = false
         }
         catch (e) {

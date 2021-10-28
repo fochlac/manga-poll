@@ -51,35 +51,40 @@ const ChapterList = styled.ul`
     flex-shrink: 1;
 `
 
-export function DetailView ({onClose, source, urls}) {
-    return <Dialog
-        title={''}
-        onClose={onClose}
-        height='80vh'
-        width='calc(90vw - max(calc((100vw - 800px) / 1.5), 4px))'
-        bodyStyle={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', marginTop: -32 }}
-    >
-        <FlexRow align='flex-start' style={{ marginBottom: 16, flexShrink: 0 }}>
-            <DetailImageContainer style={{ marginRight: 0, height: '100%', background, borderBottomLeftRadius: 4 }} >
-                <ContainedImage
-                    size="cover"
-                    src={source.imageUrl}
-                    style={{marginRight: 0, border: `solid 2px ${background}`}}
-                />
-            </DetailImageContainer>
-            <FlexColumn style={{ minHeight: 204 }}>
-                <DetailTitle>{source.title}</DetailTitle>
-                <Host>
-                    <span>Host: </span>
-                    <Link href={source.url} popup>{getHost(source.url)}</Link>
-                </Host>
-                <Subtitle>Synopsis</Subtitle>
-                <ChapterDescription>{source.description}</ChapterDescription>
-            </FlexColumn>
-        </FlexRow>
-        <ChapterList>
-            {urls.map((chapter) => (<ChapterRow chapter={chapter} key={chapter.id} />))}
-        </ChapterList>
-    </Dialog>
+export function DetailView ({ onClose, source, urls }) {
+    return (
+        <Dialog
+            title={''}
+            onClose={onClose}
+            height="80vh"
+            width="calc(90vw - max(calc((100vw - 800px) / 1.5), 4px))"
+            bodyStyle={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', marginTop: -32 }}
+        >
+            <FlexRow align="flex-start" style={{ marginBottom: 16, flexShrink: 0 }}>
+                <DetailImageContainer style={{ marginRight: 0, height: '100%', background, borderBottomLeftRadius: 4 }}>
+                    <ContainedImage
+                        size="cover"
+                        src={source.imageUrl}
+                        style={{ marginRight: 0, border: `solid 2px ${background}` }}
+                    />
+                </DetailImageContainer>
+                <FlexColumn style={{ minHeight: 204 }}>
+                    <DetailTitle>{source.title}</DetailTitle>
+                    <Host>
+                        <span>Host: </span>
+                        <Link href={source.url} popup>
+                            {getHost(source.url)}
+                        </Link>
+                    </Host>
+                    <Subtitle>Synopsis</Subtitle>
+                    <ChapterDescription>{source.description}</ChapterDescription>
+                </FlexColumn>
+            </FlexRow>
+            <ChapterList>
+                {urls.map((chapter) => (
+                    <ChapterRow chapter={chapter} key={chapter.id} />
+                ))}
+            </ChapterList>
+        </Dialog>
+    )
 }
-

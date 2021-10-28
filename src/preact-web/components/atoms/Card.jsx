@@ -2,10 +2,11 @@ import styled from 'styled-components'
 import { DefaultText } from './Typography'
 
 export const Card = styled.div`
-    box-shadow: 0px 3px 2px -1px rgb(0 0 0 / 20%), 0px 1px 2px 1px rgb(0 0 0 / 14%), 0px 1px 4px 1px rgb(0 0 0 / 12%);;
+    box-shadow: 0px 3px 2px -1px rgb(0 0 0 / 20%), 0px 1px 2px 1px rgb(0 0 0 / 14%), 0px 1px 4px 1px rgb(0 0 0 / 12%);
     background: white;
     width: calc(100% - 16px);
     margin: 0 8px 16px;
+    cursor: ${({ onClick }) => (typeof onClick === 'function' ? 'pointer' : 'default')};
 
     &:first-child {
         margin-top: 8px;
@@ -21,6 +22,7 @@ export const CardActionIcon = styled.div`
     margin-left: 4px;
     display: inline-flex;
     justify-content: center;
+    flex-shrink: 0;
     align-items: center;
     position: relative;
     user-select: none;
@@ -34,7 +36,7 @@ export const CardActionIcon = styled.div`
         font-weight: 700;
         position: absolute;
         z-index: 1000;
-        ${(props) => props.left ? 'right: calc(100% + 4px)' : 'left: calc(100% + 6px)'};
+        ${(props) => (props.left ? 'right: calc(100% + 4px)' : 'left: calc(100% + 6px)')};
         background: white;
         color: #062832;
         border: #062832 solid 1px;
@@ -47,11 +49,10 @@ export const CardActionIcon = styled.div`
         width: 0;
         height: 0;
         position: absolute;
-        ${(props) => props.left ? 'right: calc(100% - 1px)' : 'left: calc(100% + 1px)'};
+        ${(props) => (props.left ? 'right: calc(100% - 1px)' : 'left: calc(100% + 1px)')};
         border-top: 5px solid transparent;
-        border-bottom: 5px solid transparent; 
-        ${(props) => props.left ? 'border-left' : 'border-right'}: 6px solid #062832; 
-
+        border-bottom: 5px solid transparent;
+        ${(props) => (props.left ? 'border-left' : 'border-right')}: 6px solid #062832;
     }
 `
 

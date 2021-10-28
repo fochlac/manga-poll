@@ -24,9 +24,7 @@ export const CardTitleText = styled.h5`
     white-space: nowrap;
     cursor: default;
 `
-export const CardMenu = styled.div`
-
-`
+export const CardMenu = styled.div``
 export const CardMenuItem = styled.div`
     height: 30px;
     min-width: 30px;

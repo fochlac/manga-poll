@@ -1,18 +1,19 @@
 import styled from 'styled-components'
+import { preventDefault } from '../../utils/events'
 import { Link } from './Link'
 
 export const ActionLinkRaw = styled(Link)`
-    font-size: ${(props) => props.small ? '0.8rem' : ''};
+    font-size: ${(props) => (props.small ? '0.8rem' : '')};
     letter-spacing: 0.1px;
-    cursor: ${(props) => props.disabled ? 'default' : 'pointer'};
-    color: ${({theme, disabled}) => disabled ? theme.linkColorDisabled : theme.linkColor};
+    cursor: ${(props) => (props.disabled ? 'default' : 'pointer')};
+    color: ${({ theme, disabled }) => (disabled ? theme.linkColorDisabled : theme.linkColor)};
     margin-left: 4px;
-    
+
     &:hover {
-        color: ${({theme, disabled}) => disabled ? theme.linkColorDisabled : theme.linkColorHover};
+        color: ${({ theme, disabled }) => (disabled ? theme.linkColorDisabled : theme.linkColorHover)};
     }
     &:active {
-        color: ${({theme, disabled}) => disabled ? theme.linkColorDisabled : theme.linkColorActive};
+        color: ${({ theme, disabled }) => (disabled ? theme.linkColorDisabled : theme.linkColorActive)};
     }
 `
 ActionLinkRaw.defaultProps = {
@@ -24,7 +25,12 @@ ActionLinkRaw.defaultProps = {
     }
 }
 
-export const ActionLink = ({onClick, disabled, ...props}) => {
-    return <ActionLinkRaw onClick={(e) => !disabled && typeof onClick === 'function' && onClick(e)} disabled={disabled} {...props} />
+export const ActionLink = ({ onClick, disabled, ...props }) => {
+    return (
+        <ActionLinkRaw
+            onClick={preventDefault((e) => !disabled && typeof onClick === 'function' && onClick(e))}
+            disabled={disabled}
+            {...props}
+        />
+    )
 }
-

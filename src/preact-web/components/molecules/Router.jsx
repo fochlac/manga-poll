@@ -1,16 +1,16 @@
 import { BOOKMARKS, URL_LIST } from '../../constants/routes'
 import { useSelector } from '../../utils/atom'
-import { SourceList } from '../views/Bookmarks'
-import { ChapterList } from '../views/ChapterListNew'
+import { MangaFeed } from '../views/MangaFeed'
+import { MangaList } from '../views/MangaList'
 
 export function Router () {
     const route = useSelector((state) => state.route)
     switch (route?.key) {
     case URL_LIST:
-        return <ChapterList />
+        return <MangaFeed />
     case BOOKMARKS:
-        return <SourceList />
+        return <MangaList />
     default:
-        return <ChapterList />
+        return <MangaFeed />
     }
 }

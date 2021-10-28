@@ -3,19 +3,15 @@ import { useContext, useCallback, useState, useRef, useEffect } from 'preact/hoo
 
 const AtomContext = createContext()
 
-export function Provider ({ children, atom }) {
-    return (
-        <AtomContext.Provider value={{ atom }}>
-            {children}
-        </AtomContext.Provider>
-    )
+export function Provider({ children, atom }) {
+    return <AtomContext.Provider value={{ atom }}>{children}</AtomContext.Provider>
 }
 
-function isObject (obj) {
+function isObject(obj) {
     return typeof obj === 'object' && Object.prototype.toString.call(obj) === '[object Object]'
 }
 
-function differ (mappedProps, nextMappedProps) {
+function differ(mappedProps, nextMappedProps) {
     if (mappedProps === nextMappedProps) {
         return false
     }
@@ -34,17 +30,17 @@ function differ (mappedProps, nextMappedProps) {
     return false
 }
 
-export function useActions () {
+export function useActions() {
     const { atom } = useContext(AtomContext)
     return atom.actions
 }
 
-export function useDispatch () {
+export function useDispatch() {
     const { atom } = useContext(AtomContext)
     return atom.dispatch
 }
 
-function invoke (ref) {
+function invoke(ref) {
     if (ref.current) {
         ref.current()
         ref.current = null
@@ -53,7 +49,7 @@ function invoke (ref) {
 
 let i = 0
 const nextOrder = () => ++i
-export function useSelector (selectorFn) {
+export function useSelector(selectorFn) {
     const { atom } = useContext(AtomContext)
 
     if (!atom) {
@@ -97,53 +93,50 @@ export function useSelector (selectorFn) {
     // since we just go rerendered by the parent component
     invoke(cancelUpdate)
 
-    useEffect(
-        () => {
-            // very important to check for this, since
-            // our observe callback might have been removed
-            // from the atom's listeners array while atom is
-            // looping over the old list of listener references
-            let didUnobserve = false
+    useEffect(() => {
+        // very important to check for this, since
+        // our observe callback might have been removed
+        // from the atom's listeners array while atom is
+        // looping over the old list of listener references
+        let didUnobserve = false
 
-            const unobserve = atom.observe(onChange, order.current)
+        const unobserve = atom.observe(onChange, order.current)
 
-            // avoid race render/commit phase conditions
-            // trigger this to check if atom's state change before
-            // we managed to subscribe in this effect
-            onChange()
+        // avoid race render/commit phase conditions
+        // trigger this to check if atom's state change before
+        // we managed to subscribe in this effect
+        onChange()
 
-            function onChange () {
-                if (didUnobserve) return
+        function onChange() {
+            if (didUnobserve) return
 
-                // take into account store updates happening in rapid sequence
-                // cancel each previously scheduled one and reschedule
-                invoke(cancelUpdate)
+            // take into account store updates happening in rapid sequence
+            // cancel each previously scheduled one and reschedule
+            invoke(cancelUpdate)
 
-                // schedule an update
-                cancelUpdate.current = schedule(() => {
-                    cancelUpdate.current = null
-                    const nextMappedProps = selector(atom.get())
-                    if (differ(mappedProps.current, nextMappedProps)) {
-                        rerender({})
-                    }
-                })
-            }
+            // schedule an update
+            cancelUpdate.current = schedule(() => {
+                cancelUpdate.current = null
+                const nextMappedProps = selector(atom.get())
+                if (differ(mappedProps.current, nextMappedProps)) {
+                    rerender({})
+                }
+            })
+        }
 
-            return function destroy () {
-                didUnobserve = true
-                unobserve()
-                invoke(cancelUpdate)
-            }
-        },
-        [atom, selector, schedule, order, mappedProps, cancelUpdate, rerender]
-    )
+        return function destroy() {
+            didUnobserve = true
+            unobserve()
+            invoke(cancelUpdate)
+        }
+    }, [atom, selector, schedule, order, mappedProps, cancelUpdate, rerender])
 
     // always return fresh mapped props, in case
     // this is a parent rerendering children
     return mappedProps.current
 }
 
-function getRequestAnimationFrame () {
+function getRequestAnimationFrame() {
     if (typeof window === 'undefined') {
         return (callback) => callback()
     }
@@ -153,25 +146,28 @@ function getRequestAnimationFrame () {
     }
 
     return (
-        window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || polyfill
+        window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        polyfill
     )
 }
 
-function getCancelAnimationFrame () {
+function getCancelAnimationFrame() {
     if (typeof window === 'undefined') {
-        return () => { }
+        return () => {}
     }
-    return window.cancelAnimationFrame || window.mozCancelAnimationFrame || clearTimeout || (() => { })
+    return window.cancelAnimationFrame || window.mozCancelAnimationFrame || clearTimeout || (() => {})
 }
 
-function raf (fn) {
+function raf(fn) {
     const requestAnimationFrame = getRequestAnimationFrame()
     const cancelAnimationFrame = getCancelAnimationFrame()
 
     let requested = false
     let reqId
 
-    return function rafed (...args) {
+    return function rafed(...args) {
         if (!requested) {
             requested = true
             reqId = requestAnimationFrame(() => {
@@ -182,7 +178,7 @@ function raf (fn) {
             })
         }
 
-        return function cancel () {
+        return function cancel() {
             cancelAnimationFrame(reqId)
             requested = false
         }

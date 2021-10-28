@@ -7,10 +7,9 @@ import { FlexRow } from '../atoms/Layout'
 
 const Bar = styled.header`
     height: 54px;
-    background: #062832;
-    color: rgb(230, 241, 242);
+    background: ${({ theme }) => theme.colorPrimary};
+    color: ${({ theme }) => theme.colorPrimaryLight};
     margin: 0;
-    margin-bottom: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -27,13 +26,19 @@ const HeaderImage = styled.img`
     border-radius: 15%;
 `
 
+Bar.defaultProps = {
+    theme: {
+        colorPrimary: '#062832',
+        colorPrimaryLight: 'rgb(230, 241, 242)'
+    }
+}
 export function Header () {
     const dispatch = useDispatch()
     const route = useSelector((store) => store.route)
 
     return (
         <Bar>
-            <FlexRow onClick={() => dispatch('navigate', URL_LIST)} style={{cursor: 'pointer'}}>
+            <FlexRow onClick={() => dispatch('navigate', URL_LIST)} style={{ cursor: 'pointer' }}>
                 <HeaderImage src="/android-chrome-144x144.png" alt="Manga-Scout Logo" />
                 <Title id="popupTitle">Manga-Scout</Title>
             </FlexRow>
