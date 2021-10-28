@@ -10,7 +10,20 @@ const webappPath = './web/'
 const config = {
     mode: 'development',
     devtool: 'inline-source-map',
+    resolve: {
+        alias: {
+            "react": "preact/compat",
+            "react-dom/test-utils": "preact/test-utils",
+            "react-dom": "preact/compat",     // Must be below test-utils
+            "react/jsx-runtime": "preact/jsx-runtime"
+        },
+        extensions: ['.js', '.jsx', '.ts', '...']
+    },
     entry: {
+        preact: {
+            import: './src/preact-web/index.js',
+            filename: webappPath + 'index-preact.js'
+        },
         bookmark: {
             import: './src/extension/test-bookmark.js',
             filename: chromeExtensionPath + 'test-bookmark.js'
@@ -62,16 +75,22 @@ const config = {
     module: {
         rules: [
             {
-                test: /\.js$/,
+                test: /\.jsx?$/,
                 use: 'babel-loader',
                 exclude: /node_modules/
             },
             {
                 test: /\.css$/,
                 use: [
-                    'style-loader',
-                    'css-loader'
-                ]
+                    "style-loader",
+                    {
+                        loader: "css-loader",
+                        options: {
+                            importLoaders: 1,
+                            modules: true,
+                        },
+                    },
+                ],
             }
         ]
     },

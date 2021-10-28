@@ -1,18 +1,32 @@
 {
-	"presets": [
-		[
-			"@babel/preset-env",
-			{
-                "targets": "> 0.25%, not dead",
-				"debug": false
-			}
-		]
-	],
-	"plugins": [
-		"@babel/plugin-proposal-object-rest-spread",
-		"@babel/plugin-proposal-class-properties",
-		"@babel/plugin-proposal-async-generator-functions",
-		"@babel/plugin-proposal-optional-chaining",
-		"@babel/plugin-proposal-optional-catch-binding"
-	]
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": "> 0.25%, not dead",
+        "debug": false
+      }
+    ]
+  ],
+  "plugins": [
+    [
+      "@babel/plugin-transform-react-jsx",
+      {
+        "pragma": "h",
+        "pragmaFrag": "Fragment"
+      }
+    ],
+    ["babel-plugin-jsx-pragmatic", {
+      "module": "preact",
+      "import": "h",
+      "export": "h"
+    }],
+    "babel-plugin-styled-components",
+    "@babel/plugin-proposal-function-bind",
+    "@babel/plugin-proposal-object-rest-spread",
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-proposal-async-generator-functions",
+    "@babel/plugin-proposal-optional-chaining",
+    "@babel/plugin-proposal-optional-catch-binding"
+  ]
 }

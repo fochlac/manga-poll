@@ -1,6 +1,7 @@
 {
     "extends": [
-        "eslint:recommended"
+        "eslint:recommended",
+        "preact"
     ],
     "plugins": ["jest"],
     "env": {
