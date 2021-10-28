@@ -14,8 +14,10 @@ function parseFanfox (source: Source, urls: Record<string, Url>, body): ChapterR
     const urlList = $('#chapterlist .detail-main-list li').toArray().map((elem) => {
         const rawDate = new Date($(elem).find('.title2').text())
         const url = $(elem).find('a').attr('href')
-        const chapterNumber = $(elem).find('.title3, .title3a').text().replace(/^.*Ch\./, '').replace(/ - .*/, '')
-        const volumeNumber = $(elem).find('.title3, .title3a').text().replace(/^.*Vol\./, '').replace(/\sCh\..*/, '')
+        const chapterNumberRaw = $(elem).find('.title3, .title3a').text().replace(/^.*Ch\./, '').replace(/ - .*/, '')
+        const chapterNumber = String(chapterNumberRaw).match(/^[\d.-_]+/)?.[0]
+        const volumeNumberRaw = $(elem).find('.title3, .title3a').text().replace(/^.*Vol\./, '').replace(/\sCh\..*/, '')
+        const volumeNumber = String(volumeNumberRaw).match(/^[\d.-_]+/)?.[0]
 
         return {
             url: url.includes('https://fanfox.net') ? url : joinUrl('https://fanfox.net', url),

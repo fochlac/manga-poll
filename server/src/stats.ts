@@ -359,7 +359,7 @@ async function getStatsDefault(): Promise<Stats> {
         const sourceChapters = Object.values(urls).filter((url) => url.sourceId === source.id)
         const latest = sourceChapters.reduce((latest, url) => latest > Number(url.created) ? latest : Number(url.created), 0)
 
-        const chapterWarnings = Object.keys(warnings[host].chapterWarnings)
+        const chapterWarnings = Object.keys(warnings[host].chapterWarnings || {})
             .filter(key => key.includes(getUrlKey({ host, chapter: '' }, source.id)))
             .reduce((chWarnings, warningKey) => mergeWarningCollections(warnings[host].chapterWarnings[warningKey], chWarnings), {})
 
