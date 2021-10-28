@@ -171,7 +171,7 @@ export function categorizeRemoteUrls(urlList: Partial<Url>[], source: Source, ur
         if (isValid && !stored) {
             collector.newUrls.push(url)
         }
-        else if (isValid && stored && (stored.url !== url.url || !stored.chapter && url.chapter)) {
+        else if (isValid && stored && (stored.url !== url.url || !stored.chapter && url.chapter) && stored.created < url.created) {
             collector.oldUrls.push(url)
         }
         else if (!stored || !isValid) {

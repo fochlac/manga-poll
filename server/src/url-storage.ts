@@ -46,7 +46,6 @@ const urls = readFile<Url>(urlsPath, (urls) => {
 export function updateUrl(source: Source, newUrl: Partial<Url>) {
     const key = getUrlKey(newUrl, source.id)
     const stored = urls[key]
-    console.log(stored, newUrl)
     stored.url = newUrl.url
     stored.chapter = newUrl.chapter
     stored.host = newUrl.host
