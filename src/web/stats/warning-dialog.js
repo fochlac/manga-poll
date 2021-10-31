@@ -22,7 +22,7 @@ export function checkForWarningClick (event) {
             .reduce((list, key) => {
                 warnings[key].warnings.forEach((warning) => {
                     list.push({
-                        date: new Date(key).getTime(),
+                        date: new Date(`${key}Z`).getTime(),
                         message: warning
                     })
                 })

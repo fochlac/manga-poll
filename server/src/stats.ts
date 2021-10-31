@@ -1,55 +1,54 @@
-import { resolve } from "path"
-import { getSources, registerSourceChangeCallback } from "./source-storage"
-import { getUrls } from "./url-storage"
-import { createWrite, readFile } from "./utils/db"
-import { getUrlKey } from "./utils/keys"
-import { getHost } from "./utils/parse"
-import { debounce } from "./utils/timing"
-
+/* eslint-disable max-lines */
+import { resolve } from 'path'
+import { getSources, registerSourceChangeCallback } from './source-storage'
+import { getUrls } from './url-storage'
+import { createWrite, readFile } from './utils/db'
+import { getUrlKey } from './utils/keys'
+import { getHost } from './utils/parse'
+import { debounce } from './utils/timing'
 
 declare global {
     interface Warning {
-        date: number;
-        message: string;
+        date: number
+        message: string
     }
 
     type Stats = Record<string, HostStat>
 
     interface FailureRates {
-        week: number;
-        day: number;
-        hour: number;
+        week: number
+        day: number
+        hour: number
     }
 
     interface HostInfo {
-        name: string;
-        url: string;
-        failureRate: FailureRates;
+        name: string
+        url: string
+        failureRate: FailureRates
     }
 
     interface SourceStat {
-        title: string;
-        latest: number;
-        count: number;
-        chapterWarnings: Warning[];
+        title: string
+        latest: number
+        count: number
+        chapterWarnings: Warning[]
         failureRate: FailureRates
     }
 
     interface WarningCollection {
-        count: number;
-        warnings: string[];
+        count: number
+        warnings: string[]
     }
 
     interface HostStat {
-        latest: number;
+        latest: number
         sources: Record<string, SourceStat>
-        count: number;
-        warnings: any;
-        chapterWarnings: WarningCollection[];
-        url: string;
+        count: number
+        warnings: any
+        chapterWarnings: WarningCollection[]
+        url: string
         failureRate: FailureRates
     }
-
 }
 
 const warningsPath = resolve(__dirname, '../db/warnings.json')
@@ -57,74 +56,25 @@ const ipStatsPath = resolve(__dirname, '../db/ip-history.json')
 const writeWarnings = createWrite(warningsPath)
 const writeIpHistory = createWrite(ipStatsPath)
 
-const warnings = readFile<any>(warningsPath, async (warnings) => {
-    let modified = false
-    const chapterWarnings = {}
-    Object.keys(warnings).forEach((key) => {
-        if (key.split('--')[2]?.length) {
-            modified = true
-            const hostKey = key.split('--')[0]
-            chapterWarnings[hostKey] = chapterWarnings[hostKey] || {}
-            chapterWarnings[hostKey][key] = warnings[key].reduce((timeMap, chapterWarning) => {
-                if (chapterWarning.date > 1635346800000 && chapterWarning.date < 1635432400000) {
-                    return timeMap
-                }
-                const timeStamp = new Date(chapterWarning.date).toISOString().slice(0, 14) + '00'
-                timeMap[timeStamp] = timeMap[timeStamp] || { count: 0, warnings: [] }
-                timeMap[timeStamp].count++
-                if (!timeMap[timeStamp].warnings.includes(chapterWarning.message.replace(/(created.{0,3}:\s?)\d+/, '$10'))) {
-                    timeMap[timeStamp].warnings.push(chapterWarning.message.replace(/(created.{0,3}:\s?)\d+/, '$10'))
-                }
-                return timeMap
-            }, {})
-            delete warnings[key]
-        }
-        else if (!key.includes('--') && key.includes('.') && Array.isArray(warnings[key])) {
-            modified = true
-            warnings[key] = {
-                warnings: warnings[key].reduce((timeMap, hostWarning) => {
-                    const timeStamp = new Date(hostWarning.date).toISOString().slice(0, 14) + '00'
-                    timeMap[timeStamp] = timeMap[timeStamp] || { count: 0, warnings: [] }
-                    timeMap[timeStamp].count++
-                    if (!timeMap[timeStamp].warnings.includes(hostWarning.message)) {
-                        timeMap[timeStamp].warnings.push(hostWarning.message)
-                    }
-                    return timeMap
-                }, {})
+const warnings = readFile<any>(warningsPath)
+
+export function createStatsEndpoints (app) {
+    const history = readFile(
+        ipStatsPath,
+        (history) => {
+            let hasChanges = false
+            if (!history.daily) {
+                history.daily = [{}]
+                hasChanges = true
             }
-        }
-    })
-    Object.keys(chapterWarnings).forEach((key) => {
-        if (!warnings[key]) {
-            warnings[key] = {
-                warnings: {},
-                chapterWarnings: {}
+            if (!history.allTime) {
+                history.allTime = {}
+                hasChanges = true
             }
-        }
-
-        warnings[key].chapterWarnings = {
-            ...(warnings[key].chapterWarnings || {}),
-            ...chapterWarnings[key]
-        }
-        delete chapterWarnings[key]
-    })
-
-    return modified
-}, writeWarnings)
-
-export function createStatsEndpoints(app) {
-    let history = readFile(ipStatsPath, (history) => {
-        let hasChanges = false
-        if (!history.daily) {
-            history.daily = [{}]
-            hasChanges = true
-        }
-        if (!history.allTime) {
-            history.allTime = {}
-            hasChanges = true
-        }
-        return hasChanges
-    }, writeIpHistory)
+            return hasChanges
+        },
+        writeIpHistory
+    )
 
     setInterval(() => {
         if (history.daily.length >= 24) {
@@ -146,17 +96,19 @@ export function createStatsEndpoints(app) {
         }
     })
 
-    function evaluateHistory(stats) {
-        return Object.keys(stats)
-            .reduce((stats, uid) => {
+    function evaluateHistory (stats) {
+        return Object.keys(stats).reduce(
+            (stats, uid) => {
                 const isAnon = uid.slice(0, 4) === 'anon'
                 stats[isAnon ? 'anon' : 'linked']++
 
                 return stats
-            }, {
+            },
+            {
                 anon: 0,
                 linked: 0
-            })
+            }
+        )
     }
 
     app.get('/api/stats/users', (req, res) => {
@@ -173,24 +125,36 @@ export function createStatsEndpoints(app) {
         const stats = await getStats()
         res.status(200).json({ valid: true, payload: stats })
     })
-
 }
 
-export function shouldWarn(key, limit) {
-    return !warnings[key] || !limit || warnings[key].filter((warning) => Date.now() - warning.date <= 48 * 3600 * 1000).length < limit
+export function shouldWarn (key, limit) {
+    return (
+        !warnings[key] ||
+        !limit ||
+        warnings[key].filter((warning) => Date.now() - warning.date <= 48 * 3600 * 1000).length < limit
+    )
 }
 
-export function logWarning(key, message, limit = 3) {
+export function logWarning (key, message, limit = 3) {
     const timestamp = new Date().toISOString().slice(0, 14) + '00'
     if (key.includes('--')) {
         const host = key.split('--')[0]
         warnings[host] = warnings[host] || { warnings: {}, chapterWarnings: {} }
         warnings[host].chapterWarnings[key] = warnings[host].chapterWarnings[key] || {}
-        warnings[host].chapterWarnings[key][timestamp] = warnings[host].chapterWarnings[key][timestamp] || { count: 0, warnings: [] }
+        warnings[host].chapterWarnings[key][timestamp] = warnings[host].chapterWarnings[key][timestamp] || {
+            count: 0,
+            warnings: []
+        }
 
         warnings[host].chapterWarnings[key][timestamp].count++
-        if (!warnings[host].chapterWarnings[key][timestamp].warnings.includes(message.replace(/(created.{0,3}:\s?)\d+/, '$10'))) {
-            warnings[host].chapterWarnings[key][timestamp].warnings.push(message.replace(/(created.{0,3}:\s?)\d+/, '$10'))
+        if (
+            !warnings[host].chapterWarnings[key][timestamp].warnings.includes(
+                message.replace(/(created.{0,3}:\s?)\d+/, '$10')
+            )
+        ) {
+            warnings[host].chapterWarnings[key][timestamp].warnings.push(
+                message.replace(/(created.{0,3}:\s?)\d+/, '$10')
+            )
         }
     }
     else {
@@ -232,7 +196,7 @@ const fetchesPerHour = 60 / 5
 const fetchesPerDay = 24 * fetchesPerHour
 const fetchesPerWeek = 7 * fetchesPerDay
 
-function checkIsBeforeYesterday(date) {
+function checkIsBeforeYesterday (date) {
     const today = new Date().toISOString().slice(0, 11) + '00:00'
     const yesterday = new Date(Date.now() - dayInMs).toISOString().slice(0, 11) + '00:00'
 
@@ -245,8 +209,7 @@ function checkIsBeforeYesterday(date) {
     return false
 }
 
-
-async function cleanWarnings() {
+async function cleanWarnings () {
     const deletedDates = []
     const sources = await getSources()
     const hostMap = Object.values(sources).reduce((map, source) => {
@@ -255,7 +218,7 @@ async function cleanWarnings() {
         return map
     }, {})
 
-    function deleteIfOld(warnings, date) {
+    function deleteIfOld (warnings, date) {
         if (Date.now() - new Date(date).getTime() > weekInMs + dayInMs) {
             delete warnings[date]
             if (!deletedDates.includes(date)) {
@@ -285,7 +248,7 @@ async function cleanWarnings() {
         Object.keys(warnings[key]?.chapterWarnings || {}).forEach((chapterKey) => {
             const chapterWarnings = warnings[key].chapterWarnings[chapterKey]
 
-            Object.keys(chapterWarnings).forEach(date => {
+            Object.keys(chapterWarnings).forEach((date) => {
                 if (!deleteIfOld(chapterWarnings, date) && checkIsBeforeYesterday(date)) {
                     const timestamp = new Date(date).toISOString().slice(0, 11) + '00:00'
                     chapterWarnings[timestamp] = mergeWarnings(chapterWarnings[timestamp], chapterWarnings[date])
@@ -293,7 +256,17 @@ async function cleanWarnings() {
                 }
             })
 
+            if (Object.keys(warnings[key].chapterWarnings[chapterKey]).length === 0) {
+                delete warnings[key].chapterWarnings[chapterKey]
+            }
         })
+
+        if (
+            Object.keys(warnings[key].chapterWarnings).length === 0 &&
+            Object.keys(warnings[key].warnings).length === 0
+        ) {
+            delete warnings[key]
+        }
     })
 
     if (deletedDates.length) {
@@ -306,7 +279,7 @@ setInterval(() => cleanWarnings(), 60 * 1000)
 
 cleanWarnings()
 
-const makeCached = <T = any>(fn: () => T): { cachedFn: () => T, resetCache: () => void } => {
+const makeCached = <T = any>(fn: () => T): { cachedFn: () => T; resetCache: () => void } => {
     let isValid = false
     let cache = null
 
@@ -324,7 +297,7 @@ const makeCached = <T = any>(fn: () => T): { cachedFn: () => T, resetCache: () =
     }
 }
 
-function mergeWarnings(w1 = {count: 0, warnings: []}, w2 = {count: 0, warnings: []}) {
+function mergeWarnings (w1 = { count: 0, warnings: [] }, w2 = { count: 0, warnings: [] }) {
     return {
         count: (w1.count || 0) + (w2.count || 0),
         warnings: (w1.warnings || []).reduce((warnings, warning) => {
@@ -336,19 +309,25 @@ function mergeWarnings(w1 = {count: 0, warnings: []}, w2 = {count: 0, warnings: 
     }
 }
 
-function mergeWarningCollections(wc1: Record<string, WarningCollection> = {}, wc2: Record<string, WarningCollection> = {}) {
-    return Object.keys(wc1).reduce((combi, date) => {
-        if (combi[date]) {
-            combi[date] = mergeWarnings(wc1[date], combi[date])
-        }
-        else {
-            combi[date] = wc1[date]
-        }
-        return combi
-    }, {...wc2})
+function mergeWarningCollections (
+    wc1: Record<string, WarningCollection> = {},
+    wc2: Record<string, WarningCollection> = {}
+) {
+    return Object.keys(wc1).reduce(
+        (combi, date) => {
+            if (combi[date]) {
+                combi[date] = mergeWarnings(wc1[date], combi[date])
+            }
+            else {
+                combi[date] = wc1[date]
+            }
+            return combi
+        },
+        { ...wc2 }
+    )
 }
 
-async function getStatsDefault(): Promise<Stats> {
+async function getStatsDefault (): Promise<Stats> {
     const urls = await getUrls()
     const sources = await getSources()
 
@@ -357,11 +336,18 @@ async function getStatsDefault(): Promise<Stats> {
         const url = source.url.split('/').slice(0, 3).join('/')
         stats[host] = stats[host] || emptyStats(url, source.type, warnings[host].warnings)
         const sourceChapters = Object.values(urls).filter((url) => url.sourceId === source.id)
-        const latest = sourceChapters.reduce((latest, url) => latest > Number(url.created) ? latest : Number(url.created), 0)
+        const latest = sourceChapters.reduce(
+            (latest, url) => (latest > Number(url.created) ? latest : Number(url.created)),
+            0
+        )
 
         const chapterWarnings = Object.keys(warnings[host].chapterWarnings || {})
-            .filter(key => key.includes(getUrlKey({ host, chapter: '' }, source.id)))
-            .reduce((chWarnings, warningKey) => mergeWarningCollections(warnings[host].chapterWarnings[warningKey], chWarnings), {})
+            .filter((key) => key.includes(getUrlKey({ host, chapter: '' }, source.id)))
+            .reduce(
+                (chWarnings, warningKey) =>
+                    mergeWarningCollections(warnings[host].chapterWarnings[warningKey], chWarnings),
+                {}
+            )
 
         stats[host].chapterWarnings = mergeWarningCollections(stats[host].chapterWarnings, chapterWarnings)
         stats[host].latest = stats[host].latest >= latest ? stats[host].latest : latest
@@ -389,22 +375,25 @@ async function getStatsDefault(): Promise<Stats> {
             const hour = new Date().toISOString().slice(0, 14) + '00'
             const dayLimit = new Date(new Date().toISOString().slice(0, 11) + '00:00').getTime()
             const weekLimit = new Date(new Date(Date.now() - weekInMs).toISOString().slice(0, 11) + '00:00').getTime()
-            const {weekWarnings, dayWarnings, hourWarnings} = Object.keys(warnings).reduce((col, date) => {
-                if (date === hour) {
-                    col.hourWarnings += warnings[date].count
+            const { weekWarnings, dayWarnings, hourWarnings } = Object.keys(warnings).reduce(
+                (col, date) => {
+                    if (date === hour) {
+                        col.hourWarnings += warnings[date].count
+                    }
+                    if (new Date(date).getTime() > dayLimit) {
+                        col.dayWarnings += warnings[date].count
+                    }
+                    if (new Date(date).getTime() > weekLimit) {
+                        col.weekWarnings += warnings[date].count
+                    }
+                    return col
+                },
+                {
+                    weekWarnings: 0,
+                    dayWarnings: 0,
+                    hourWarnings: 0
                 }
-                if (new Date(date).getTime() > dayLimit) {
-                    col.dayWarnings += warnings[date].count
-                }
-                if (new Date(date).getTime() > weekLimit) {
-                    col.weekWarnings += warnings[date].count
-                }
-                return col
-            }, {
-                weekWarnings: 0,
-                dayWarnings: 0,
-                hourWarnings: 0
-            })
+            )
 
             const sources = Object.keys(stats[host].sources).length
             const minutes = new Date().getMinutes()
@@ -424,7 +413,7 @@ async function getStatsDefault(): Promise<Stats> {
     return stats
 }
 
-let hosts: { stable: HostInfo[], unstable: HostInfo[] } = { stable: [], unstable: [] }
+let hosts: { stable: HostInfo[]; unstable: HostInfo[] } = { stable: [], unstable: [] }
 
 const statsCache = makeCached(getStatsDefault)
 
@@ -434,28 +423,29 @@ export const resetStatsCache = () => statsCache.resetCache()
 
 registerSourceChangeCallback(resetStatsCache)
 
-export function getHosts() {
+export function getHosts () {
     return hosts
 }
 
-async function updateHostsRaw() {
+async function updateHostsRaw () {
     const stats = await getStats()
 
-    hosts = Object.keys(stats).reduce((hosts, host) => {
-        let state = 'stable'
-        if (
-            stats[host].count <= 10 || stats[host].failureRate?.week >= 0.1
-        ) {
-            state = 'unstable'
-        }
-        const hostInfo: HostInfo = {
-            name: host,
-            url: stats[host].url,
-            failureRate: stats[host].failureRate
-        }
-        hosts[state].push(hostInfo)
-        return hosts
-    }, { stable: [], unstable: [] })
+    hosts = Object.keys(stats).reduce(
+        (hosts, host) => {
+            let state = 'stable'
+            if (stats[host].count <= 10 || stats[host].failureRate?.week >= 0.1) {
+                state = 'unstable'
+            }
+            const hostInfo: HostInfo = {
+                name: host,
+                url: stats[host].url,
+                failureRate: stats[host].failureRate
+            }
+            hosts[state].push(hostInfo)
+            return hosts
+        },
+        { stable: [], unstable: [] }
+    )
 }
 
 export const updateHosts = debounce(updateHostsRaw, 500)

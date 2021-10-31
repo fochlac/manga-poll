@@ -53,7 +53,7 @@ function renderHostDiagram (stats, hosts) {
         (dayWarningMap, host) => {
             Object.keys(stats[host].warnings).forEach((dateKey) => {
                 const warningDay = date(dateKey)
-                if (Date.now() - new Date(dateKey).getTime() <= 61 * 60 * 1000) {
+                if (Date.now() - new Date(`${dateKey}Z`).getTime() <= 61 * 60 * 1000) {
                     if (!dayWarningMap['Last hour'][host]) {
                         dayWarningMap['Last hour'][host] = 0
                     }
