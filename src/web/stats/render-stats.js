@@ -136,12 +136,12 @@ function renderHostList (stats, hosts) {
         const tableRows = Object.values(stats[host].sources)
             .sort((a, b) => String(a.title).localeCompare(b.title))
             .map(
-                ({ title, latest, count, warnings, id }) => `
-                            <td title="${title}" class="chtitle" data-warnings='${JSON.stringify(warnings).replace(
-    /'/g,
-    '`'
-)}'>
-                                ${title}${(Object.keys(warnings).length && getIcon('severe')) || ''}
+                ({ title, latest, count, warnings, id, url }) => `
+                            <td title="${title}" class="chtitle" data-warnings='${JSON.stringify(warnings).replace(/'/g, '`')}'>
+                                <a href="${url}" target="_blank" rel="noopener">
+                                    ${title}${(Object.keys(warnings).length && getIcon('severe')) || ''}
+                                    ${linkIcon}
+                                </a>
                             </td>
                             <td>${count}</td>
                             <td>${date(latest)}</td>
