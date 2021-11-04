@@ -174,7 +174,7 @@ export function logWarning (key, message, limit = 3) {
     }
 }
 
-const emptyStats = (url, type, warnings = []) => ({
+const emptyStats = (url, type, warnings = {}) => ({
     latest: 0,
     type,
     sources: {},
@@ -256,14 +256,14 @@ async function cleanWarnings () {
                 }
             })
 
-            if (Object.keys(warnings[key].chapterWarnings[chapterKey]).length === 0) {
+            if (Object.keys(warnings[key]?.chapterWarnings[chapterKey]).length === 0) {
                 delete warnings[key].chapterWarnings[chapterKey]
             }
         })
 
         if (
-            Object.keys(warnings[key].chapterWarnings).length === 0 &&
-            Object.keys(warnings[key].warnings).length === 0
+            Object.keys(warnings[key]?.chapterWarnings).length === 0 &&
+            Object.keys(warnings[key]?.warnings).length === 0
         ) {
             delete warnings[key]
         }
@@ -334,14 +334,14 @@ async function getStatsDefault (): Promise<Stats> {
     const stats = Object.values(sources).reduce((stats, source) => {
         const host = getHost(source.url)
         const url = source.url.split('/').slice(0, 3).join('/')
-        stats[host] = stats[host] || emptyStats(url, source.type, warnings[host].warnings)
+        stats[host] = stats[host] || emptyStats(url, source.type, warnings[host]?.warnings)
         const sourceChapters = Object.values(urls).filter((url) => url.sourceId === source.id)
         const latest = sourceChapters.reduce(
             (latest, url) => (latest > Number(url.created) ? latest : Number(url.created)),
             0
         )
 
-        const chapterWarnings = Object.keys(warnings[host].chapterWarnings || {})
+        const chapterWarnings = Object.keys(warnings[host]?.chapterWarnings || {})
             .filter((key) => key.includes(getUrlKey({ host, chapter: '' }, source.id)))
             .reduce(
                 (chWarnings, warningKey) =>
@@ -370,7 +370,7 @@ async function getStatsDefault (): Promise<Stats> {
 
     Object.keys(stats).forEach((host) => {
         if (stats[host]?.warnings || stats[host]?.chapterWarnings) {
-            const warnings = mergeWarningCollections(stats[host].warnings, stats[host].chapterWarnings)
+            const warnings = mergeWarningCollections(stats[host]?.warnings, stats[host]?.chapterWarnings)
             stats[host].warnings = warnings
             const hour = new Date().toISOString().slice(0, 14) + '00'
             const dayLimit = new Date(new Date().toISOString().slice(0, 11) + '00:00').getTime()

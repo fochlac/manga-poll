@@ -8,15 +8,15 @@ import { markLinksWithSourceChanged } from './link-controller'
 import { storeImage } from './utils/images'
 
 interface WorkerResult {
-    hasError: boolean;
-    source: Source;
-    error: Error;
-    isNew: boolean;
-    result: ChapterResult;
+    hasError: boolean
+    source: Source
+    error: Error
+    isNew: boolean
+    result: ChapterResult
 }
 
 function fetchChapterListData (sources, urls): Promise<WorkerResult[]> {
-    return new Promise(async (res, reject) => {
+    return new Promise((res, reject) => {
         const worker = new Worker('../../../dist/schedule-worker/fetch-chapters.js', [], { esm: true })
         const timeout = setTimeout(() => {
             console.log('Fetch-Timeout: Terminating worker!')
@@ -28,7 +28,7 @@ function fetchChapterListData (sources, urls): Promise<WorkerResult[]> {
             worker.terminate()
             clearTimeout(timeout)
         }
-        
+
         worker.onerror = (e) => {
             console.log(`Worker failed due to error: ${e?.message}`)
             reject(e)
@@ -40,15 +40,15 @@ function fetchChapterListData (sources, urls): Promise<WorkerResult[]> {
     })
 }
 
-let isRunning = false
-async function fetchForSources(sources: Record<string, Source>, isNew?: boolean) {
+let isRunning = 0
+async function fetchForSources (sources: Record<string, Source>, isNew?: boolean) {
     const start = Date.now()
     console.log('Fetching new chapters...')
     const urls = getUrls()
     const results = await fetchChapterListData(sources, urls)
     console.log('Fetching chapters took ' + Math.floor((Date.now() - start) / 1000) + ' seconds.')
 
-    results.forEach(({hasError, result, error, source}) => {
+    results.forEach(({ hasError, result, error, source }) => {
         if (hasError) {
             console.log(`Error fetching urls for source ${source?.title}:\n`, error)
             logWarning(getHost(source.url), 'Unknown Error while fetching chapters.', 0)
@@ -57,31 +57,36 @@ async function fetchForSources(sources: Record<string, Source>, isNew?: boolean)
             const { sourceInfo, urls, oldUrls, warnings } = result
             const shouldUpdateDescription = !source.description || !source.imageUrl
             if (sourceInfo?.update && !shouldUpdateDescription) {
-                console.log(`Source has changed - updating from "${JSON.stringify(source)}" to "${JSON.stringify(sourceInfo.update)}".`)
+                console.log(
+                    `Source has changed - updating from "${JSON.stringify(source)}" to "${JSON.stringify(
+                        sourceInfo.update
+                    )}".`
+                )
                 updateSource(source.id, sourceInfo.update)
                 markLinksWithSourceChanged(source.id)
             }
             if (shouldUpdateDescription && sourceInfo?.description && sourceInfo.imageUrl) {
                 console.log(`Updating source image + description for ${source.title}.`)
-                storeImage(source, sourceInfo.imageUrl)
-                    .then((imageUrl) => updateSource(source.id, { 
-                        ...source, 
-                        ...(sourceInfo.update ? sourceInfo.update : {}) ,
-                        description: sourceInfo.description, 
-                        imageUrl,
-                    }))
+                storeImage(source, sourceInfo.imageUrl).then((imageUrl) =>
+                    updateSource(source.id, {
+                        ...source,
+                        ...(sourceInfo.update ? sourceInfo.update : {}),
+                        description: sourceInfo.description,
+                        imageUrl
+                    })
+                )
             }
             if (oldUrls?.length) {
                 console.log(`Updating ${oldUrls.length} urls for source ${source.title}.`)
                 try {
                     oldUrls.forEach((url) => updateUrl(source, url))
                 }
-                catch(e) {
+                catch (e) {
                     console.log(`Error updating url for source ${source.title}.`)
                 }
             }
             if (urls.length) {
-                let page = getHost(source.url)
+                const page = getHost(source.url)
                 console.log(`${urls.length} new urls for ${source.title} on "${page}".`)
                 resetStatsCache()
                 sendTopicMessage(source.id)
@@ -103,24 +108,24 @@ async function fetchForSources(sources: Record<string, Source>, isNew?: boolean)
 }
 
 const fetchAllUrls = async (isNew?: boolean) => {
-    isRunning = true
+    isRunning = Date.now() + 1000 * 60 * 15
     try {
         const sources = await getSources()
         await fetchForSources(sources, isNew)
-        isRunning = false
+        isRunning = 0
     }
-    catch(e) {
-        isRunning = false
+    catch (e) {
+        isRunning = 0
         throw e
     }
 }
 
 let timer
 
-export function init() {
+export function init () {
     clearInterval(timer)
     timer = setInterval(() => {
-        if (!isRunning) {
+        if (isRunning < Date.now()) {
             fetchAllUrls()
         }
     }, 60000 * 5)
@@ -128,4 +133,4 @@ export function init() {
 }
 
 export const fetchAll = (isNew) => fetchAllUrls(isNew)
-export const fetchSource = (source, isNew) => fetchForSources({[source.id]: source}, isNew)
+export const fetchSource = (source, isNew) => fetchForSources({ [source.id]: source }, isNew)
