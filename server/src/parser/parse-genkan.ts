@@ -5,12 +5,12 @@ import { getHost } from '../utils/parse'
 
 const TYPE = 'genkan'
 
-async function testGenkan(rawUrl) {
-    const [url, id] = rawUrl.match(/https?:\/\/[^/]*\/comics\/(\d*)-[-\w\d]*/) || []
+async function testGenkan (rawUrl) {
+    const [url, id] = rawUrl.match(/https?:\/\/.*\/comics\/(\d*)-[-\w\d]*/) || []
     if (!url || !id) {
         throw Error(`Could not extract url and/or id from genkan page. url: ${url} id: ${id}`)
     }
-    const sourcehtml: string = await fetch(url, { headers }).then(res => res.text())
+    const sourcehtml: string = await fetch(url, { headers }).then((res) => res.text())
 
     const $ = cheerio.load(sourcehtml)
     const title = $('meta[property*="title"]').attr('content')
@@ -18,7 +18,7 @@ async function testGenkan(rawUrl) {
     return createSource(TYPE, id, title, url)
 }
 
-function parseDate(dateString) {
+function parseDate (dateString) {
     const baseDate = new Date()
     baseDate.setHours(0, 0, 0, 0)
     const amount = Number(dateString.match(/\d+/)?.[0])
@@ -50,14 +50,14 @@ function parseDate(dateString) {
     return baseDate.getTime()
 }
 
-async function fetchGenkan(source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
+async function fetchGenkan (source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     try {
         const response = await fetch(source.url, { method: 'get', headers })
         const body = await getResponseBody(response)
 
         const $ = cheerio.load(body)
         const host = getHost(source.url)
-    
+
         const urlList = $('#content > .container > .row > .col-lg-9 .card .list-item').toArray().map((elem) => {
             const chapter = $(elem).find('span').text().trim()
             return {
@@ -69,8 +69,8 @@ async function fetchGenkan(source: Source, urls: Record<string, Url>): Promise<C
         })
 
         const rawImageUrl = $('.media-comic-card a.media-content').attr('style')?.match(/background-image:\s*url\(([^)]*)\)/)?.[1]
-        const imageUrl = rawImageUrl.includes(getHost(source.url)) ? rawImageUrl : joinUrl(source.url.split('/').slice(0,3).join('/') , rawImageUrl)
-        const description =  $('meta[name="description"]').attr('content')
+        const imageUrl = rawImageUrl.includes(getHost(source.url)) ? rawImageUrl : joinUrl(source.url.split('/').slice(0, 3).join('/'), rawImageUrl)
+        const description = $('meta[name="description"]').attr('content')
 
         let sourceInfo
         if (imageUrl?.length && description?.length && (!source.imageUrl || !source.description)) {
@@ -83,7 +83,7 @@ async function fetchGenkan(source: Source, urls: Record<string, Url>): Promise<C
         if (!urlList?.length) {
             return { urls: [], warnings: [[host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0]] }
         }
-    
+
         const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(urlList, source, urls)
         return {
             urls: newUrls,
@@ -104,10 +104,10 @@ const genkan: Parser = {
     parseLink: testGenkan,
     parseCondition: async (url) => {
         try {
-            const sourcehtml: string = await fetch(url, { headers, redirect: 'manual' }).then(res => res.text())
+            const sourcehtml: string = await fetch(url, { headers, redirect: 'manual' }).then((res) => res.text())
             return sourcehtml.includes('Powered by Genkan.')
         }
-        catch(e) {
+        catch (e) {
             console.log('Error fetching url.', e)
             return false
         }
