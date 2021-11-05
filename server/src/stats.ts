@@ -284,8 +284,8 @@ async function cleanWarnings () {
         })
 
         if (
-            Object.keys(warnings[key]?.chapterWarnings).length === 0 &&
-            Object.keys(warnings[key]?.warnings).length === 0
+            Object.keys(warnings[key]?.chapterWarnings || {}).length === 0 &&
+            Object.keys(warnings[key]?.warnings || {}).length === 0
         ) {
             delete warnings[key]
         }
