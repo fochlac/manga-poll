@@ -207,8 +207,12 @@ async function fetchMadara (source: Source, urls: Record<string, Url>): Promise<
         }
 
         let sourceInfo
-        if (body) {
-            const $ = cheerio.load(body)
+        const $ = body && cheerio.load(body)
+
+        if ($ && $('title').text().includes('Cloudflare')) {
+            errortext = 'Cloudflare-Blockage detected.'
+        }
+        else if ($) {
             const imageUrl = $('.summary_image img').attr('data-src') || $('.summary_image img').attr('src')
             const description = $('meta[name="description"]').attr('content')
 
@@ -218,19 +222,19 @@ async function fetchMadara (source: Source, urls: Record<string, Url>): Promise<
                     description
                 }
             }
-        }
-        if (body && cheerio.load(body)('li.wp-manga-chapter > a')?.length) {
-            try {
-                const rawSource = parseMadaraPage(body, source.url)
-                if (rawSource && ['mangaId', 'url', 'title'].some((prop) => rawSource[prop] !== source[prop])) {
-                    sourceInfo = sourceInfo || {}
-                    sourceInfo.update = rawSource
+            if ($('li.wp-manga-chapter > a')?.length) {
+                try {
+                    const rawSource = parseMadaraPage(body, source.url)
+                    if (rawSource && ['mangaId', 'url', 'title'].some((prop) => rawSource[prop] !== source[prop])) {
+                        sourceInfo = sourceInfo || {}
+                        sourceInfo.update = rawSource
+                    }
                 }
+                catch (e) {
+                    console.log(`Error updating source: ${source.title} (${source.id}): ${e?.message}`)
+                }
+                return parseMadara(source, urls, body, sourceInfo)
             }
-            catch (e) {
-                console.log(`Error updating source: ${source.title} (${source.id}): ${e?.message}`)
-            }
-            return parseMadara(source, urls, body, sourceInfo)
         }
         else {
             const formData = new FormData()

@@ -1,33 +1,31 @@
+import { getPassword, resetPassword } from './auth'
 import { renderStats } from './render-stats'
 
 const editDialog = document.getElementById('edit-dialog')
 const editMangaTitle = document.getElementById('edit-manga-title')
 const editTitle = document.getElementById('edit-title')
 const editUrl = document.getElementById('edit-url')
-const editPass = document.getElementById('edit-passcode')
 const editButton = document.getElementById('edit-button')
 const editError = document.getElementById('edit-error')
 
-editButton.addEventListener('click', () => {
+editButton.addEventListener('click', async () => {
     const td = document.querySelector(`td[data-source="${editDialog.dataset.source}"]`)
     if (
         editTitle.value &&
-        editUrl.value &&
-        (editTitle.value !== td.dataset.title || editUrl.value !== td.dataset.url)
+        editUrl.innerText &&
+        (editTitle.value !== td.dataset.title || editUrl.innerText !== td.dataset.url)
     ) {
         editButton.disabled = true
         editTitle.disabled = true
-        editPass.disabled = true
         editUrl.disabled = true
         editError.innerHTML = ''
         fetch(`/api/sources/${td.dataset.source}`, {
             method: 'put',
-            headers: { authentication: editPass.value, 'Content-Type': 'application/json; charset=utf-8' },
-            body: JSON.stringify({ url: editUrl.value, title: editTitle.value })
+            headers: { authentication: await getPassword(), 'Content-Type': 'application/json; charset=utf-8' },
+            body: JSON.stringify({ url: editUrl.innerText, title: editTitle.value })
         })
             .then((res) => {
                 editButton.disabled = false
-                editPass.disabled = false
                 editTitle.disabled = false
                 editUrl.disabled = false
                 if (res.status === 200) {
@@ -36,14 +34,15 @@ editButton.addEventListener('click', () => {
                 }
                 else {
                     editError.innerHTML = 'Error deleting source!'
+                    resetPassword()
                 }
             })
             .catch(() => {
-                editPass.disabled = false
                 editButton.disabled = false
                 editTitle.disabled = false
                 editUrl.disabled = false
                 editError.innerHTML = 'Error deleting source!'
+                resetPassword()
             })
     }
 })
@@ -61,7 +60,7 @@ export function checkClickForEditClick (e) {
             editDialog.style.display = 'flex'
             editDialog.dataset.source = td.dataset.source
             editTitle.value = td.dataset.title
-            editUrl.value = td.dataset.url
+            editUrl.innerText = td.dataset.url
             editMangaTitle.innerHTML = td.dataset.title
         }
         return true

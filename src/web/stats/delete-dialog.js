@@ -1,31 +1,31 @@
+import { getPassword, resetPassword } from './auth'
 import { renderStats } from './render-stats'
 
 const deleteDialog = document.getElementById('delete-dialog')
 const deleteTitle = document.getElementById('delete-title')
 const deleteSource = document.getElementById('delete-source')
-const deletePass = document.getElementById('delete-passcode')
 const deleteButton = document.getElementById('delete-button')
 const deleteError = document.getElementById('delete-error')
 
-deleteButton.addEventListener('click', (e) => {
-    if (deleteSource.value && deletePass.value) {
+deleteButton.addEventListener('click', async (e) => {
+    if (deleteSource.value) {
         deleteButton.disabled = true
-        deletePass.disabled = true
         deleteError.innerHTML = ''
-        fetch(`/api/sources/${deleteSource.value}`, { method: 'delete', headers: { authentication: deletePass.value } })
+        fetch(`/api/sources/${deleteSource.value}`, { method: 'delete', headers: { authentication: await getPassword() } })
             .then((res) => {
                 deleteButton.disabled = false
-                deletePass.disabled = false
                 if (res.status === 200) {
                     deleteDialog.style.display = 'none'
                     renderStats()
                 }
                 else {
                     deleteError.innerHTML = 'Error deleting source!'
+                    resetPassword()
                 }
             })
             .catch(() => {
                 deleteError.innerHTML = 'Error deleting source!'
+                resetPassword()
             })
     }
 })

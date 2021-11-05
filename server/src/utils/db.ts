@@ -9,11 +9,16 @@ export function createWrite (path) {
     let isWriting = false
     return async (data) => {
         if (!timeout) {
-            timeout = setTimeout(() => {
+            timeout = setTimeout(async () => {
                 timeout = null
                 isWriting = true
-                copyFile(path, `${path}.backup`)
-                    .then(() => writeFile(path, JSON.stringify(dataRef.current, null, 2)))
+                try {
+                    await copyFile(path, `${path}.backup`)
+                }
+                catch (e) {
+                    console.error('Could not create backup.', e?.message)
+                }
+                writeFile(path, JSON.stringify(dataRef.current, null, 2))
                     .catch(console.log)
                     .then(() => {
                         dataRef.current = nextDataRef.current
@@ -46,7 +51,12 @@ export function readFile<T = any> (
         }
         catch (e) {
             console.log(`Error reading file "${path}.backup". Reinitializing DB`)
-            copyFileSync(`${path}.backup`, `${path}.backup_${Date.now()}`)
+            try {
+                copyFileSync(`${path}.backup`, `${path}.backup_${Date.now()}`)
+            }
+            catch (e) {
+                console.log(`Error creating permanant backup file of "${path}.backup".`)
+            }
         }
     }
     if (typeof modificationCallback === 'function' && modificationCallback(data) && typeof write === 'function') {

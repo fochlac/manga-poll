@@ -2,6 +2,7 @@
 import { resolve } from 'path'
 import { getSources, registerSourceChangeCallback } from './source-storage'
 import { getUrls } from './url-storage'
+import { adminUrl } from './utils/authentication'
 import { createWrite, readFile } from './utils/db'
 import { getUrlKey } from './utils/keys'
 import { getHost } from './utils/parse'
@@ -52,11 +53,14 @@ declare global {
 }
 
 const warningsPath = resolve(__dirname, '../db/warnings.json')
+const blacklistWarningsPath = resolve(__dirname, '../db/warnings-blacklist.json')
 const ipStatsPath = resolve(__dirname, '../db/ip-history.json')
 const writeWarnings = createWrite(warningsPath)
+const writeWarningsBlacklist = createWrite(blacklistWarningsPath)
 const writeIpHistory = createWrite(ipStatsPath)
 
 const warnings = readFile<any>(warningsPath)
+const warningsBlacklist = readFile<any>(blacklistWarningsPath) || {}
 
 export function createStatsEndpoints (app) {
     const history = readFile(
@@ -125,6 +129,21 @@ export function createStatsEndpoints (app) {
         const stats = await getStats()
         res.status(200).json({ valid: true, payload: stats })
     })
+
+    app.post('/api/stats/warnings/blacklist', adminUrl, async (req, res) => {
+        const { message } = req?.body || {}
+        if (!message) {
+            return res.status(400).json({ valid: false })
+        }
+
+        warningsBlacklist[message] = true
+        writeWarningsBlacklist(warningsBlacklist)
+
+        res.status(200).json({valid: true, payload: warningsBlacklist})
+    })
+    app.get('/api/stats/warnings/blacklist', async (req, res) => {
+        res.status(200).json({ valid: true, payload: warningsBlacklist })
+    })
 }
 
 export function shouldWarn (key, limit) {
@@ -136,6 +155,9 @@ export function shouldWarn (key, limit) {
 }
 
 export function logWarning (key, message, limit = 3) {
+    if (warningsBlacklist[message]) {
+        return
+    }
     const timestamp = new Date().toISOString().slice(0, 14) + '00'
     if (key.includes('--')) {
         const host = key.split('--')[0]

@@ -135,6 +135,7 @@ tr:nth-child(2n) td {
   margin-left: 0;
 }
 #edit-dialog,
+#passcode-dialog,
 #delete-dialog,
 #warnings-dialog {
   position: fixed;
@@ -151,6 +152,7 @@ tr:nth-child(2n) td {
   z-index: 10;
 }
 #edit-dialog .container,
+#passcode-dialog .container,
 #delete-dialog .container {
   display: flex;
   flex-direction: column;
@@ -159,6 +161,7 @@ tr:nth-child(2n) td {
   align-items: stretch;
 }
 #edit-dialog .dialog,
+#passcode-dialog .dialog,
 #delete-dialog .dialog,
 .warnings {
   width: 700px;
@@ -174,26 +177,32 @@ tr:nth-child(2n) td {
   padding-top: 4px;
 }
 #edit-dialog .dialog,
+#passcode-dialog .dialog,
 #delete-dialog .dialog {
   min-height: auto;
   min-width: 350px;
   width: auto;
 }
 #edit-dialog label,
+#passcode-dialog label,
 #delete-dialog label {
   margin-top: 12px;
   font-size: 12px;
   font-weight: 600;
 }
-#edit-dialog input {
+#edit-dialog p[contenteditable] {
   margin-top: 2px;
   border: none;
   border-bottom: solid 1px;
+  max-width: 400px;
+  font-size: 13.3333px;
+  font-family: Arial;
+  padding: 2px 2px 4px;
+  min-width: 100%;
   outline: none;
-  resize: none;
-  font-family: inherit;
 }
 #edit-dialog input,
+#passcode-dialog input,
 #delete-dialog input {
   margin-top: 2px;
   height: 20px;
@@ -202,6 +211,7 @@ tr:nth-child(2n) td {
   outline: none;
 }
 #edit-dialog h5,
+#passcode-dialog h5,
 #delete-dialog h5 {
   padding-left: 0;
 }
@@ -211,6 +221,12 @@ tr:nth-child(2n) td {
 .message {
   text-align: justify;
   word-break: break-all;
+}
+.message .stop {
+  width: 18px;
+  height: 18px;
+  margin-bottom: -4px;
+  margin-left: 8px;
 }
 .title h5 a {
   text-decoration: none;
@@ -314,6 +330,9 @@ tr:nth-child(2n) td {
 #globalDiagramm:after {
   content: attr(data-max);
 }
+#delete-dialog-title,
+#edit-dialog-title,
+#passcode-dialog-title,
 #warnings-dialog-title {
   display: flex;
   justify-content: space-between;
@@ -339,7 +358,7 @@ tr:nth-child(2n) td {
 .closebutton {
   font-size: 20px;
   line-height: 4px;
-  margin: 5px -9px -5px;
+  margin: 5px -9px -5px 5px;
   padding: 10px;
   cursor: pointer;
   height: 10px;
