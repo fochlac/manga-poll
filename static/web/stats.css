@@ -34,8 +34,9 @@ th:nth-child(3) {
 td:nth-child(4),
 th:nth-child(4) {
   text-align: right;
-  width: 20px;
+  width: 36px;
 }
+.edit,
 .delete {
   width: 16px;
   height: 16px;
@@ -46,6 +47,12 @@ th:nth-child(4) {
 }
 .delete:hover path {
   fill: royalblue;
+}
+.edit path {
+  stroke: cornflowerblue;
+}
+.edit:hover path {
+  stroke: royalblue;
 }
 th {
   padding-bottom: 4px;
@@ -127,6 +134,7 @@ tr:nth-child(2n) td {
   margin-right: 8px;
   margin-left: 0;
 }
+#edit-dialog,
 #delete-dialog,
 #warnings-dialog {
   position: fixed;
@@ -142,13 +150,15 @@ tr:nth-child(2n) td {
   display: none;
   z-index: 10;
 }
+#edit-dialog .container,
 #delete-dialog .container {
   display: flex;
   flex-direction: column;
-  height: 150px;
+  min-height: 150px;
   justify-content: space-between;
   align-items: stretch;
 }
+#edit-dialog .dialog,
 #delete-dialog .dialog,
 .warnings {
   width: 700px;
@@ -163,21 +173,35 @@ tr:nth-child(2n) td {
   flex-direction: column;
   padding-top: 4px;
 }
+#edit-dialog .dialog,
 #delete-dialog .dialog {
   min-height: auto;
   min-width: 350px;
   width: auto;
 }
+#edit-dialog label,
 #delete-dialog label {
-  margin-top: 8px;
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 600;
 }
+#edit-dialog input {
+  margin-top: 2px;
+  border: none;
+  border-bottom: solid 1px;
+  outline: none;
+  resize: none;
+  font-family: inherit;
+}
+#edit-dialog input,
 #delete-dialog input {
-  margin-top: 4px;
+  margin-top: 2px;
   height: 20px;
   border: none;
   border-bottom: solid 1px;
   outline: none;
 }
+#edit-dialog h5,
 #delete-dialog h5 {
   padding-left: 0;
 }

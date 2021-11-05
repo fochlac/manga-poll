@@ -5,10 +5,12 @@ import { getHost } from '../utils/parse'
 
 const TYPE = 'webtoon'
 
-async function fetchWebtoons(source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
+async function fetchWebtoons (source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     const host = getHost(source.url)
     try {
-        const rssXml = await fetch(`${source.url}/rss?title_no=${source.mangaId}`, { headers }).then((res) => res.text())
+        const rssXml = await fetch(`${source.url}/rss?title_no=${source.mangaId}`, { headers }).then((res) =>
+            res.text()
+        )
         const rssJson = await parseStringPromise(rssXml)
 
         const description = rssJson?.rss?.channel?.[0]?.description[0]
@@ -22,15 +24,14 @@ async function fetchWebtoons(source: Source, urls: Record<string, Url>): Promise
             }
         }
 
-        const urlList = rssJson?.rss?.channel?.[0]?.item
-            ?.map((item) => {
-                const url = item.link[0]
-                const chapter = url.split('episode_no=')[1]?.split('&')[0]
+        const urlList = rssJson?.rss?.channel?.[0]?.item?.map((item) => {
+            const url = item.link[0]
+            const chapter = url.split('episode_no=')[1]?.split('&')[0]
 
-                return { url, chapter, host, created: new Date(item.pubDate[0]).getTime() }
-            })
+            return { url, chapter, host, created: new Date(item.pubDate[0]).getTime() }
+        })
 
-        let { newUrls, oldUrls, warnings } = categorizeRemoteUrls(urlList, source, urls)
+        const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(urlList, source, urls)
         return {
             urls: newUrls,
             oldUrls,
@@ -39,7 +40,16 @@ async function fetchWebtoons(source: Source, urls: Record<string, Url>): Promise
         }
     }
     catch (err) {
-        return { urls: [], warnings: [[host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0]] }
+        return {
+            urls: [],
+            warnings: [
+                [
+                    host,
+                    `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`,
+                    0
+                ]
+            ]
+        }
     }
 }
 
@@ -47,7 +57,7 @@ async function parseWebtoonsLink (rawUrl: string) {
     console.log(TYPE)
     const url = rawUrl.split('/').slice(0, 6).join('/')
     const id = rawUrl.split('title_no=')[1]?.split('&')[0]
-    const rssXml = await fetch(`${url}/rss?title_no=${id}`, { headers }).then(r => r.text())
+    const rssXml = await fetch(`${url}/rss?title_no=${id}`, { headers }).then((r) => r.text())
     const rssJson = await parseStringPromise(rssXml)
     const title = rssJson?.rss?.channel?.[0]?.title[0]
     const description = rssJson?.rss?.channel?.[0]?.description[0]
@@ -55,7 +65,6 @@ async function parseWebtoonsLink (rawUrl: string) {
 
     return createSource(TYPE, id, title, url, imageUrl, description)
 }
-
 
 const webtoons: Parser = {
     fetchFunction: fetchWebtoons,

@@ -24,12 +24,7 @@ import './parser/parse-webtoons'
 
 const app = express()
 const server = createServer(app)
-app.use(
-    cors(), 
-    compression(), 
-    express.json(), 
-    express.static(resolve(__dirname, '../../dist/web')),
-)
+app.use(cors(), compression(), express.json(), express.static(resolve(__dirname, '../../dist/web')))
 initImages(app)
 
 app.use(createRateLimiter(50, 30))

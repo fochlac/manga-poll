@@ -1,5 +1,6 @@
 import 'regenerator-runtime/runtime.js'
 import { checkClickForDeleteClick } from './delete-dialog'
+import { checkClickForEditClick } from './edit-dialog'
 import { renderStats } from './render-stats'
 import { checkForWarningClick } from './warning-dialog'
 
@@ -8,7 +9,7 @@ document.addEventListener('click', (event) => {
     const closestLink = event.target.closest('.host .title .link, .host .title .warning')
     const closestHost = event.target.closest('.host')
 
-    if (checkClickForDeleteClick(event) || checkForWarningClick(event)) {
+    if (checkClickForDeleteClick(event) || checkForWarningClick(event) || checkClickForEditClick(event)) {
         return
     }
     else if (closestTitle && closestTitle.contains(event.target) && !closestLink) {

@@ -1,6 +1,7 @@
 import { date, getIcon, mergeWarningCollections, time } from './utils'
 
 const deleteIcon = document.querySelector('svg.delete')
+const editIcon = document.querySelector('svg.edit')
 const linkIcon = document.querySelector('svg.link').outerHTML
 const activeUsers = document.querySelector('#active-users')
 
@@ -145,7 +146,12 @@ function renderHostList (stats, hosts) {
                             </td>
                             <td>${count}</td>
                             <td>${date(latest)}</td>
-                            <td data-source="${id}" data-title="${title}">${deleteIcon.outerHTML}</td>
+                            <td data-source="${id}" data-title="${title}" data-url="${url}">
+                                <div class="row">
+                                    ${editIcon.outerHTML}
+                                    ${deleteIcon.outerHTML}
+                                </div>
+                            </td>
                         `
             )
 

@@ -3,19 +3,19 @@ import { customAlphabet } from 'nanoid'
 import { resolve } from 'path'
 import { getSources } from './source-storage'
 
-const idGen = customAlphabet("0123456789", 10)
-const pwGen = customAlphabet("0123456789", 5)
+const idGen = customAlphabet('0123456789', 10)
+const pwGen = customAlphabet('0123456789', 5)
 
 const linksPath = resolve(__dirname, '../db/links.json')
 
 declare global {
     interface Link {
-        id: string;
-        pw: string;
-        hiddenChapters: Record<string, boolean>;
-        hide: number;
-        sources: unknown[];
-        lastModified: number;
+        id: string
+        pw: string
+        hiddenChapters: Record<string, boolean>
+        hide: number
+        sources: unknown[]
+        lastModified: number
     }
 }
 
@@ -28,20 +28,20 @@ catch (e) {
 }
 
 let writeLinksTimeout = null
-function write() {
+function write () {
     clearTimeout(writeLinksTimeout)
     writeLinksTimeout = setTimeout(() => {
         fs.writeFile(linksPath, JSON.stringify(links, null, 2), () => null)
     }, 100)
 }
 
-function toKey(id, pw) {
+function toKey (id, pw) {
     if (!/^\d{10}$/.test(id) || !/^\d{5}$/.test(pw)) {
         throw new Error('Invalid id or pw.')
     }
     return `${pw.slice(0, 2)}${id.slice(0, 5)}${pw[2]}${id.slice(5)}${pw.slice(3)}`
 }
-function fromKey(key) {
+function fromKey (key) {
     if (!/^\d{15}$/.test(key)) {
         throw new Error('Invalid key.')
     }
@@ -51,7 +51,7 @@ function fromKey(key) {
     }
 }
 
-function createPayload(link: Link) {
+function createPayload (link: Link) {
     const { hiddenChapters, hide, sources, lastModified, id, pw } = link
     const sourceMap = getSources()
 
@@ -59,15 +59,19 @@ function createPayload(link: Link) {
         key: toKey(id, pw),
         hiddenChapters,
         hide,
-        sources: sources.map((linksrc) => typeof linksrc === 'string' && sourceMap[linksrc] ||
-            linksrc.hasOwnProperty('id') && sourceMap[(linksrc as Source).id]
-        ).filter((source) => !!source),
+        sources: sources
+            .map(
+                (linksrc) =>
+                    (typeof linksrc === 'string' && sourceMap[linksrc]) ||
+                    (Object.prototype.hasOwnProperty.call(linksrc, 'id') && sourceMap[(linksrc as Source).id])
+            )
+            .filter((source) => !!source),
         lastModified
     }
 }
 
 const bfp = {}
-function checkKey(key) {
+function checkKey (key) {
     const { id, pw } = fromKey(key)
 
     if (bfp[id] && bfp[id].count >= 3 && Date.now() - bfp[id].lastHit <= 10000) {
@@ -89,21 +93,26 @@ function checkKey(key) {
 }
 
 const invalidQueue = Promise.resolve()
-function handleKeyError(res) {
-    let hasTimedOut = false
+function handleKeyError (res) {
+    const hasTimedOut = false
     const timeout = setTimeout(() => res.status(429).send({ valid: false }), 100000)
-    invalidQueue.catch(() => null).then(() =>
-        new Promise(resolve => setTimeout(() => {
-            if (!hasTimedOut) {
-                clearTimeout(timeout)
-                res.status(400).send({ valid: false })
-                resolve(null)
-            }
-        }, 5000))
-    )
+    invalidQueue
+        .catch(() => null)
+        .then(
+            () =>
+                new Promise((resolve) =>
+                    setTimeout(() => {
+                        if (!hasTimedOut) {
+                            clearTimeout(timeout)
+                            res.status(400).send({ valid: false })
+                            resolve(null)
+                        }
+                    }, 5000)
+                )
+        )
 }
 
-export function deleteSourceFromLinks(sourceId) {
+export function deleteSourceFromLinks (sourceId) {
     Object.keys(links).forEach((key) => {
         if (links[key].sources?.includes(sourceId)) {
             links[key].sources = links[key].sources.filter((sourceKey) => sourceKey && sourceKey !== sourceId)
@@ -113,7 +122,7 @@ export function deleteSourceFromLinks(sourceId) {
     write()
 }
 
-export function markLinksWithSourceChanged(sourceId) {
+export function markLinksWithSourceChanged (sourceId) {
     Object.keys(links).forEach((key) => {
         if (links[key].sources?.includes(sourceId)) {
             links[key].lastModified = Date.now()
@@ -122,13 +131,9 @@ export function markLinksWithSourceChanged(sourceId) {
     write()
 }
 
-export function linksController(app) {
+export function linksController (app) {
     app.post('/api/links', (req, res) => {
-        const {
-            hiddenChapters,
-            hide,
-            sources
-        } = req.body
+        const { hiddenChapters, hide, sources } = req.body
 
         const pw = pwGen()
         let id = idGen()

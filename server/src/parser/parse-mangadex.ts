@@ -6,30 +6,48 @@ const TYPE = 'mangadex'
 
 const pageSize = 100
 
-async function fetchMangadex(source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
+async function fetchMangadex (source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     const host = getHost(source.url)
     try {
-        const result = await fetch(`https://api.mangadex.org/manga/${source.mangaId}/feed?limit=${pageSize}`, { method: 'get', headers: headers }).then((res) => res.json())
+        const result = await fetch(`https://api.mangadex.org/manga/${source.mangaId}/feed?limit=${pageSize}`, {
+            method: 'get',
+            headers: headers
+        }).then((res) => res.json())
 
         let list = result.data
 
         if (!list?.length) {
-            return { urls: [], warnings: [[host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0]] }
+            return {
+                urls: [],
+                warnings: [
+                    [host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0]
+                ]
+            }
         }
 
         if (result.total > pageSize) {
             for (let offset = pageSize; offset <= result.total; offset += pageSize) {
-                const offsetResult = await fetch(`https://api.mangadex.org/manga/${source.mangaId}/feed?limit=${pageSize}&offset=${offset}`, { method: 'get', headers: headers })
-                    .then((res) => res.json())
+                const offsetResult = await fetch(
+                    `https://api.mangadex.org/manga/${source.mangaId}/feed?limit=${pageSize}&offset=${offset}`,
+                    { method: 'get', headers: headers }
+                ).then((res) => res.json())
                 list = list.concat(offsetResult.data)
             }
         }
 
         let sourceInfo
         if (!source.imageUrl || !source.description) {
-            const mangaInfo = await fetch(`https://api.mangadex.org/manga/${source.mangaId}`, { method: 'get', headers: headers }).then((res) => res.json())
+            const mangaInfo = await fetch(`https://api.mangadex.org/manga/${source.mangaId}`, {
+                method: 'get',
+                headers: headers
+            }).then((res) => res.json())
             const coverId = mangaInfo.data?.relationships?.find((rel) => rel.type === 'cover_art')?.id
-            const coverInfo = coverId && await fetch(`https://api.mangadex.org/cover/${coverId}`, { method: 'get', headers: headers }).then((res) => res.json())
+            const coverInfo =
+                coverId &&
+                (await fetch(`https://api.mangadex.org/cover/${coverId}`, {
+                    method: 'get',
+                    headers: headers
+                }).then((res) => res.json()))
             const coverFileName = coverInfo?.data?.attributes?.fileName
             const imageUrl = coverFileName && `https://mangadex.org/cover/${coverId}/${coverFileName}`
             const description = mangaInfo?.data?.attributes?.description?.en
@@ -73,19 +91,27 @@ async function fetchMangadex(source: Source, urls: Record<string, Url>): Promise
         }
     }
     catch (err) {
-        return { urls: [], warnings: [[host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0]] }
+        return {
+            urls: [],
+            warnings: [
+                [
+                    host,
+                    `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`,
+                    0
+                ]
+            ]
+        }
     }
 }
 
-
-async function parseMangadexPage(rawUrl: string) {
+async function parseMangadexPage (rawUrl: string) {
     if (/title\/[\d-\w]*\/[\d-\w]*/.test(rawUrl)) {
         const id = rawUrl.split('/title/')?.[1]?.split('/')[0]
         if (!id) {
             console.log('Could not extract id from manga link.')
             return null
         }
-        const mangaInfo = await fetch(`https://api.mangadex.org/manga/${id}`).then(r => r.json())
+        const mangaInfo = await fetch(`https://api.mangadex.org/manga/${id}`).then((r) => r.json())
 
         if (mangaInfo?.data?.type !== 'manga') {
             console.log('Invalid id extracted from manga link.')
@@ -100,7 +126,7 @@ async function parseMangadexPage(rawUrl: string) {
             console.log('Could not extract id from chapter link.')
             return null
         }
-        const chapterInfo = await fetch(`https://api.mangadex.org/chapter/${id}?includes[]=manga`).then(r => r.json())
+        const chapterInfo = await fetch(`https://api.mangadex.org/chapter/${id}?includes[]=manga`).then((r) => r.json())
 
         if (chapterInfo?.data?.type !== 'chapter') {
             console.log('Invalid id extracted from chapter link.')

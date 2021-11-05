@@ -1,4 +1,4 @@
-export function createRateLimiter(amount: number, seconds: number) {
+export function createRateLimiter (amount: number, seconds: number) {
     let requests = {}
     setInterval(() => {
         requests = {}
@@ -13,7 +13,9 @@ export function createRateLimiter(amount: number, seconds: number) {
         requests[ip] += 1
         if (requests[ip] >= amount) {
             if (requests[ip] === amount) {
-                console.log(`IP ${ip} exceeded rate limit with ${requests[ip]} requests in ${seconds} seconds. Slowing down.`)
+                console.log(
+                    `IP ${ip} exceeded rate limit with ${requests[ip]} requests in ${seconds} seconds. Slowing down.`
+                )
             }
             setTimeout(() => next(), 5000)
         }

@@ -58,18 +58,26 @@ async function fetchGenkan (source: Source, urls: Record<string, Url>): Promise<
         const $ = cheerio.load(body)
         const host = getHost(source.url)
 
-        const urlList = $('#content > .container > .row > .col-lg-9 .card .list-item').toArray().map((elem) => {
-            const chapter = $(elem).find('span').text().trim()
-            return {
-                url: $(elem).find('a').attr('href'),
-                chapter,
-                host,
-                created: parseDate($(elem).find('.item-company').text()) + (!isNaN(Number(chapter)) ? Number(chapter) : 0)
-            }
-        })
+        const urlList = $('#content > .container > .row > .col-lg-9 .card .list-item')
+            .toArray()
+            .map((elem) => {
+                const chapter = $(elem).find('span').text().trim()
+                return {
+                    url: $(elem).find('a').attr('href'),
+                    chapter,
+                    host,
+                    created:
+                        parseDate($(elem).find('.item-company').text()) +
+                        (!isNaN(Number(chapter)) ? Number(chapter) : 0)
+                }
+            })
 
-        const rawImageUrl = $('.media-comic-card a.media-content').attr('style')?.match(/background-image:\s*url\(([^)]*)\)/)?.[1]
-        const imageUrl = rawImageUrl.includes(getHost(source.url)) ? rawImageUrl : joinUrl(source.url.split('/').slice(0, 3).join('/'), rawImageUrl)
+        const rawImageUrl = $('.media-comic-card a.media-content')
+            .attr('style')
+            ?.match(/background-image:\s*url\(([^)]*)\)/)?.[1]
+        const imageUrl = rawImageUrl.includes(getHost(source.url))
+            ? rawImageUrl
+            : joinUrl(source.url.split('/').slice(0, 3).join('/'), rawImageUrl)
         const description = $('meta[name="description"]').attr('content')
 
         let sourceInfo
@@ -81,7 +89,12 @@ async function fetchGenkan (source: Source, urls: Record<string, Url>): Promise<
         }
 
         if (!urlList?.length) {
-            return { urls: [], warnings: [[host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0]] }
+            return {
+                urls: [],
+                warnings: [
+                    [host, `Invalid chapterlist found for ${source.title} on ${host}: Recieved empty URL-List`, 0]
+                ]
+            }
         }
 
         const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(urlList, source, urls)
@@ -94,7 +107,16 @@ async function fetchGenkan (source: Source, urls: Record<string, Url>): Promise<
     }
     catch (err) {
         const host = getHost(source.url)
-        return { urls: [], warnings: [[host, `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`, 0]] }
+        return {
+            urls: [],
+            warnings: [
+                [
+                    host,
+                    `Error fetching chapterlist for ${source.title} on ${host}: ${err?.message || 'Unknown Error.'}`,
+                    0
+                ]
+            ]
+        }
     }
 }
 

@@ -1,6 +1,6 @@
-import { getUrls } from "./url-storage"
+import { getUrls } from './url-storage'
 
-export function urlController(app) {
+export function urlController (app) {
     app.post('/api/urls/fetch', async (req, res) => {
         let payload = []
         const urls = await getUrls()
@@ -10,7 +10,7 @@ export function urlController(app) {
             payload = Object.values(urls).filter((url) => sourceFilter.includes(url.sourceId))
         }
         if (!isNaN(Number(req?.body?.date)) && Number(req.body.date) > 0) {
-            const limit = req?.body?.limit && !isNaN(Number(req.body.limit)) && Number(req.body.limit) || 25
+            const limit = (req?.body?.limit && !isNaN(Number(req.body.limit)) && Number(req.body.limit)) || 25
             const date = Number(req.body.date)
             let old = 0
             payload = payload

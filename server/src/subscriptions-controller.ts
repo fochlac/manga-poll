@@ -6,13 +6,20 @@ admin.initializeApp({
     credential: admin.credential.cert(resolve(join(__dirname, '../firebase-credentials.json')))
 })
 
-console.log(process.env.MANGA_GAPI_SERVER_KEY?.length ? `GAPI Server key: ${(process.env.MANGA_GAPI_SERVER_KEY).slice(0, 10)}*********${(process.env.MANGA_GAPI_SERVER_KEY).slice(-10)}` : 'No GAPI Server key.')
+console.log(
+    process.env.MANGA_GAPI_SERVER_KEY?.length
+        ? `GAPI Server key: ${process.env.MANGA_GAPI_SERVER_KEY.slice(
+            0,
+            10
+        )}*********${process.env.MANGA_GAPI_SERVER_KEY.slice(-10)}`
+        : 'No GAPI Server key.'
+)
 
-async function getTopicSubscriptions(token) {
+async function getTopicSubscriptions (token) {
     if (!process.env.MANGA_GAPI_SERVER_KEY?.length) {
         return []
     }
-    const headers = { authorization: `key=${process.env.MANGA_GAPI_SERVER_KEY}`, accept: 'application/json'}
+    const headers = { authorization: `key=${process.env.MANGA_GAPI_SERVER_KEY}`, accept: 'application/json' }
     const response = await fetch(`https://iid.googleapis.com/iid/info/${token}?details=true`, { headers })
     const body = await response.json()
     if (response.status !== 200) {
@@ -22,9 +29,8 @@ async function getTopicSubscriptions(token) {
     return Object.keys(body?.rel?.topics || {})
 }
 
-
 const timeouts = {}
-export function sendTopicMessage(topic) {
+export function sendTopicMessage (topic) {
     clearTimeout(timeouts[topic])
 
     timeouts[topic] = setTimeout(() => {
@@ -39,7 +45,7 @@ export function sendTopicMessage(topic) {
     }, 100)
 }
 
-export function subscriptionsController(app) {
+export function subscriptionsController (app) {
     app.post('/api/subscriptions', async (req, res) => {
         const { topics, key } = req.body
 
@@ -61,7 +67,10 @@ export function subscriptionsController(app) {
             if (unsubscribe.length) {
                 await Promise.all(subscribe.map((topic) => admin.messaging().unsubscribeFromTopic([key], topic)))
             }
-            console.log(subscribe.length && `Subscribed ${subscribe.length} topics` || '', unsubscribe.length && `Unsubscribed ${unsubscribe.length} topics` || '')
+            console.log(
+                (subscribe.length && `Subscribed ${subscribe.length} topics`) || '',
+                (unsubscribe.length && `Unsubscribed ${unsubscribe.length} topics`) || ''
+            )
             res.status(200).json({ valid: true })
         }
         catch (err) {
@@ -75,13 +84,11 @@ export function subscriptionsController(app) {
 
         const deleteTopics: string[] = Array.isArray(topics) ? topics : [topics]
         const oldTopics = await getTopicSubscriptions(key)
-        const unsubscribe = oldTopics.length && oldTopics || deleteTopics
+        const unsubscribe = (oldTopics.length && oldTopics) || deleteTopics
 
         try {
-            await Promise.all(
-                unsubscribe.map((topic) => admin.messaging().unsubscribeFromTopic([key], topic))
-            )
-            console.log(unsubscribe.length && `Unsubscribed from ${unsubscribe.length} topics.` || '')
+            await Promise.all(unsubscribe.map((topic) => admin.messaging().unsubscribeFromTopic([key], topic)))
+            console.log((unsubscribe.length && `Unsubscribed from ${unsubscribe.length} topics.`) || '')
             res.status(200).json({ valid: true })
         }
         catch (err) {

@@ -1,11 +1,11 @@
-import { promises, readFileSync, copyFileSync } from "fs"
+import { promises, readFileSync, copyFileSync } from 'fs'
 
 const { writeFile, copyFile } = promises
 
-export function createWrite(path) {
+export function createWrite (path) {
     let timeout
-    const dataRef = {current: null}
-    const nextDataRef = {current: null}
+    const dataRef = { current: null }
+    const nextDataRef = { current: null }
     let isWriting = false
     return async (data) => {
         if (!timeout) {
@@ -30,7 +30,11 @@ export function createWrite(path) {
     }
 }
 
-export function readFile<T=any>(path: string, modificationCallback?:(data:Record<string, T>) => boolean|Promise<Boolean>, write?: Function):Record<string, T> {
+export function readFile<T = any> (
+    path: string,
+    modificationCallback?: (data: Record<string, T>) => boolean | Promise<boolean>,
+    write?: (data: Record<string, T>) => unknown
+): Record<string, T> {
     let data: Record<string, T> = {}
     try {
         data = JSON.parse(readFileSync(path, { encoding: 'utf-8' }))
@@ -43,10 +47,10 @@ export function readFile<T=any>(path: string, modificationCallback?:(data:Record
         catch (e) {
             console.log(`Error reading file "${path}.backup". Reinitializing DB`)
             copyFileSync(`${path}.backup`, `${path}.backup_${Date.now()}`)
-        }   
+        }
     }
     if (typeof modificationCallback === 'function' && modificationCallback(data) && typeof write === 'function') {
-        write(data)        
+        write(data)
     }
     return data
 }

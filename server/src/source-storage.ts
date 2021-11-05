@@ -5,14 +5,14 @@ import { createWrite, readFile } from './utils/db'
 
 declare global {
     interface Source {
-        id: string;
-        title: string;
-        type: string;
-        url: string;
-        created: number;
-        mangaId: string;
-        description?: string;
-        imageUrl?: string;
+        id: string
+        title: string
+        type: string
+        url: string
+        created: number
+        mangaId: string
+        description?: string
+        imageUrl?: string
     }
 }
 
@@ -20,22 +20,29 @@ const nanoid = customAlphabet(urlAlphabet, 10)
 const sourcesPath = resolve(__dirname, '../db/sources.json')
 const writeSources = createWrite(sourcesPath)
 
-const sources: Record<string, Source> = readFile<Source>(sourcesPath, (sources) => {
-    let hasChanges = false
-    Object.keys(sources).forEach((key) => {
-        if (sources[key].type === 'mangadex' && (sources[key].url.includes('api.mangadex') || !sources[key].url.includes(sources[key].mangaId))) {
-            sources[key].url = `https://mangadex.org/title/${sources[key].mangaId}`
-            hasChanges = true
-        }
-    })
-    return hasChanges
-}, writeSources)
+const sources: Record<string, Source> = readFile<Source>(
+    sourcesPath,
+    (sources) => {
+        let hasChanges = false
+        Object.keys(sources).forEach((key) => {
+            if (
+                sources[key].type === 'mangadex' &&
+                (sources[key].url.includes('api.mangadex') || !sources[key].url.includes(sources[key].mangaId))
+            ) {
+                sources[key].url = `https://mangadex.org/title/${sources[key].mangaId}`
+                hasChanges = true
+            }
+        })
+        return hasChanges
+    },
+    writeSources
+)
 
-export function getSources() {
+export function getSources () {
     return sources
 }
 
-export async function addSource(title, url, mangaId, type, imageUrl = '', description = '') {
+export async function addSource (title, url, mangaId, type, imageUrl = '', description = '') {
     const entry = {
         title,
         url,
@@ -52,7 +59,7 @@ export async function addSource(title, url, mangaId, type, imageUrl = '', descri
     return entry
 }
 
-export async function updateSource(id, { title, url, mangaId, imageUrl, description }: Partial<Source>) {
+export async function updateSource (id, { title, url, mangaId, imageUrl, description }: Partial<Source>) {
     const entry = sources[id]
     if (entry) {
         entry.title = title
@@ -73,7 +80,7 @@ export async function updateSource(id, { title, url, mangaId, imageUrl, descript
     throw new Error(`Cannot update. Source with ${id} doesn't exist.`)
 }
 
-export function removeSource(id) {
+export function removeSource (id) {
     if (sources[id]) {
         delete sources[id]
         writeSources(sources)
@@ -85,13 +92,15 @@ export function removeSource(id) {
 
 const callbacks = []
 
-export function registerSourceChangeCallback(cb) {
+export function registerSourceChangeCallback (cb) {
     callbacks.push(cb)
 }
 
-function triggerSourceChangeCallbacks() {
+function triggerSourceChangeCallbacks () {
     try {
         callbacks.forEach((fn) => typeof fn === 'function' && fn())
     }
-    catch(e) {}
+    catch (e) {
+        console.error(e)
+    }
 }
