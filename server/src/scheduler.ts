@@ -19,9 +19,9 @@ function fetchChapterListData (sources, urls): Promise<WorkerResult[]> {
     return new Promise((res, reject) => {
         const worker = new Worker('../../../dist/schedule-worker/fetch-chapters.js', [], { esm: true })
         const timeout = setTimeout(() => {
-            console.log('Fetch-Timeout: Terminating worker!')
+            reject(new Error('Fetch-Timeout: Terminating worker!'))
             worker.terminate()
-        }, 590000)
+        }, 1000 * 60 * 9)
 
         worker.onmessage = (e) => {
             res(e.data)
