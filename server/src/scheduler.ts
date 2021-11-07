@@ -67,14 +67,23 @@ async function fetchForSources (sources: Record<string, Source>, isNew?: boolean
             }
             if (shouldUpdateDescription && sourceInfo?.description && sourceInfo.imageUrl) {
                 console.log(`Updating source image + description for ${source.title}.`)
-                storeImage(source, sourceInfo.imageUrl).then((imageUrl) =>
-                    updateSource(source.id, {
-                        ...source,
-                        ...(sourceInfo.update ? sourceInfo.update : {}),
-                        description: sourceInfo.description,
-                        imageUrl
+                storeImage(source, sourceInfo.imageUrl)
+                    .then((imageUrl) =>
+                        updateSource(source.id, {
+                            ...source,
+                            ...(sourceInfo.update ? sourceInfo.update : {}),
+                            description: sourceInfo.description,
+                            imageUrl
+                        })
+                    )
+                    .catch(() => {
+                        console.log(`Error storing or fetching image for ${source.title}.`)
+                        updateSource(source.id, {
+                            ...source,
+                            ...(sourceInfo.update ? sourceInfo.update : {}),
+                            description: sourceInfo.description
+                        })
                     })
-                )
             }
             if (oldUrls?.length) {
                 console.log(`Updating ${oldUrls.length} urls for source ${source.title}.`)

@@ -49,7 +49,7 @@ async function fetchMangadex (source: Source, urls: Record<string, Url>): Promis
                     headers: headers
                 }).then((res) => res.json()))
             const coverFileName = coverInfo?.data?.attributes?.fileName
-            const imageUrl = coverFileName && `https://mangadex.org/cover/${coverId}/${coverFileName}`
+            const imageUrl = coverFileName && `https://uploads.mangadex.org/covers/${source.mangaId}/${coverFileName}.256.jpg`
             const description = mangaInfo?.data?.attributes?.description?.en
 
             if (imageUrl?.length && description?.length && (!source.imageUrl || !source.description)) {
@@ -105,7 +105,7 @@ async function fetchMangadex (source: Source, urls: Record<string, Url>): Promis
 }
 
 async function parseMangadexPage (rawUrl: string) {
-    if (/title\/[\d-\w]*\/[\d-\w]*/.test(rawUrl)) {
+    if (/title\/[\d-\w]*(\/[\d-\w]*|)$/.test(rawUrl)) {
         const id = rawUrl.split('/title/')?.[1]?.split('/')[0]
         if (!id) {
             console.log('Could not extract id from manga link.')

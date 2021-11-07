@@ -148,7 +148,7 @@ async function parseMadara (source: Source, urls: Record<string, Url>, body, sou
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g
 
 const fetchPage: (rawUrl: string) => Promise<string> = async (rawUrl) =>
-    await fetch(rawUrl, { headers }).then((res) => res.text())
+    await getResponseBody(await fetch(rawUrl, { headers })).catch(() => '')
 
 function parseMadaraPage (sourcehtml: string, rawUrl: string) {
     const $ = cheerio.load(sourcehtml)
@@ -207,12 +207,9 @@ async function fetchMadara (source: Source, urls: Record<string, Url>): Promise<
         }
 
         let sourceInfo
-        const $ = body && cheerio.load(body)
 
-        if ($ && $('title').text().includes('Cloudflare')) {
-            errortext = 'Cloudflare-Blockage detected.'
-        }
-        else if ($) {
+        if (body && !errortext) {
+            const $ = cheerio.load(body)
             const imageUrl = $('.summary_image img').attr('data-src') || $('.summary_image img').attr('src')
             const description = $('meta[name="description"]').attr('content')
 
@@ -236,24 +233,25 @@ async function fetchMadara (source: Source, urls: Record<string, Url>): Promise<
                 return parseMadara(source, urls, body, sourceInfo)
             }
         }
-        else {
-            const formData = new FormData()
-            formData.append('action', 'manga_get_chapters')
-            formData.append('manga', source.mangaId)
-            const baseurl = source.url.match(/https?:\/\/[^/]*\//)?.[0]
-            try {
-                const response = await fetch(joinUrl(baseurl, 'wp-admin/admin-ajax.php'), {
-                    method: 'post',
-                    body: formData,
-                    headers
-                })
-                const body = await getResponseBody(response)
-                return parseMadara(source, urls, body, sourceInfo)
-            }
-            catch (err) {
-                errortext = `${errortext || 'Could not find chapter list in body.'} + ${err}`
-            }
+
+        const formData = new FormData()
+        formData.append('action', 'manga_get_chapters')
+        formData.append('manga', source.mangaId)
+        const baseurl = source.url.match(/https?:\/\/[^/]*\//)?.[0]
+        try {
+            const response = await fetch(joinUrl(baseurl, 'wp-admin/admin-ajax.php'), {
+                method: 'post',
+                body: formData,
+                headers
+            })
+            const body = await getResponseBody(response)
+
+            return parseMadara(source, urls, body, sourceInfo)
         }
+        catch (err) {
+            errortext = `${errortext || 'Could not find chapter list in body.'} + ${err?.message || err}`
+        }
+
         if (body && cheerio.load(body)('#manga-chapters-holder')?.length) {
             const resp = await fetch(joinUrl(source.url, '/ajax/chapters/'), { headers, method: 'post' })
             try {
@@ -261,7 +259,7 @@ async function fetchMadara (source: Source, urls: Record<string, Url>): Promise<
                 return parseMadara(source, urls, body, sourceInfo)
             }
             catch (err) {
-                throw new Error(`${errortext} + ${err}`)
+                throw new Error(`${errortext} + ${err?.message || err}`)
             }
         }
         return { urls: [] }

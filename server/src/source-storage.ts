@@ -32,6 +32,13 @@ const sources: Record<string, Source> = readFile<Source>(
                 sources[key].url = `https://mangadex.org/title/${sources[key].mangaId}`
                 hasChanges = true
             }
+            if (
+                sources[key].type === 'mangadex' &&
+                !sources[key].imageUrl?.includes(sources[key].mangaId)
+            ) {
+                delete sources[key].imageUrl
+                hasChanges = true
+            }
         })
         return hasChanges
     },

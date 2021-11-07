@@ -68,14 +68,17 @@ export function checkSourceType (type) {
     return !!parserMap[type]
 }
 
+const testForCloudFlare = (text) => {
+    return text.includes('Access denied') && text.includes('Cloudflare') ||
+    text.includes('<title>Please Wait... | Cloudflare</title>') ||
+    text.includes('id="cf-bubbles"')
+}
+
 export async function getResponseBody (response): Promise<string> {
     const body = await response.text()
 
-    if (body.includes('Access denied') && body.includes('Cloudflare')) {
-        throw Error('Cloudflare-blockage detected.')
-    }
-    if (body.includes('id="cf-bubbles"')) {
-        throw Error('(Temporary) Cloudflare-blockage detected.')
+    if (testForCloudFlare(body)) {
+        throw Error('Cloudflare-Captcha detected.')
     }
     if (response.status >= 300) {
         throw Error(`Unable to get chapter page with response code "${response.status}".`)
