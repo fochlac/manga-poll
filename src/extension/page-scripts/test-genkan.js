@@ -1,5 +1,5 @@
 export function testGenkan () {
-    const result = location.href.match(/https?:\/\/[^/]*\/comics\/(\d*)-[-\w\d]*/) || []
+    const result = location.href.match(/https?:\/\/.*\/comics\/(\d*)-[-\w\d]*/) || []
     const url = result[0]
     const id = result[1]
 
@@ -19,14 +19,13 @@ export function testGenkan () {
             chapter
         }
     }
-    else {
-        const title = document.querySelector('meta[property*="title"]').content.trim()
 
-        return {
-            type: 'genkan',
-            id,
-            title,
-            url
-        }
+    const title = document.querySelector('meta[property*="title"]').content.trim()
+
+    return {
+        type: 'genkan',
+        id,
+        title,
+        url
     }
 }

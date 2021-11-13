@@ -16,16 +16,41 @@ export const atom = createAtom(
         route: { key: URL_LIST, params: null }
     },
     {
-        async init({ set, swap, get }) {
+        async init ({ set, swap, get, dispatch }) {
+            const link = await db.link.read()
+
+            if (!link?.key && sessionStorage.getItem('hasMangaScout')) {
+                try {
+                    const start = Date.now()
+                    await new Promise((resolve, reject) => {
+                        const interval = setInterval(async () => {
+                            if (sessionStorage.getItem('MangaScoutLinkKey')) {
+                                clearInterval(interval)
+                                const extLinkKey = sessionStorage.getItem('MangaScoutLinkKey')
+                                if (extLinkKey) {
+                                    await dispatch('connectToLink', extLinkKey)
+                                }
+                                resolve()
+                            }
+                            else if (Date.now() - start >= 50) {
+                                clearInterval(interval)
+                                reject()
+                            }
+                        }, 5)
+                    })
+                }
+                catch (err) {}
+            }
+
             try {
                 await Links.fetchLinkUpdate()
-            } catch (e) {}
+            }
+            catch (e) {}
 
             const maxOld = await db.urls.getMaxOld()
             const hide = await db.urls.getHide()
             const sourceList = await db.sources.read()
             const urls = await db.urls.read()
-            const link = await db.link.read()
             const settings = await db.settings.local.read()
 
             swap({
@@ -49,22 +74,83 @@ export const atom = createAtom(
                 urls: await db.urls.read()
             })
         },
-        navigate({ set }, key, params, query) {
+        navigate ({ set }, key, params, query) {
             set({
                 route: { key, params, query }
             })
         },
-        triggerFetch() {
+        overlay ({ set, get }, overlay) {
+            set({
+                route: { ...get().route, overlay }
+            })
+        },
+        triggerFetch () {
             interval.triggerInstantly()
         },
-        async deleteSource({ set }, id) {
+        async connectToLink (_atom, linkId) {
+            const linkResult = await api.Link.read(linkId)
+            if (linkResult?.valid) {
+                await db.link.set(linkResult.payload)
+                await db.link.setLocal(linkResult.payload)
+            }
+            else {
+                throw new Error('Invalid link-id.')
+            }
+        },
+        async createNewLink (_atom) {
+            const link = await db.link.read()
+            if (!link) {
+                const linkData = await db.link.local()
+                const newLinkResult = await api.Link.insert(linkData)
+                if (newLinkResult?.valid) {
+                    const link = newLinkResult.payload
+                    await db.link.set(link)
+                }
+            }
+        },
+        async fetchHosts ({set}) {
+            const hosts = await api.Hosts.read()
+            set({
+                hosts: hosts.payload
+            })
+        },
+        async unlinkAccount () {
+            await db.link.set(null)
+        },
+        async subscribeNotifications ({ get }, messagingToken) {
+            const settings = await db.settings.local.read()
+            const sourceKeyList = Object.keys(get().sources)
+
+            db.settings.local.set({
+                ...settings,
+                notifications: true
+            })
+            await api.Subscription.subscribe(
+                sourceKeyList,
+                messagingToken
+            )
+        },
+        async unsubscribeNotifications ({ get }, messagingToken) {
+            const settings = await db.settings.local.read()
+            const sourceKeyList = Object.keys(get().sources)
+
+            db.settings.local.set({
+                ...settings,
+                notifications: false
+            })
+            await api.Subscription.unsubscribe(
+                sourceKeyList,
+                messagingToken
+            )
+        },
+        async deleteSource ({ set }, id) {
             await db.sources.delete(id)
             set({ sources: await db.sources.read() })
         },
-        async hideChapter({ set }, id) {
+        async hideChapter (_atom, id) {
             await hideChapter(db, id)
         },
-        async incrementMaxOld({ set }) {
+        async incrementMaxOld ({ set }) {
             const maxOld = await db.urls.getMaxOld()
             db.urls.setMaxOld(maxOld + 100)
             set({ maxOld: maxOld + 100 })
@@ -128,5 +214,11 @@ db.onChange(async (changes) => {
     if (Object.prototype.hasOwnProperty.call(changes, 'maxOld')) {
         atom.set({ maxOld: changes.maxOld })
         interval.triggerInstantly()
+    }
+    if (Object.prototype.hasOwnProperty.call(changes, 'localSettings')) {
+        atom.set({ settings: await db.settings.local.read() })
+    }
+    if (Object.prototype.hasOwnProperty.call(changes, 'link')) {
+        atom.set({ link: await db.link.read() })
     }
 })

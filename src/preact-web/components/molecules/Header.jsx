@@ -1,9 +1,11 @@
 import { Settings } from 'preact-feather'
+import { useState } from 'preact/hooks'
 import styled from 'styled-components'
-import { URL_LIST, SETTINGS } from '../../constants/routes'
+import { URL_LIST, SETTINGS, IMPRESSUM } from '../../constants/routes'
 import { useDispatch, useSelector } from '../../utils/atom'
 import { ActionLink } from '../atoms/ActionLink'
 import { FlexRow } from '../atoms/Layout'
+import { useOverlayDelay } from './Router'
 
 const Bar = styled.header`
     height: 54px;
@@ -18,6 +20,7 @@ const Bar = styled.header`
 `
 const Title = styled.h1`
     font-size: 22px;
+    letter-spacing: 0.9px;
 `
 const HeaderImage = styled.img`
     width: 32px;
@@ -32,9 +35,15 @@ Bar.defaultProps = {
         colorPrimaryLight: 'rgb(230, 241, 242)'
     }
 }
+
 export function Header () {
     const dispatch = useDispatch()
     const route = useSelector((store) => store.route)
+    const [showX, setShowX] = useState(false)
+    const settingsOpen = route.overlay === SETTINGS
+    useOverlayDelay(() => {
+        setShowX(settingsOpen)
+    }, [settingsOpen])
 
     return (
         <Bar>
@@ -43,7 +52,12 @@ export function Header () {
                 <Title id="popupTitle">Manga-Scout</Title>
             </FlexRow>
             <FlexRow>
-                <ActionLink disabled={route.key === SETTINGS} onClick={() => dispatch('navigate', SETTINGS)} small>
+                <ActionLink
+                    onMouseDown={() => dispatch('overlay', showX ? '' : SETTINGS)}
+                    small
+                    light
+                    disabled={route.overlay === IMPRESSUM}
+                >
                     <Settings size={24} />
                 </ActionLink>
             </FlexRow>

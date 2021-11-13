@@ -5,12 +5,8 @@ export const Card = styled.div`
     box-shadow: 0px 3px 2px -1px rgb(0 0 0 / 20%), 0px 1px 2px 1px rgb(0 0 0 / 14%), 0px 1px 4px 1px rgb(0 0 0 / 12%);
     background: white;
     width: calc(100% - 16px);
-    margin: 0 8px 16px;
+    margin: 4px 8px 12px;
     cursor: ${({ onClick }) => (typeof onClick === 'function' ? 'pointer' : 'default')};
-
-    &:first-child {
-        margin-top: 8px;
-    }
 `
 export const CardContent = styled.div`
     display: flex;

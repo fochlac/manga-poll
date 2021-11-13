@@ -12,7 +12,7 @@ import {
     joinUrl,
     categorizeRemoteUrls
 } from '../parser'
-import { getHost } from '../utils/parse'
+import { getHost, parseNAgoDateString } from '../utils/parse'
 
 const TYPE = 'madara'
 
@@ -58,6 +58,13 @@ function parseDates (urlList) {
         const { date } = url
 
         if (
+            typeof date === 'string' &&
+            date.trim().length &&
+            /\d+.*ago/.test(date)
+        ) {
+            created = parseNAgoDateString(date)
+        }
+        else if (
             type === 'monthWritten' &&
             typeof date === 'string' &&
             date.trim().length &&

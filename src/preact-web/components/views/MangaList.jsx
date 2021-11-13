@@ -1,4 +1,5 @@
 import { useState } from 'preact/hooks'
+import { Fragment } from 'preact'
 import styled from 'styled-components'
 import { useSelector } from '../../utils/atom'
 import { DetailView } from '../molecules/DetailView'
@@ -11,8 +12,13 @@ const List = styled.ul`
     overflow-x: hidden;
     margin: 0;
     width: 100%;
-    padding: 0 max(calc((100vw - 800px) / 3), 4px) 0 max(8px, calc((100vw - 800px) / 3));
+    padding: 0 max(calc((100vw - 1200px) / 3), 4px) 0 max(8px, calc((100vw - 1200px) / 3));
     box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-top: 16px;
 `
 export function MangaList () {
     const { urls, sources } = useSelector((store) => ({
@@ -37,18 +43,20 @@ export function MangaList () {
     const detailSource = detail && sources?.[detail]
 
     return (
-        <List>
-            {Array.from(urlMap.entries()).map(([sourceId, chapters]) => (
-                <MangaCard
-                    chapters={chapters}
-                    key={sourceId}
-                    sourceId={sourceId}
-                    showDetails={() => showDetails(sourceId)}
-                />
-            ))}
+        <Fragment>
+            <List>
+                {Array.from(urlMap.entries()).map(([sourceId, chapters]) => (
+                    <MangaCard
+                        chapters={chapters}
+                        key={sourceId}
+                        sourceId={sourceId}
+                        showDetails={() => showDetails(sourceId)}
+                    />
+                ))}
+            </List>
             {detailSource && (
                 <DetailView source={detailSource} onClose={() => showDetails(null)} urls={urlMap.get(detail)} />
             )}
-        </List>
+        </Fragment>
     )
 }

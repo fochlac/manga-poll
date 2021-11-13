@@ -1,5 +1,5 @@
 export function testMangadex () {
-    if (/title\/[\d-\w]*\/[\d-\w]*/.test(window.location.pathname)) {
+    if (/title\/[\d-\w]*(\/[\d-\w]*|)$/.test(window.location.pathname)) {
         const id = window.location.pathname.split('/')?.[2]
         const name = document.querySelector('.manga-container .title p')?.innerText
 

@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-export const CardImage = styled.div`
+export const CardImage = styled.img`
     min-height: 100%;
     width: 90px;
     overflow: hidden;
@@ -9,7 +9,5 @@ export const CardImage = styled.div`
     align-items: center;
     margin-right: 16px;
     flex-shrink: 0;
-    background-image: url(${(props) => props.src});
-    background-position: center;
-    background-size: cover;
+    object-fit: cover;
 `

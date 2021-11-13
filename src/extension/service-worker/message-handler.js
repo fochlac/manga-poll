@@ -56,5 +56,12 @@ export function initMessageHandler (db, Api) {
             }
             sendResponse({ action: 'MARK_READ_ERROR' })
         }
+        else if (request?.action === 'REQUEST_LINK') {
+            db.link.read()
+                .then((link) => {
+                    sendResponse({ action: 'LINK_RESPONSE', link })
+                })
+            return true
+        }
     })
 }

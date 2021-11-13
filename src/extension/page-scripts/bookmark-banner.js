@@ -20,6 +20,10 @@ export function renderBookmark (result) {
         ` : ''}
     </style>
     <style>
+        .${id}:hover {
+            transition: opacity 0s;
+            opacity: 1;
+        }
         .${id} {
             position: sticky;
             top: 0;
@@ -27,6 +31,17 @@ export function renderBookmark (result) {
             z-index: 1000000000;
             font-family: system-ui;
             color: #000c21;
+            transition: opacity cubic-bezier(1, 0, 1, -0.5) 10s;
+            opacity: 0;
+            animation: hide cubic-bezier(1, 0, 1, -0.5) 10s;
+        }
+        @keyframes hide {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
         }
         .${id} .${id5} {
             display: flex;

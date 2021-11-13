@@ -26,4 +26,10 @@ if (window?.sessionStorage) {
     sessionStorage.setItem('hasMangaScout', 1)
 }
 
+if (location.href.includes('manga.fochlac.com') || location.href.includes('localhost:43214')) {
+    chrome.storage.sync.get('link', ({link}) => {
+        sessionStorage.setItem('MangaScoutLinkKey', link?.key || 'unlinked')
+    })
+}
+
 test()

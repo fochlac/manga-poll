@@ -11,7 +11,7 @@ export const ListHeader = styled.li`
     outline: white solid 2px;
     padding: 0 5px;
     margin-bottom: 4px;
-    padding-top: 4px;
+    padding-top: 20px;
     padding-bottom: 1px;
     justify-content: space-between;
 `

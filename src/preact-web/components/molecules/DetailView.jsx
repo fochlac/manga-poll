@@ -72,7 +72,7 @@ export function DetailView ({ onClose, source, urls }) {
                     <DetailTitle>{source.title}</DetailTitle>
                     <Host>
                         <span>Host: </span>
-                        <Link href={source.url} popup>
+                        <Link href={source.url} newTab>
                             {getHost(source.url)}
                         </Link>
                     </Host>

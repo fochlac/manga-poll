@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { preventDefault } from '../../utils/events'
+import { stopPropagation } from '../../utils/events'
 
 const LinkRaw = styled.a`
     text-decoration: none;
@@ -40,7 +40,7 @@ export const Link = ({ newTab, target, rel, ...props }) => {
             {...props}
             target={newTab ? '_blank' : target}
             rel={newTab ? 'noreferrer' : rel}
-            onClick={preventDefault(props.onClick)}
+            onClick={stopPropagation(props.onClick)}
         />
     )
 }

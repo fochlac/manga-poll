@@ -5,3 +5,11 @@ export function preventDefault (fn) {
         typeof fn === 'function' && fn(e)
     }
 }
+
+export function stopPropagation (fn) {
+    return (e) => {
+        e.stopPropagation()
+        typeof fn === 'function' && fn(e)
+    }
+}
+
