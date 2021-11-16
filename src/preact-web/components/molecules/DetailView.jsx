@@ -12,13 +12,29 @@ const DetailImageContainer = styled.div`
     max-width: 30%;
     margin-right: 8px;
     flex-grow: 0;
+    margin-right: 4px;
+    height: calc(100% - 4px);
+    background: rgb(198, 218, 253);
+    border-bottom-left-radius: 4px;
+    max-height: 200px;
+    min-height: calc(100% - 4px);
+    height: 200px;
+    width: 140px;
+    
+    @media(max-width: 500px) {
+        height: 120px;
+        width: 100px;
+        min-height: unset;
+    }
 `
 const DetailTitle = styled.h3`
     font-size: 1.8rem;
     margin: 0;
     width: 100%;
-    box-sizing: border-box;
-    padding-left: 16px;
+
+    @media(max-width: 500px) {
+        font-size: 1.5rem;
+    }
 `
 const Host = styled.h6`
     white-space: nowrap;
@@ -26,8 +42,6 @@ const Host = styled.h6`
     margin: 0;
     width: 100%;
     box-sizing: border-box;
-    padding-left: 16px;
-    margin-bottom: 16px;
 `
 const Subtitle = styled.h5`
     width: 100%;
@@ -35,6 +49,10 @@ const Subtitle = styled.h5`
     margin-top: auto;
     padding-left: 16px;
     box-sizing: border-box;
+
+    @media(max-width: 500px) {
+        display: none;
+    }
 `
 const ChapterDescription = styled.p`
     padding: 8px 16px;
@@ -44,11 +62,35 @@ const ChapterDescription = styled.p`
     margin-bottom: 0;
     border-bottom-right-radius: 4px;
     border-top-right-radius: 4px;
+    max-height: 156px;
+    overflow: auto;
 `
 const ChapterList = styled.ul`
     padding: 0;
     overflow-y: auto;
     flex-shrink: 1;
+`
+const TitleContainer = styled.div`
+    overflow: visible;
+    width: 100%;
+    padding-left: 16px;
+    margin-bottom: 16px;
+
+    @media(max-width: 500px) {
+        height: 0;
+        margin-left: min(125px, calc(30vw + 25px));
+        width: calc(100% - min(125px, calc(30vw + 5px)));
+        margin-top: -120px;
+        margin-bottom: 120px;
+        padding-right: 25px;
+    }
+`
+const InfoContainer = styled(FlexColumn)`
+    min-height: 204px;
+
+    @media(max-width: 500px) {
+        min-height: unset;
+    }
 `
 
 export function DetailView ({ onClose, source, urls }) {
@@ -56,29 +98,37 @@ export function DetailView ({ onClose, source, urls }) {
         <Dialog
             title={''}
             onClose={onClose}
-            height="80vh"
-            width="calc(90vw - max(calc((100vw - 800px) / 1.5), 4px))"
+            dialogStyle={{
+                height: 'max(calc(80vh - (100vw - 800px)), 80vh)',
+                width: 'calc(90vw - ((100vw - 800px) / 1.5))',
+                maxWidth: '100%',
+                maxHeight: 'calc(100% - 54px)',
+                marginTop: '54px',
+                borderRadius: 'min(4px, calc(4px + 100vw - 700px))'
+            }}
             bodyStyle={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', marginTop: -32 }}
         >
-            <FlexRow align="flex-start" style={{ marginBottom: 16, flexShrink: 0 }}>
-                <DetailImageContainer style={{ marginRight: 0, height: '100%', background, borderBottomLeftRadius: 4 }}>
+            <FlexRow align="flex-start" style={{ marginBottom: 16, flexShrink: 0 }} flip={500}>
+                <DetailImageContainer>
                     <ContainedImage
                         size="cover"
                         src={source.imageUrl}
                         style={{ marginRight: 0, border: `solid 2px ${background}` }}
                     />
                 </DetailImageContainer>
-                <FlexColumn style={{ minHeight: 204 }}>
-                    <DetailTitle>{source.title}</DetailTitle>
-                    <Host>
-                        <span>Host: </span>
-                        <Link href={source.url} newTab>
-                            {getHost(source.url)}
-                        </Link>
-                    </Host>
+                <InfoContainer>
+                    <TitleContainer>
+                        <DetailTitle>{source.title}</DetailTitle>
+                        <Host>
+                            <span>Host: </span>
+                            <Link href={source.url} newTab>
+                                {getHost(source.url)}
+                            </Link>
+                        </Host>
+                    </TitleContainer>
                     <Subtitle>Synopsis</Subtitle>
                     <ChapterDescription>{source.description}</ChapterDescription>
-                </FlexColumn>
+                </InfoContainer>
             </FlexRow>
             <ChapterList>
                 {urls.map((chapter) => (

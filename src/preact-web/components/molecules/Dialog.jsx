@@ -2,10 +2,10 @@ import { X } from 'preact-feather'
 import { Backdrop, DialogBody, DialogBox, DialogCloseIcon, DialogHead, DialogTitle } from '../atoms/Modal'
 import { ButtonBar } from '../atoms/Buttons'
 
-export const Dialog = ({ title, onClose, children, buttons, width, height, bodyStyle }) => {
+export const Dialog = ({ title, onClose, children, buttons, width, height, bodyStyle, dialogStyle }) => {
     return (
         <Backdrop visible onClick={onClose}>
-            <DialogBox style={{ width, height }} onClick={(e) => e.stopPropagation()}>
+            <DialogBox style={dialogStyle || { width, height }} onClick={(e) => e.stopPropagation()}>
                 <DialogHead>
                     <DialogTitle>{title}</DialogTitle>
                     {typeof onClose === 'function' && (

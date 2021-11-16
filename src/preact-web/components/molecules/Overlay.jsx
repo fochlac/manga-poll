@@ -73,13 +73,14 @@ const OverlayContent = styled(FlexColumn)`
 
 const OverlayTitle = styled(FlexRow)`
     padding: 8px 16px;
-    height: 20px;
+    min-height: 20px;
     color: #e6f1f2;
     background: #224049;
     font-size: 18px;
     letter-spacing: 0.8px;
     margin: 0;
     position: relative;
+    padding-right: 35px;
 `
 const Close = styled.div`
     cursor: pointer;

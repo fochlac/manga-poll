@@ -41,7 +41,7 @@ app.get('*', (_req, res) => {
 
 const port = !isNaN(Number(process.env.PORT)) ? Number(process.env.PORT) : 43214
 
-server.listen(port, 'localhost', () => {
+server.listen(port, '0.0.0.0', () => {
     console.log(`listening to http://localhost:${port}/`)
     init()
 })
