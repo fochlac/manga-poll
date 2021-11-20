@@ -44,8 +44,8 @@ let isRunning = 0
 async function fetchForSources (sources: Record<string, Source>, isNew?: boolean) {
     const start = Date.now()
     console.log('Fetching new chapters...')
-    const urls = getUrls()
-    const results = await fetchChapterListData(sources, urls)
+    const storedUrls = getUrls()
+    const results = await fetchChapterListData(sources, storedUrls)
     console.log('Fetching chapters took ' + Math.floor((Date.now() - start) / 1000) + ' seconds.')
 
     results.forEach(({ hasError, result, error, source }) => {
@@ -99,7 +99,8 @@ async function fetchForSources (sources: Record<string, Source>, isNew?: boolean
                 console.log(`${urls.length} new urls for ${source.title} on "${page}".`)
                 resetStatsCache()
                 sendTopicMessage(source.id)
-                urls.forEach(addUrl(source, isNew))
+                const hasUrls = Object.values(storedUrls).some((url) => url.sourceId === source.id)
+                urls.forEach(addUrl(source, !hasUrls || isNew))
             }
             if (warnings?.length) {
                 result.warnings.forEach((rawWarning) => {
