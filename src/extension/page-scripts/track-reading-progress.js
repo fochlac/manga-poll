@@ -88,7 +88,7 @@ function showSuccessBadge (title, chapter) {
                 flex-wrap: wrap;
                 justify-content: center;
                 background: #ffff8d;
-                right: 16px;
+                right: 8px;
                 text-align: center;
                 padding: 4px 16px;
                 border-radius: 4px;

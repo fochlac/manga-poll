@@ -14,6 +14,8 @@ export function renderBookmark (result) {
     div.innerHTML = `
     <style>
         .${id} {
+            height: 66px;
+            font-size: 0;
             position: fixed;
             z-index: 10000;
             left: 100%;
@@ -27,20 +29,48 @@ export function renderBookmark (result) {
             color: #e5e5e5;
             font-size: 16px;
             line-height: 18px;
-            border-bottom-left-radius: 5px;
-            transition: left ease-in-out 0.2s;
+            border-top-left-radius: 0;
+            transition: all ease-in-out 0.4s;
+            font-family: sans-serif;
         }
         .${id}.${id6},
         .${id}:hover {
             left: calc(100% - 300px) !important;
+            height: 150px;
+            font-size: 16px;
+        }
+        .${id}:hover .${id7} img {    
+            left: 11px;
         }
         .${id} .${id7} img {    
             width: 30px;
             height: 30px;
+            transition: all .4s ease-in-out;
+            position: absolute;
+            left: 7px;
+            min-width: 30px;
+            top: 7px;
+        }
+        .${id}:hover .${id2} {
+            position: absolute;
+            height: 30px;
+            font-size: 25px;
+            line-height: 30px;
+            width: 263px;
+            padding-left: 16px;
+            padding-right: 91px;
+            left: 29px;
+            top: 8px;
+        }
+        .${id}:hover .${id7} {
+            width: 5px;
+            height: 150px;
         }
         .${id} .${id7} {
+            padding-bottom: 20px;
+            height: 66px;
+            transition: all .4s ease-in-out;
             width: 46px;
-            height: 46px;
             position: absolute;
             right: 100%;
             top: -1px;
@@ -56,24 +86,31 @@ export function renderBookmark (result) {
             visibility: visible !important;
         }
         .${id} .${id2} {
-            white-space: nowrap;
-            height: 42px;
-            font-size: 25px;
-            line-height: 42px;
-            width: 100%;
-            padding-left: 16px;
+            position: absolute;
+            font-size: 10px;
+            letter-spacing: 0.3px;
+            padding: unset;
+            width: 42px;
+            height: auto;
+            line-height: 8px;
+            left: -43px;
+            top: 42px;
+            text-align: center;
+            transition: all .4s ease-in-out;
         }
         .${id} .${id3} {
             display: flex;
             flex-direction: column;
             height: 100%;
-            padding: 8px 8px 8px 16px;
+            padding: 6px 8px 8px 6px;
+            margin-top: 42px;
+            max-height: 100%;
+            overflow: hidden;
+            border-top: solid 1px #737377;
+            width: calc(100% - 4px);
         }
         .${id} .${id5} {
             margin-bottom: 8px;
-            max-height: 72px;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
         .${id} .${id4} {
             font-weight: 600;
