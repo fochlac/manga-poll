@@ -20,26 +20,6 @@ const config = {
         extensions: ['.js', '.jsx', '.ts', '...']
     },
     entry: {
-        preact: {
-            import: './src/preact-web/index.js',
-            filename: webappPath + 'index-preact.js'
-        },
-        bookmark: {
-            import: './src/extension/test-bookmark.js',
-            filename: chromeExtensionPath + 'test-bookmark.js'
-        },
-        content: {
-            import: './src/extension/content-script.js',
-            filename: chromeExtensionPath + 'content-script.js'
-        },
-        popup: {
-            import: './src/extension/popup/popup.js',
-            filename: chromeExtensionPath + 'popup.js'
-        },
-        'ext-sw': {
-            import: './src/extension/service-worker/sw.js',
-            filename: chromeExtensionPath + 'sw.js'
-        },
         'bookmark-firefox': {
             import: './src/extension/test-bookmark.js',
             filename: firefoxExtensionPath + 'test-bookmark.js'
@@ -55,18 +35,6 @@ const config = {
         'ext-ff-sw': {
             import: './src/extension/service-worker/sw.js',
             filename: firefoxExtensionPath + 'sw.js'
-        },
-        'page-sw': {
-            import: './src/web/sw/sw.js',
-            filename: webappPath + 'sw.js'
-        },
-        page: {
-            import: './src/web/app/index.js',
-            filename: webappPath + 'index.js'
-        },
-        stats: {
-            import: './src/web/stats/stats.js',
-            filename: webappPath + 'stats.js'
         }
     },
     output: {
@@ -106,19 +74,6 @@ const config = {
                     to: firefoxSourcePath
                 },
                 {
-                    from: "./webpack.config.ff.js",
-                    to: firefoxSourcePath + "./webpack.config.js"
-                },
-                {
-                    from: "./static/web/*",
-                    to: webappPath + "[name][ext]"
-                },
-                {
-                    context: './static/extension/',
-                    from: "**/*",
-                    to: chromeExtensionPath
-                },
-                {
                     context: './static/extension/',
                     from: "**/*",
                     to: firefoxExtensionPath
@@ -127,11 +82,6 @@ const config = {
                     context: './static/extension/',
                     from: "**/*",
                     to: firefoxExtensionPath
-                },
-                {
-                    context: './static/extension_chrome/',
-                    from: "**/*",
-                    to: chromeExtensionPath
                 },
                 {
                     context: './static/extension_firefox/',

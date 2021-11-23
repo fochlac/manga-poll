@@ -46,10 +46,6 @@ const urls = readFile<Url>(
                 delete urls[urlKey]
                 modified = true
             }
-            else if (url?.created > 1635375451023 && url.created < 1635375741424) {
-                delete urls[urlKey]
-                modified = true
-            }
             else if (!url) {
                 delete urls[urlKey]
                 modified = true

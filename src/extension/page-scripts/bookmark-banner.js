@@ -39,6 +39,7 @@ export function renderBookmark (result) {
             height: 150px;
             font-size: 16px;
         }
+        .${id}.${id6} .${id7} img,
         .${id}:hover .${id7} img {    
             left: 11px;
         }
@@ -51,6 +52,7 @@ export function renderBookmark (result) {
             min-width: 30px;
             top: 7px;
         }
+        .${id}.${id6} .${id2},
         .${id}:hover .${id2} {
             position: absolute;
             height: 30px;
@@ -62,6 +64,7 @@ export function renderBookmark (result) {
             left: 29px;
             top: 8px;
         }
+        .${id}.${id6} .${id7},
         .${id}:hover .${id7} {
             width: 5px;
             height: 150px;
@@ -97,6 +100,7 @@ export function renderBookmark (result) {
             top: 42px;
             text-align: center;
             transition: all .4s ease-in-out;
+            visibility: visible !important;
         }
         .${id} .${id3} {
             display: flex;

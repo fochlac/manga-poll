@@ -42,7 +42,7 @@ export function trackProgress (url, source) {
 
         let scrollevents = 0
         let skip = false
-        document.addEventListener('scroll', () => {
+        addEventListener('scroll', () => {
             if (!skip) {
                 skip = true
                 const page = document.documentElement
@@ -58,10 +58,10 @@ export function trackProgress (url, source) {
                 hide()
                 hide = null
             }
-        })
+        }, {passive: true, capture: true})
 
         let clickevents = 0
-        document.addEventListener('click', () => {
+        addEventListener('click', () => {
             if (clickevents > 10) {
                 markReadOnce()
                 if (typeof hide === 'function') {
@@ -70,7 +70,7 @@ export function trackProgress (url, source) {
                 }
             }
             clickevents++
-        })
+        }, {passive: true, capture: true})
     }
 }
 
