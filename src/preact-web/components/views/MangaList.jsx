@@ -28,7 +28,7 @@ export function MangaList () {
     }))
     const [detail, showDetails] = useState('')
 
-    if (!urls?.newUrls?.length || !urls?.oldUrls?.length) return null
+    if (!Array.isArray(urls?.newUrls) || !Array.isArray(urls?.oldUrls)) return null
 
     const urlMapNew = urls.newUrls.reduce((map, url) => {
         if (!map.has(url.sourceId)) map.set(url.sourceId, [])
