@@ -50,7 +50,7 @@ export function MangaFeed () {
 
     return (
         <List onScroll={scrollHandler()} ref={listRef}>
-            {urls?.newUrls?.length && (
+            {Boolean(urls?.newUrls?.length) && (
                 <Fragment>
                     <ListHeader>
                         <span>
@@ -66,7 +66,7 @@ export function MangaFeed () {
                     ))}
                 </Fragment>
             )}
-            {urls?.oldUrls?.length && (
+            {Boolean(urls?.oldUrls?.length) && (
                 <Fragment>
                     <ListHeader ref={oldChapterRef}>
                         <span>Old Chapters</span>
