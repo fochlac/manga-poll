@@ -76,7 +76,7 @@ async function fetchForSources (sources: Record<string, Source>, isNew?: boolean
                             imageUrl
                         })
                     )
-                    .catch(() => {
+                    .catch((e) => {
                         console.log(`Error storing or fetching image for ${source.title}.`)
                         updateSource(source.id, {
                             ...source,

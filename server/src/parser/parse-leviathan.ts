@@ -125,7 +125,10 @@ async function fetchLeviathan (source: Source, urls: Record<string, Url>): Promi
             })
             const body = await getResponseBody(response)
             const $ = cheerio.load(body)
-            const imageUrl = $('.summary_image img').attr('data-src')
+            let imageUrl = $('.summary_image img').attr('src')
+            if (!/https/.test(imageUrl)) {
+                imageUrl = $('.summary_image img').attr('data-src')
+            }
             const description = $('meta[name="description"]').attr('content')
 
             if (imageUrl?.length && description?.length && (!source.imageUrl || !source.description)) {

@@ -51,8 +51,11 @@ async function parseMangastream (source: Source, urls: Record<string, Url>, body
         }
     }
 
-    const imageUrl = $('.thumb img').attr('src')
-    const description = $('meta[name="description"],meta[property="og:description"]').attr('content')
+    let imageUrl = $('.thumb img').attr('src')
+    if (!/https/.test(imageUrl)) {
+        imageUrl = $('.thumb img').attr('data-src')
+    }
+    const description = $('meta[name="description"],meta[property="og:description"]').attr('content') || $('div[itemprop="description"]').text()
     let sourceInfo
     if (imageUrl?.length && description?.length && (!source.imageUrl || !source.description)) {
         sourceInfo = {
