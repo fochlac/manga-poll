@@ -4,7 +4,6 @@ const path = require('path')
 
 const chromeExtensionPath = './extension_chrome/'
 const firefoxExtensionPath = './extension_firefox/'
-const firefoxSourcePath = './extension_firefox_source/'
 const webappPath = './web/'
 
 const config = {
@@ -97,18 +96,6 @@ const config = {
     plugins: [
         new CopyPlugin({
             patterns: [
-                {
-                    from: "./{src/extension,src/common,static/extension,static/extension_firefox}/**/*",
-                    to: firefoxSourcePath
-                },
-                {
-                    from: "./*",
-                    to: firefoxSourcePath
-                },
-                {
-                    from: "./webpack.config.ff.js",
-                    to: firefoxSourcePath + "./webpack.config.js"
-                },
                 {
                     from: "./static/web/*",
                     to: webappPath + "[name][ext]"

@@ -7,7 +7,7 @@
     "build": "rm -rf ./dist && webpack --config webpack.config.prod.js",
     "watch": "webpack -w",
     "package": "npm run build && node ./zip-files.js",
-    "test:package": "cd ./dist/extension_firefox_source && npm i && npm run package",
+    "test:package": "cd ./dist/extension_firefox_source && npm i && npm run package && cd ../.. && node ./compare-source.js",
     "format": "prettier-eslint 'src/**/*.js'"
   },
   "jest": {
@@ -36,9 +36,11 @@
     "babel-loader": "^8.1.0",
     "babel-plugin-jsx-pragmatic": "^1.0.2",
     "babel-plugin-styled-components": "^1.13.3",
+    "colors": "^1.4.0",
     "copy-webpack-plugin": "^9.0.1",
     "core-js": "^3.6.5",
     "css-loader": "^4.2.1",
+    "diff": "^5.0.0",
     "eslint": "^7.32.0",
     "eslint-config-preact": "^1.1.4",
     "eslint-config-prettier": "^6.11.0",
