@@ -20,30 +20,7 @@ const nanoid = customAlphabet(urlAlphabet, 10)
 const sourcesPath = resolve(__dirname, '../db/sources.json')
 const writeSources = createWrite(sourcesPath)
 
-const sources: Record<string, Source> = readFile<Source>(
-    sourcesPath,
-    (sources) => {
-        let hasChanges = false
-        Object.keys(sources).forEach((key) => {
-            if (
-                sources[key].type === 'mangadex' &&
-                (sources[key].url.includes('api.mangadex') || !sources[key].url.includes(sources[key].mangaId))
-            ) {
-                sources[key].url = `https://mangadex.org/title/${sources[key].mangaId}`
-                hasChanges = true
-            }
-            if (
-                sources[key].type === 'mangadex' &&
-                !sources[key].imageUrl?.includes(sources[key].mangaId)
-            ) {
-                delete sources[key].imageUrl
-                hasChanges = true
-            }
-        })
-        return hasChanges
-    },
-    writeSources
-)
+const sources: Record<string, Source> = readFile<Source>(sourcesPath)
 
 export function getSources () {
     return sources

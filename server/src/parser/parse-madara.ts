@@ -217,9 +217,9 @@ async function fetchMadara (source: Source, urls: Record<string, Url>): Promise<
 
         if (body && !errortext) {
             const $ = cheerio.load(body)
-            let imageUrl = $('.summary_image img').attr('src')
+            let imageUrl = $('.summary_image img').attr('data-src')
             if (!/https/.test(imageUrl)) {
-                imageUrl = $('.summary_image img').attr('data-src')
+                imageUrl = $('.summary_image img').attr('src')
             }
             const description = $('meta[name="description"]').attr('content')
 

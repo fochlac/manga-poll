@@ -64,6 +64,22 @@ async function parseMangastream (source: Source, urls: Record<string, Url>, body
         }
     }
 
+    const breadcrumpLink = $('ol[itemtype="http://schema.org/BreadcrumbList"] meta[itemprop="position"][content="2"]')
+        .closest('li')
+        .find('a')
+    const url = breadcrumpLink.attr('href')
+    const name = breadcrumpLink.find('span').text()
+    if (source.url !== url && name) {
+        sourceInfo = sourceInfo || {}
+        sourceInfo.update = {
+            title: name,
+            url,
+            mangaId: url?.split('/')[4],
+            imageUrl,
+            description
+        }
+    }
+
     const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(urlList, source, urls)
 
     const { newUrls: availableNewUrls, warnings: availabilityWarnings } = await checkNewUrlAvailability(
