@@ -109,6 +109,12 @@ async function parseMangastream (source: Source, urls: Record<string, Url>, body
 async function fetchMangastream (source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     try {
         const response = await fetch(source.url, { method: 'get', headers })
+            .then((res) => {
+                if (res.status === 404) {
+                    return fetch(source.url.replace(/[0-9]{8,13}-/, ''), { method: 'get', headers })
+                }
+                return res
+            })
         const body = await getResponseBody(response)
 
         return parseMangastream(source, urls, body)

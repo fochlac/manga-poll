@@ -2,13 +2,17 @@ import fetch from 'node-fetch'
 import { createSource, categorizeRemoteUrls, registerParser, headers } from '../parser'
 import { parseStringPromise } from 'xml2js'
 import { getHost } from '../utils/parse'
+import https from 'https'
 
 const TYPE = 'webtoon'
 
 async function fetchWebtoons (source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     const host = getHost(source.url)
     try {
-        const rssXml = await fetch(`${source.url}/rss?title_no=${source.mangaId}`, { headers }).then((res) =>
+        const rssXml = await fetch(`${source.url}/rss?title_no=${source.mangaId}`, {
+            headers,
+            agent: new https.Agent({ rejectUnauthorized: false })
+        }).then((res) =>
             res.text()
         )
         const rssJson = await parseStringPromise(rssXml)
