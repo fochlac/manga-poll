@@ -20,7 +20,17 @@ const nanoid = customAlphabet(urlAlphabet, 10)
 const sourcesPath = resolve(__dirname, '../db/sources.json')
 const writeSources = createWrite(sourcesPath)
 
-const sources: Record<string, Source> = readFile<Source>(sourcesPath)
+const sources: Record<string, Source> = readFile<Source>(sourcesPath, (sources) => {
+    let modified = false
+    Object.keys(sources).forEach((key) => {
+        if (sources[key].url.includes('asura-test.phazor.xyz')) {
+            sources[key].url = sources[key].url.replace('asura-test.phazor.xyz', 'www.asurascans.com')
+            sources[key].imageUrl = sources[key].imageUrl.replace('asura-test.phazor.xyz', 'www.asurascans.com')
+            modified = true
+        }
+    })
+    return modified
+}, writeSources)
 
 export function getSources () {
     return sources
