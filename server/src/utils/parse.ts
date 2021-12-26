@@ -34,3 +34,9 @@ export function parseNAgoDateString (dateString) {
 
     return baseDate.getTime()
 }
+
+export function createAttributeEqualityChecker (obj1, obj2) {
+    return (key) => {
+        return obj1[key] === obj2[key]
+    }
+}

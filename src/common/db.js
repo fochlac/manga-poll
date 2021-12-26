@@ -9,6 +9,11 @@ export function createDB (storage) {
     const { read, write } = storage
 
     async function readSources () {
+        const { sources } = await read(NAMESPACES.LOCAL, { sources: null })
+        if (sources) {
+            return sources
+        }
+
         const { registry } = await read(NAMESPACES.SYNC, { registry: '["sources-1"]' })
         return parse(registry, ['sources-1'])
             .reduce((sources, key) => {
@@ -19,15 +24,7 @@ export function createDB (storage) {
     }
 
     function writeSources (sources) {
-        const registry = []
-        const updates = {}
-        for (let x = 1; x <= Math.max(1, Math.ceil(sources.length / 20)); x++) {
-            const key = `sources-${x}`
-            registry.push(key)
-            updates[key] = JSON.stringify(sources.slice((x - 1) * 20, x * 20))
-        }
-        updates.registry = JSON.stringify(registry)
-        return write(NAMESPACES.SYNC, updates)
+        return write(NAMESPACES.LOCAL, { sources })
     }
 
     async function addSource (source) {

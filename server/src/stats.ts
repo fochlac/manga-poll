@@ -292,7 +292,7 @@ async function cleanWarnings () {
     })
 
     if (deletedDates.length) {
-        console.log(`Removed Chapters for dates: "${deletedDates.join('", "')}".`)
+        console.log(`Removed Chapter-Warnings for dates: "${deletedDates.join('", "')}".`)
         writeWarnings(warnings)
     }
 }

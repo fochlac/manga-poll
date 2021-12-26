@@ -28,6 +28,11 @@ const sources: Record<string, Source> = readFile<Source>(sourcesPath, (sources) 
             sources[key].imageUrl = sources[key].imageUrl.replace('asura-test.phazor.xyz', 'www.asurascans.com')
             modified = true
         }
+        if (sources[key].imageUrl?.includes('phazor.xyz')) {
+            sources[key].imageUrl = ''
+            sources[key].description = ''
+            modified = true
+        }
     })
     return modified
 }, writeSources)

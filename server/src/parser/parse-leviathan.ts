@@ -11,7 +11,7 @@ import {
     categorizeRemoteUrls
 } from '../parser'
 import { getUrlKey } from '../utils/keys'
-import { getHost } from '../utils/parse'
+import { createAttributeEqualityChecker, getHost } from '../utils/parse'
 
 const TYPE = 'leviathan'
 
@@ -79,8 +79,7 @@ function extractChapterRevisionSegment (url) {
     return url.split('/').slice(-2)[0]?.split('_')?.[1]
 }
 
-async function parseLeviathanPage (rawUrl: string) {
-    const sourcehtml: string = await fetch(rawUrl, { headers }).then((res) => res.text())
+function parseLeviathanPage (rawUrl: string, sourcehtml: string) {
     const $ = cheerio.load(sourcehtml)
 
     const titles = [
@@ -105,7 +104,13 @@ async function parseLeviathanPage (rawUrl: string) {
     const baseUrl = rawUrl.split('/manga/')[0] + '/manga/'
     const mangaId = rawUrl.replace(baseUrl, '').split('/')[0]
 
-    return createSource(TYPE, mangaId, title, `${baseUrl}${mangaId}`)
+    let imageUrl = $('.summary_image img').attr('src')
+    if (!/https/.test(imageUrl)) {
+        imageUrl = $('.summary_image img').attr('data-src')
+    }
+    const description = $('meta[name="description"]').attr('content')
+
+    return createSource(TYPE, mangaId, title, `${baseUrl}${mangaId}`, imageUrl, description)
 }
 
 async function fetchLeviathan (source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
@@ -116,31 +121,20 @@ async function fetchLeviathan (source: Source, urls: Record<string, Url>): Promi
         url = joinUrl(baseUrl, 'manga', source.url.split('/manga/')[1], 'ajax/chapters')
         const response = await fetch(url, { method: 'post', headers })
         body = await getResponseBody(response)
+        const chapterOverviewRequest = await fetch(joinUrl(baseUrl, 'manga', source.url.split('/manga/')[1]), {
+            method: 'get',
+            headers
+        })
+        const chapterOverview = await getResponseBody(chapterOverviewRequest)
+        const currentSource = parseLeviathanPage(url, chapterOverview)
+        const result = parseLeviathan(source, urls, body, url)
+        const isAttributeEqual = createAttributeEqualityChecker(source, currentSource)
 
-        let sourceInfo
-        if (!source.imageUrl || !source.description) {
-            const response = await fetch(joinUrl(baseUrl, 'manga', source.url.split('/manga/')[1]), {
-                method: 'get',
-                headers
-            })
-            const body = await getResponseBody(response)
-            const $ = cheerio.load(body)
-            let imageUrl = $('.summary_image img').attr('src')
-            if (!/https/.test(imageUrl)) {
-                imageUrl = $('.summary_image img').attr('data-src')
-            }
-            const description = $('meta[name="description"]').attr('content')
-
-            if (imageUrl?.length && description?.length && (!source.imageUrl || !source.description)) {
-                sourceInfo = {
-                    imageUrl,
-                    description
-                }
+        if (!['title', 'mangaId', 'imageUrl', 'description', 'url'].every(isAttributeEqual)) {
+            result.sourceInfo = {
+                update: currentSource
             }
         }
-
-        const result = parseLeviathan(source, urls, body, url)
-        result.sourceInfo = sourceInfo
         return result
     }
     catch (err) {
@@ -161,7 +155,10 @@ async function fetchLeviathan (source: Source, urls: Record<string, Url>): Promi
 const leviathan = {
     fetchFunction: fetchLeviathan,
     type: TYPE,
-    parseLink: parseLeviathanPage,
+    parseLink: async (rawUrl) => {
+        const sourcehtml: string = await fetch(rawUrl, { headers }).then((res) => res.text())
+        return parseLeviathanPage(rawUrl, sourcehtml)
+    },
     parseCondition: (url) => url.includes('leviatanscans.com') || url.includes('immortalupdates.com')
 }
 
