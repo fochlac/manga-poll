@@ -66,7 +66,6 @@ export function updateUrl (source: Source, newUrl: Partial<Url>) {
     stored.url = newUrl.url
     stored.chapter = newUrl.chapter
     stored.host = newUrl.host
-    stored.created = newUrl.created
     writeUrls(urls)
     return urls[key]
 }
