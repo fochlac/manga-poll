@@ -218,6 +218,14 @@ async function fetchMadara (source: Source, urls: Record<string, Url>): Promise<
         if (body && !errortext) {
             const $ = cheerio.load(body)
             let imageUrl = $('.summary_image img').attr('data-src')
+
+	    if (/https/.test($('.summary_image img').attr('data-srcset')?.split(' ')?.[0] || '')) {
+                imageUrl = $('.summary_image img').attr('data-srcset').split(' ')[0]
+            }
+            else if (/https/.test($('.summary_image img').attr('srcset')?.split(' ')?.[0] || '')) {
+                imageUrl = $('.summary_image img').attr('srcset').split(' ')[0]
+            }
+
             if (!/https/.test(imageUrl)) {
                 imageUrl = $('.summary_image img').attr('src')
             }
