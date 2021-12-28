@@ -45,13 +45,13 @@ function zipFiles () {
     return Promise.all([
         zip('./dist/extension_chrome/', './dist/extension_chrome.zip')
             .then(() => console.log('Successfully packaged Chrome-Extension.'))
-            .catch(() => console.log('Error packaging Chrome-Extension.')),
+            .catch((e) => console.log('Error packaging Chrome-Extension: ', e)),
         zip('./dist/extension_firefox/', './dist/extension_firefox.zip')
             .then(() => console.log('Successfully packaged Firefox-Extension.'))
-            .catch(() => console.log('Error packaging Firefox-Extension.')),
+            .catch((e) => console.log('Error packaging Firefox-Extension:', e)),
         zip('./dist/extension_firefox_source/', './dist/extension_firefox_source.zip')
             .then(() => console.log('Successfully packaged Firefox-Extension-Source.'))
-            .catch(() => console.log('Error packaging Firefox-Extension-Source.'))
+            .catch((e) => console.log('Error packaging Firefox-Extension-Source:', e))
     ])
 }
 

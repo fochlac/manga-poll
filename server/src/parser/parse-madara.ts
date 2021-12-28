@@ -1,6 +1,5 @@
 import cheerio from 'cheerio'
 import FormData from 'form-data'
-import fetch from 'node-fetch'
 import {
     getResponseBody,
     registerParser,
@@ -12,6 +11,7 @@ import {
     joinUrl,
     categorizeRemoteUrls
 } from '../parser'
+import { fetch } from '../utils/fetch'
 import { getHost, parseNAgoDateString } from '../utils/parse'
 
 const TYPE = 'madara'
@@ -57,11 +57,7 @@ function parseDates (urlList) {
         let created = baseDate.getTime()
         const { date } = url
 
-        if (
-            typeof date === 'string' &&
-            date.trim().length &&
-            /\d+.*ago/.test(date)
-        ) {
+        if (typeof date === 'string' && date.trim().length && /\d+.*ago/.test(date)) {
             created = parseNAgoDateString(date)
         }
         else if (
@@ -219,7 +215,7 @@ async function fetchMadara (source: Source, urls: Record<string, Url>): Promise<
             const $ = cheerio.load(body)
             let imageUrl = $('.summary_image img').attr('data-src')
 
-	    if (/https/.test($('.summary_image img').attr('data-srcset')?.split(' ')?.[0] || '')) {
+            if (/https/.test($('.summary_image img').attr('data-srcset')?.split(' ')?.[0] || '')) {
                 imageUrl = $('.summary_image img').attr('data-srcset').split(' ')[0]
             }
             else if (/https/.test($('.summary_image img').attr('srcset')?.split(' ')?.[0] || '')) {
@@ -277,8 +273,12 @@ async function fetchMadara (source: Source, urls: Record<string, Url>): Promise<
                 return parseMadara(source, urls, body, sourceInfo)
             }
             catch (err) {
+                console.log(err)
                 throw new Error(`${errortext} + ${err?.message || err}`)
             }
+        }
+        if ((errortext?.length || 0) > 10) {
+            throw new Error(errortext)
         }
         return { urls: [] }
     }

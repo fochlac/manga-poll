@@ -38,6 +38,9 @@ function testFile (filename) {
             }
         })
     }
+    else {
+        console.log(`No diff in ${filename}`)
+    }
 }
 
 ['content-script.js', 'test-bookmark.js', 'sw.js', 'popup.js', 'popup.css', 'popup.html'].forEach(testFile)

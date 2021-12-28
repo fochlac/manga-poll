@@ -5,9 +5,10 @@
   "main": "popup.js",
   "scripts": {
     "build": "rm -rf ./dist && webpack --config webpack.config.prod.js",
+    "build:package": "rm -rf ./dist && webpack --config webpack.config.package.js",
     "watch": "webpack -w",
-    "package": "npm run build && node ./zip-files.js",
-    "test:package": "cd ./dist/extension_firefox_source && npm i && npm run package && cd ../.. && node ./compare-source.js",
+    "package": "npm i && npm run build:package && node ./zip-files.js",
+    "test:package": "cd ./dist/extension_firefox_source && npm i && npm run package && cd ../.. &&  node ./compare-source.js",
     "format": "prettier-eslint 'src/**/*.js'"
   },
   "jest": {
@@ -67,7 +68,7 @@
     "styled-components": "^5.3.3",
     "tiny-atom": "^4.2.2",
     "webpack": "5.28.0",
-    "webpack-cli": "4.6.0",
+    "webpack-cli": "4.9.1",
     "zip-a-folder": "^1.1.0"
   }
 }
