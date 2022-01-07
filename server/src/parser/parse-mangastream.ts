@@ -12,20 +12,26 @@ import { getHost } from '../utils/parse'
 
 const TYPE = 'mangastream'
 
-async function testMangastream (rawUrl) {
-    const sourcehtml: string = await fetch(rawUrl, { headers }).then((res) => res.text())
-
+function testMangastream (rawUrl, sourcehtml) {
     const $ = cheerio.load(sourcehtml)
     const breadcrumpLink = $('ol[itemtype="http://schema.org/BreadcrumbList"] meta[itemprop="position"][content="2"]')
         .closest('li')
         .find('a')
-    const url = breadcrumpLink.attr('href')
-    const name = breadcrumpLink.find('span').text()
+    const thumbnail = $('#content .hentry .thumb img')
+    if (!breadcrumpLink?.length && thumbnail?.length) {
+        const name = thumbnail.attr('title')
+        return createSource(TYPE, rawUrl?.split('/')[4], name, rawUrl)
+    }
+
+    const url = $('.readingnavtop .backseries a').length ? $('.readingnavtop .backseries a').attr('href') : breadcrumpLink.attr('href')
+    const name = $('.headpost .allc a').text() ||
+        $('.headpost [itemprop="name"]').text().split(/( –|\s+chapter)/i)?.[0] ||
+        breadcrumpLink.find('span').text()
 
     return createSource(TYPE, url?.split('/')[4], name, url)
 }
 
-async function parseMangastream (source: Source, urls: Record<string, Url>, body: string): Promise<ChapterResult> {
+async function parseMangastream (source: Source, urls: Record<string, Url>, body: string, currentUrl: string): Promise<ChapterResult> {
     const $ = cheerio.load(body)
     const baseDate = new Date()
     baseDate.setHours(0, 0, 0, 0)
@@ -64,20 +70,14 @@ async function parseMangastream (source: Source, urls: Record<string, Url>, body
         }
     }
 
-    const breadcrumpLink = $('ol[itemtype="http://schema.org/BreadcrumbList"] meta[itemprop="position"][content="2"]')
-        .closest('li')
-        .find('a')
-    const url = breadcrumpLink.attr('href')
-    const name = breadcrumpLink.find('span').text()
-    if (source.url !== url && name) {
+    let updatedSource
+    try {
+        updatedSource = testMangastream(currentUrl, body)
+    }
+    catch (e) {} // eslint-disable-line no-empty
+    if (source.url !== updatedSource.url || updatedSource.mangaId !== source.mangaId) {
         sourceInfo = sourceInfo || {}
-        sourceInfo.update = {
-            title: name,
-            url,
-            mangaId: url?.split('/')[4],
-            imageUrl,
-            description
-        }
+        sourceInfo.update = updatedSource
     }
 
     const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(urlList, source, urls)
@@ -117,7 +117,7 @@ async function fetchMangastream (source: Source, urls: Record<string, Url>): Pro
             })
         const body = await getResponseBody(response)
 
-        return parseMangastream(source, urls, body)
+        return parseMangastream(source, urls, body, response.url)
     }
     catch (err) {
         const host = getHost(source.url)
@@ -137,11 +137,16 @@ async function fetchMangastream (source: Source, urls: Record<string, Url>): Pro
 const mangastream: Parser = {
     fetchFunction: fetchMangastream,
     type: TYPE,
-    parseLink: testMangastream,
+    parseLink: async (rawUrl) => {
+        const sourcehtml: string = await fetch(rawUrl, { headers }).then((res) => res.text())
+        return testMangastream(rawUrl, sourcehtml)
+    },
     parseCondition: async (url) => {
         try {
             const sourcehtml: string = await fetch(url, { headers, redirect: 'manual' }).then((res) => res.text())
-            return sourcehtml.includes('ts-breadcrumb bixbox')
+            const $ = cheerio.load(sourcehtml)
+            return sourcehtml.includes('ts-breadcrumb bixbox') ||
+                $('.readingnavtop .chpnw, .headpost [itemprop="name"], #content .hentry .thumb img')?.length > 0
         }
         catch (e) {
             console.log('Error fetching url.', e)

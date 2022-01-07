@@ -18,10 +18,16 @@ export function extractSource () {
         else if (document.documentElement.innerHTML.includes('Powered by Genkan.')) {
             result = testGenkan()
         }
-        else if (document.documentElement.innerHTML.includes('ts-breadcrumb bixbox')) {
+        else if (
+            document.documentElement.innerHTML.includes('ts-breadcrumb bixbox') ||
+            document.querySelector('.readingnavtop .backseries a, .headpost .allc a, #content .hentry .thumb img')
+        ) {
             result = testMangastream()
         }
-        else if (window.location.host.includes('leviatanscans.com') || window.location.host.includes('immortalupdates.com')) {
+        else if (
+            window.location.host.includes('leviatanscans.com') ||
+            window.location.host.includes('immortalupdates.com')
+        ) {
             result = testLeviathan()
         }
         else if (window.location.host.includes('mangadex.org')) {
