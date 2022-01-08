@@ -4,11 +4,13 @@ export function testMangastream () {
         ?.querySelector('a')
 
     const thumbnail = document.querySelector('#content .hentry .thumb img')
+    const id = document.querySelector('.bookmark').dataset.id || document.documentElement.innerHTML.match(/"manga_ID":"(\d+)"/)?.[1] || url?.split('/')[4]
+
     if (!breadcrumpLink && thumbnail) {
         return {
             type: 'mangastream',
             url: window.location.href,
-            id: window.location.href.split('/')[4],
+            id,
             title: thumbnail.title
         }
     }
@@ -25,7 +27,7 @@ export function testMangastream () {
     if (name && url) {
         return {
             type: 'mangastream',
-            id: url?.split('/')[4],
+            id,
             title: name,
             url,
             chapter

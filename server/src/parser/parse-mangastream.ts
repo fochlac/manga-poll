@@ -27,8 +27,9 @@ function testMangastream (rawUrl, sourcehtml) {
     const name = $('.headpost .allc a').text() ||
         $('.headpost [itemprop="name"]').text().split(/( –|\s+chapter)/i)?.[0] ||
         breadcrumpLink.find('span').text()
+    const mangaId = $('.bookmark').data('id') || sourcehtml.match(/"manga_ID":"(\d+)"/)?.[1] || url?.split('/')[4]
 
-    return createSource(TYPE, url?.split('/')[4], name, url)
+    return createSource(TYPE, mangaId, name, url)
 }
 
 async function parseMangastream (source: Source, urls: Record<string, Url>, body: string, currentUrl: string): Promise<ChapterResult> {
