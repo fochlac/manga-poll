@@ -273,7 +273,6 @@ async function fetchMadara (source: Source, urls: Record<string, Url>): Promise<
                 return parseMadara(source, urls, body, sourceInfo)
             }
             catch (err) {
-                console.log(err)
                 throw new Error(`${errortext} + ${err?.message || err}`)
             }
         }

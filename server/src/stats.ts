@@ -148,7 +148,7 @@ export function createStatsEndpoints (app) {
 
 export function shouldWarn (key, limit) {
     return (
-        !warnings[key] ||
+        !warnings?.[key] ||
         !limit ||
         warnings[key].filter((warning) => Date.now() - warning.date <= 48 * 3600 * 1000).length < limit
     )

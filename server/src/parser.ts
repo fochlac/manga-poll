@@ -79,11 +79,11 @@ export function checkSourceType (type) {
 
 export const testForCloudFlare = (text, status) => {
     if (text.includes('<title>Please Wait... | Cloudflare</title>') || status > 400 && text.toLowerCase().includes('cloudflare') && text.includes('form id="challenge-form"')) {
-        throw Error('Cloudflare-JS-Challenge detected.')
+        throw new Error('Cloudflare-JS-Challenge detected.')
     }
 
     if (text.includes('Access denied') && text.includes('Cloudflare') || text.includes('id="cf-bubbles"')) {
-        throw Error('Cloudflare-Captcha detected.')
+        throw new Error('Cloudflare-Captcha detected.')
     }
 }
 
@@ -92,14 +92,14 @@ export async function getResponseBody (response): Promise<string> {
     testForCloudFlare(body, response.status)
 
     if (response.status >= 300) {
-        throw Error(`Unable to get chapter page with response code "${response.status}".`)
+        throw new Error(`Unable to get chapter page with response code "${response.status}".`)
     }
 
     return body
 }
 
 export async function fetchWithPuppeteer (url): Promise<string> {
-    const browser = await puppeteer.launch({ headless: true })
+    const browser = await puppeteer.launch({ args: ['--no-sandbox'], headless: true })
     const page = await browser.newPage()
     await page.goto(url)
     await page.waitForTimeout(7000)
