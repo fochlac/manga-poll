@@ -23,14 +23,8 @@ const writeSources = createWrite(sourcesPath)
 const sources: Record<string, Source> = readFile<Source>(sourcesPath, (sources) => {
     let modified = false
     Object.keys(sources).forEach((key) => {
-        if (sources[key].url.includes('asura-test.phazor.xyz')) {
-            sources[key].url = sources[key].url.replace('asura-test.phazor.xyz', 'www.asurascans.com')
-            sources[key].imageUrl = sources[key].imageUrl.replace('asura-test.phazor.xyz', 'www.asurascans.com')
-            modified = true
-        }
-        if (sources[key].imageUrl?.includes('phazor.xyz')) {
-            sources[key].imageUrl = ''
-            sources[key].description = ''
+        if (sources[key].url?.includes('reaperscans.com') && sources[key].type === 'madara') {
+            delete sources[key]
             modified = true
         }
     })

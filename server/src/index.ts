@@ -21,6 +21,7 @@ import './parser/parse-mangastream'
 import './parser/parse-genkan'
 import './parser/parse-leviathan'
 import './parser/parse-webtoons'
+import './parser/parse-reaper'
 
 const app = express()
 const server = createServer(app)

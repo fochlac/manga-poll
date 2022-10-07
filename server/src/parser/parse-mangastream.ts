@@ -27,7 +27,7 @@ function testMangastream (rawUrl, sourcehtml) {
     const name = $('.headpost .allc a').text() ||
         $('.headpost [itemprop="name"]').text().split(/( –|\s+chapter)/i)?.[0] ||
         breadcrumpLink.find('span').text()
-    const mangaId = $('.bookmark').data('id') || sourcehtml.match(/"manga_ID":"(\d+)"/)?.[1] || url?.split('/')[4]
+    const mangaId = $('.bookmark[data-id]').data('id') || sourcehtml.match(/"manga_ID":"(\d+)"/)?.[1] || url?.split('/')[4]
 
     return createSource(TYPE, mangaId, name, url)
 }
@@ -75,7 +75,9 @@ async function parseMangastream (source: Source, urls: Record<string, Url>, body
     try {
         updatedSource = testMangastream(currentUrl, body)
     }
-    catch (e) {} // eslint-disable-line no-empty
+    catch (e) {
+        console.log(e)
+    } // eslint-disable-line no-empty
     if (source.url !== updatedSource.url || updatedSource.mangaId !== source.mangaId) {
         sourceInfo = sourceInfo || {}
         sourceInfo.update = updatedSource

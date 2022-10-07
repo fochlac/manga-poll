@@ -4,6 +4,7 @@ import { testLeviathan } from './test-leviathan'
 import { testMadara } from './test-madara'
 import { testMangadex } from './test-mangadex'
 import { testMangastream } from './test-mangastream'
+import { testReaper } from './test-reaper'
 import { testWebtoons } from './test-webtoon'
 
 export function extractSource () {
@@ -33,6 +34,9 @@ export function extractSource () {
         else if (window.location.host.includes('mangadex.org')) {
             result = testMangadex()
         }
+        else if (window.location.host.includes('reaperscans.com')) {
+            result = testReaper()
+        }
         else {
             result = testMadara()
         }
@@ -42,6 +46,8 @@ export function extractSource () {
     }
 
     if (result && result.title && result.url && result.id && result.type) {
+        console.info('Parsed page as possible source: ', result)
         return result
     }
+    console.info('Unknown pagetype or bad parsing: ', result)
 }

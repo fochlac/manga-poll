@@ -29,18 +29,22 @@ const linkParserList: Partial<Parser>[] = []
 let defaultLinkParser: Parser['parseLink']
 
 export function registerParser ({ type, fetchFunction, parseLink, parseCondition }: Parser) {
+    if (typeof fetchFunction !== 'function') {
+        console.log(`Error registering parser for type '${type}': invalid fetch function.`)
+    }
     parserMap[type] = fetchFunction
     linkParserList.push({ parseLink, parseCondition, type })
     if (type === defaultType) {
         defaultLinkParser = parseLink
     }
+    console.log(`Registered parser for type '${type}'.`)
 }
 
 export function fetchChapterList (source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     const type = source.type || defaultType
     const fetchFunction = parserMap[source.type]
     if (!fetchFunction) {
-        throw Error(`No fetch function for parser type ${type}.`)
+        throw Error(`No fetch function for parser type '${type}'.`)
     }
     return fetchFunction(source, urls)
 }
@@ -68,18 +72,20 @@ export function checkSourceType (type) {
     return !!parserMap[type]
 }
 
-const testForCloudFlare = (text) => {
-    return text.includes('Access denied') && text.includes('Cloudflare') ||
-    text.includes('<title>Please Wait... | Cloudflare</title>') ||
-    text.includes('id="cf-bubbles"')
+const testForCloudFlare = (text, status) => {
+    if (text.includes('<title>Please Wait... | Cloudflare</title>') || status > 400 && text.toLowerCase().includes('cloudflare') && text.includes('form id="challenge-form"')) {
+        throw Error('Cloudflare-JS-Challenge detected.')
+    }
+
+    if (text.includes('Access denied') && text.includes('Cloudflare') || text.includes('id="cf-bubbles"')) {
+        throw Error('Cloudflare-Captcha detected.')
+    }
 }
 
 export async function getResponseBody (response): Promise<string> {
     const body = await response.text()
+    testForCloudFlare(body, response.status)
 
-    if (testForCloudFlare(body)) {
-        throw Error('Cloudflare-Captcha detected.')
-    }
     if (response.status >= 300) {
         throw Error(`Unable to get chapter page with response code "${response.status}".`)
     }

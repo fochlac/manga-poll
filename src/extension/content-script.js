@@ -32,4 +32,17 @@ if (location.href.includes('manga.fochlac.com') || location.href.includes('local
     })
 }
 
-test()
+function runOnce (fn) {
+    let hasRun = false
+    return (...args) => {
+        if (!hasRun) {
+            hasRun = true
+            fn(...args)
+        }
+    }
+}
+
+const startup = runOnce(test)
+
+document.addEventListener('DOMContentLoaded', () => startup())
+setTimeout(() => startup(), 1500)

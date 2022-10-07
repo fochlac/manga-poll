@@ -1,6 +1,6 @@
 import { X } from 'preact-feather'
 import { Backdrop, DialogBody, DialogBox, DialogCloseIcon, DialogHead, DialogTitle } from '../atoms/Modal'
-import { ButtonBar } from '../atoms/Buttons'
+import { ButtonBar } from '../atoms/ButtonBar'
 
 export const Dialog = ({ title, onClose, children, buttons, width, height, bodyStyle, dialogStyle }) => {
     return (

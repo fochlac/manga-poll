@@ -9,6 +9,7 @@ import '../parser/parse-mangastream'
 import '../parser/parse-genkan'
 import '../parser/parse-leviathan'
 import '../parser/parse-webtoons'
+import '../parser/parse-reaper'
 
 let skip = false
 async function fetchAllUrls (sources: Record<string, Source>, urls: Record<string, Url>) {

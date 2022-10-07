@@ -99,7 +99,7 @@ async function parseMadara (source: Source, urls: Record<string, Url>, body, sou
     const $ = cheerio.load(body)
     const host = getHost(source.url)
 
-    const urlList = $('li.wp-manga-chapter a')
+    const urlList = $('li.wp-manga-chapter a[href*="/"]')
         .toArray()
         .map((elem) => {
             const url = $(elem).attr('href')
@@ -233,7 +233,7 @@ async function fetchMadara (source: Source, urls: Record<string, Url>): Promise<
                     description
                 }
             }
-            if ($('li.wp-manga-chapter a')?.length) {
+            if ($('li.wp-manga-chapter a[href*="/"]')?.length) {
                 try {
                     const rawSource = parseMadaraPage(body, source.url)
                     if (rawSource && ['mangaId', 'url', 'title'].some((prop) => rawSource[prop] !== source[prop])) {
