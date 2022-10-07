@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, getResponseBody, createSource, categorizeRemoteUrls } from '../parser'
+import { registerParser, headers, testForCloudFlare, createSource, categorizeRemoteUrls, fetchWithPuppeteer } from '../parser'
 import { getHost, parseNAgoDateString } from '../utils/parse'
 
 const TYPE = 'reaper'
@@ -19,7 +19,7 @@ function parseReaper (source: Source, urls: Record<string, Url>, body): ChapterR
             const chapterNumberRaw = $(elem)
                 .find('div:nth-child(2) > div > div:nth-child(1) p')
                 .text()
-            const chapterNumber = String(chapterNumberRaw).match(/^[_\d.-]+/)?.[0]
+            const chapterNumber = String(chapterNumberRaw).match(/[\d.-]+/)?.[0]
             const date = parseNAgoDateString(rawDate)
 
             return {
@@ -60,7 +60,15 @@ function parseReaper (source: Source, urls: Record<string, Url>, body): ChapterR
 async function fetchReaper (source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     try {
         const response = await fetch(source.url, { method: 'get', headers })
-        const body = await getResponseBody(response)
+        let body = await response.text()
+
+        try {
+            testForCloudFlare(body, response.status)
+        }
+        catch (e) {
+            console.log(`Cloudflare detected for ${source.title}. Trying puppeteer...`)
+            body = await fetchWithPuppeteer(source.url)
+        }
 
         return parseReaper(source, urls, body)
     }

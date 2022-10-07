@@ -1,6 +1,11 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
+import puppeteer from 'puppeteer-extra'
+import StealthPlugin from 'puppeteer-extra-plugin-stealth'
+
 import { getUrlKey } from './utils/keys'
+
+puppeteer.use(StealthPlugin())
 
 declare global {
     interface ChapterResult {
@@ -72,7 +77,7 @@ export function checkSourceType (type) {
     return !!parserMap[type]
 }
 
-const testForCloudFlare = (text, status) => {
+export const testForCloudFlare = (text, status) => {
     if (text.includes('<title>Please Wait... | Cloudflare</title>') || status > 400 && text.toLowerCase().includes('cloudflare') && text.includes('form id="challenge-form"')) {
         throw Error('Cloudflare-JS-Challenge detected.')
     }
@@ -90,6 +95,17 @@ export async function getResponseBody (response): Promise<string> {
         throw Error(`Unable to get chapter page with response code "${response.status}".`)
     }
 
+    return body
+}
+
+export async function fetchWithPuppeteer (url): Promise<string> {
+    const browser = await puppeteer.launch({ headless: true })
+    const page = await browser.newPage()
+    await page.goto(url)
+    await page.waitForTimeout(7000)
+    // eslint-disable-next-line no-undef
+    const body = await page.evaluate(() => document.body.innerHTML)
+    await browser.close()
     return body
 }
 

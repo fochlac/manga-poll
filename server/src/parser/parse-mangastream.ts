@@ -3,10 +3,11 @@ import fetch from 'node-fetch'
 import {
     registerParser,
     headers,
-    getResponseBody,
     createSource,
     checkNewUrlAvailability,
-    categorizeRemoteUrls
+    categorizeRemoteUrls,
+    fetchWithPuppeteer,
+    testForCloudFlare
 } from '../parser'
 import { getHost } from '../utils/parse'
 
@@ -23,16 +24,27 @@ function testMangastream (rawUrl, sourcehtml) {
         return createSource(TYPE, rawUrl?.split('/')[4], name, rawUrl)
     }
 
-    const url = $('.readingnavtop .backseries a').length ? $('.readingnavtop .backseries a').attr('href') : breadcrumpLink.attr('href')
-    const name = $('.headpost .allc a').text() ||
-        $('.headpost [itemprop="name"]').text().split(/( –|\s+chapter)/i)?.[0] ||
+    const url = $('.readingnavtop .backseries a').length
+        ? $('.readingnavtop .backseries a').attr('href')
+        : breadcrumpLink.attr('href')
+    const name =
+        $('.headpost .allc a').text() ||
+        $('.headpost [itemprop="name"]')
+            .text()
+            .split(/( –|\s+chapter)/i)?.[0] ||
         breadcrumpLink.find('span').text()
-    const mangaId = $('.bookmark[data-id]').data('id') || sourcehtml.match(/"manga_ID":"(\d+)"/)?.[1] || url?.split('/')[4]
+    const mangaId =
+        $('.bookmark[data-id]').data('id') || sourcehtml.match(/"manga_ID":"(\d+)"/)?.[1] || url?.split('/')[4]
 
     return createSource(TYPE, mangaId, name, url)
 }
 
-async function parseMangastream (source: Source, urls: Record<string, Url>, body: string, currentUrl: string): Promise<ChapterResult> {
+async function parseMangastream (
+    source: Source,
+    urls: Record<string, Url>,
+    body: string,
+    currentUrl: string
+): Promise<ChapterResult> {
     const $ = cheerio.load(body)
     const baseDate = new Date()
     baseDate.setHours(0, 0, 0, 0)
@@ -62,7 +74,9 @@ async function parseMangastream (source: Source, urls: Record<string, Url>, body
     if (!/https/.test(imageUrl)) {
         imageUrl = $('.thumb img').attr('data-src')
     }
-    const description = $('meta[name="description"],meta[property="og:description"]').attr('content') || $('div[itemprop="description"]').text()
+    const description =
+        $('meta[name="description"],meta[property="og:description"]').attr('content') ||
+        $('div[itemprop="description"]').text()
     let sourceInfo
     if (imageUrl?.length && description?.length && (!source.imageUrl || !source.description)) {
         sourceInfo = {
@@ -111,14 +125,24 @@ async function parseMangastream (source: Source, urls: Record<string, Url>, body
 
 async function fetchMangastream (source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     try {
-        const response = await fetch(source.url, { method: 'get', headers })
-            .then((res) => {
-                if (res.status === 404) {
-                    return fetch(source.url.replace(/[0-9]{8,13}-/, ''), { method: 'get', headers })
-                }
-                return res
-            })
-        const body = await getResponseBody(response)
+        let url = source.url
+        const response = await fetch(url, { method: 'get', headers }).then((res) => {
+            if (res.status === 404) {
+                url = url.replace(/[0-9]{8,13}-/, '')
+                return fetch(url, { method: 'get', headers })
+            }
+            return res
+        })
+
+        let body = await response.text()
+
+        try {
+            testForCloudFlare(body, response.status)
+        }
+        catch (e) {
+            console.log(`Cloudflare detected for ${source.title}. Trying puppeteer...`)
+            body = await fetchWithPuppeteer(url)
+        }
 
         return parseMangastream(source, urls, body, response.url)
     }
@@ -148,8 +172,10 @@ const mangastream: Parser = {
         try {
             const sourcehtml: string = await fetch(url, { headers, redirect: 'manual' }).then((res) => res.text())
             const $ = cheerio.load(sourcehtml)
-            return sourcehtml.includes('ts-breadcrumb bixbox') ||
+            return (
+                sourcehtml.includes('ts-breadcrumb bixbox') ||
                 $('.readingnavtop .chpnw, .headpost [itemprop="name"], #content .hentry .thumb img')?.length > 0
+            )
         }
         catch (e) {
             console.log('Error fetching url.', e)
