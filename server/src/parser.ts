@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
 import puppeteer from 'puppeteer-extra'
@@ -78,11 +79,18 @@ export function checkSourceType (type) {
 }
 
 export const testForCloudFlare = (text, status) => {
-    if (text.includes('<title>Please Wait... | Cloudflare</title>') || status > 400 && text.toLowerCase().includes('cloudflare') && text.includes('form id="challenge-form"')) {
+    if (
+        text.includes('<title>Please Wait... | Cloudflare</title>') ||
+        (status > 400 && text.toLowerCase().includes('cloudflare') && text.includes('form id="challenge-form"'))
+    ) {
         throw new Error('Cloudflare-JS-Challenge detected.')
     }
 
-    if (text.includes('Access denied') && text.includes('Cloudflare') || text.includes('id="cf-bubbles"')) {
+    if (
+        text.includes('<title>Attention Required! | Cloudflare</title>') ||
+        (text.includes('Access denied') && text.includes('Cloudflare')) ||
+        text.includes('id="cf-bubbles"')
+    ) {
         throw new Error('Cloudflare-Captcha detected.')
     }
 }
@@ -98,14 +106,45 @@ export async function getResponseBody (response): Promise<string> {
     return body
 }
 
+let puppeteerInstance
+export async function closePuppeteer () {
+    if (puppeteerInstance) {
+        const browser = await puppeteerInstance
+        await browser.close()
+    }
+}
+
 export async function fetchWithPuppeteer (url): Promise<string> {
-    const browser = await puppeteer.launch({ args: ['--no-sandbox'], headless: true })
+    if (!puppeteerInstance) {
+        puppeteerInstance = puppeteer.launch({ args: ['--no-sandbox'], headless: true })
+    }
+    const browser = await puppeteerInstance
     const page = await browser.newPage()
     await page.goto(url)
-    await page.waitForTimeout(7000)
+    await page.waitForFunction(
+        () => {
+            // eslint-disable-next-line no-undef
+            const text = document.body.innerHTML
+            if (
+                text.includes('<title>Please Wait... | Cloudflare</title>') ||
+                (text.toLowerCase().includes('cloudflare') && text.includes('form id="challenge-form"'))
+            ) {
+                return false
+            }
+            else if (
+                text.includes('<title>Attention Required! | Cloudflare</title>') ||
+                (text.includes('Access denied') && text.includes('Cloudflare')) ||
+                text.includes('id="cf-bubbles"')
+            ) {
+                return false
+            }
+            return true
+        },
+        { timeout: 10000 }
+    )
     // eslint-disable-next-line no-undef
     const body = await page.evaluate(() => document.body.innerHTML)
-    await browser.close()
+    await page.close()
     return body
 }
 

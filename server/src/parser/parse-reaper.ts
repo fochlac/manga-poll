@@ -64,6 +64,7 @@ async function fetchReaper (source: Source, urls: Record<string, Url>): Promise<
 
         try {
             testForCloudFlare(body, response.status)
+            console.log(body)
         }
         catch (e) {
             console.log(`Cloudflare detected for ${source.title}. Trying puppeteer...`)
