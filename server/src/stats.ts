@@ -146,14 +146,6 @@ export function createStatsEndpoints (app) {
     })
 }
 
-export function shouldWarn (key, limit) {
-    return (
-        !warnings?.[key] ||
-        !limit ||
-        warnings[key].filter((warning) => Date.now() - warning.date <= 48 * 3600 * 1000).length < limit
-    )
-}
-
 export function logWarning (key, message, limit = 3) {
     if (warningsBlacklist[message]) {
         return
@@ -191,9 +183,7 @@ export function logWarning (key, message, limit = 3) {
     writeWarnings(warnings)
     updateHosts()
 
-    if (shouldWarn(key, limit)) {
-        console.log(message)
-    }
+    console.log(message)
 }
 
 const emptyStats = (url, type, warnings = {}) => ({
