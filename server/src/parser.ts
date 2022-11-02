@@ -115,37 +115,7 @@ export async function closePuppeteer () {
 }
 
 export async function fetchWithPuppeteer (url): Promise<string> {
-    if (!puppeteerInstance) {
-        puppeteerInstance = puppeteer.launch({ args: ['--no-sandbox'], headless: true })
-    }
-    const browser = await puppeteerInstance
-    const page = await browser.newPage()
-    await page.goto(url)
-    await page.waitForFunction(
-        () => {
-            // eslint-disable-next-line no-undef
-            const text = document.body.innerHTML
-            if (
-                text.includes('<title>Please Wait... | Cloudflare</title>') ||
-                (text.toLowerCase().includes('cloudflare') && text.includes('form id="challenge-form"'))
-            ) {
-                return false
-            }
-            else if (
-                text.includes('<title>Attention Required! | Cloudflare</title>') ||
-                (text.includes('Access denied') && text.includes('Cloudflare')) ||
-                text.includes('id="cf-bubbles"')
-            ) {
-                return false
-            }
-            return true
-        },
-        { timeout: 10000 }
-    )
-    // eslint-disable-next-line no-undef
-    const body = await page.evaluate(() => document.body.innerHTML)
-    await page.close()
-    return body
+    return null
 }
 
 export const headers = {
