@@ -50,7 +50,7 @@ const urls = readFile<Url>(
                 delete urls[urlKey]
                 modified = true
             }
-            else if (url.url.includes('reaperscans.com/series')) {
+            else if (url.url.includes('asurascans.com')) {
                 delete urls[urlKey]
                 modified = true
             }

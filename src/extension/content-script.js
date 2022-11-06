@@ -1,5 +1,6 @@
 import { renderBookmark } from './page-scripts/bookmark-banner'
 import { extractSource } from './page-scripts/extract-source'
+import { renderList } from './page-scripts/migrate-kenmei'
 import { trackProgress } from './page-scripts/track-reading-progress'
 
 const controller = chrome || browser
@@ -20,6 +21,15 @@ function test () {
             }
         })
     }
+
+    // if (location.href.includes('kenmei.co')) {
+    //     controller.runtime.sendMessage({
+    //         action: 'KENMEI'
+    //     }, (response) => {
+    //         console.log(response)
+    //         renderList(response.sources)
+    //     })
+    // }
 }
 
 if (window?.sessionStorage) {

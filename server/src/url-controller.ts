@@ -1,3 +1,4 @@
+import { checkForDuplicate } from './duplicates'
 import { getUrls } from './url-storage'
 
 export function urlController (app) {
@@ -6,7 +7,7 @@ export function urlController (app) {
         const urls = await getUrls()
 
         if (Array.isArray(req?.body?.sources) && req.body.sources.length > 0) {
-            const sourceFilter = req.body.sources
+            const sourceFilter = req.body.sources.map(checkForDuplicate)
             payload = Object.values(urls).filter((url) => sourceFilter.includes(url.sourceId))
         }
         if (!isNaN(Number(req?.body?.date)) && Number(req.body.date) > 0) {

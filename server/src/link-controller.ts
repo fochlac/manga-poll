@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { customAlphabet } from 'nanoid'
 import { resolve } from 'path'
+import { checkForDuplicate } from './duplicates'
 import { getSources } from './source-storage'
 
 const idGen = customAlphabet('0123456789', 10)
@@ -62,7 +63,7 @@ function createPayload (link: Link) {
         sources: sources
             .map(
                 (linksrc) =>
-                    (typeof linksrc === 'string' && sourceMap[linksrc]) ||
+                    (typeof linksrc === 'string' && sourceMap[checkForDuplicate(linksrc)]) ||
                     (Object.prototype.hasOwnProperty.call(linksrc, 'id') && sourceMap[(linksrc as Source).id])
             )
             .filter((source) => !!source),

@@ -23,7 +23,7 @@ const writeSources = createWrite(sourcesPath)
 const sources: Record<string, Source> = readFile<Source>(sourcesPath, (sources) => {
     let modified = false
     Object.keys(sources).forEach((key) => {
-        if (sources[key].url?.includes('reaperscans.com') && sources[key].type === 'madara') {
+        if (sources[key].url?.includes('asurascans.com')) {
             delete sources[key]
             modified = true
         }

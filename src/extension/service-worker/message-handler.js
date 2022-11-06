@@ -33,6 +33,14 @@ export function initMessageHandler (db, Api) {
                 return true
             }
         }
+        else if (request?.action === 'KENMEI') {
+            db.sources.read().then((sources) => {
+                sendResponse({
+                    sources: sources.map(({ title }) => ({ title }))
+                })
+            })
+            return true
+        }
         else if (request?.action === 'SAVE_BOOKMARK') {
             if (request.source?.mangaId && request.source.title && request.source.url && request.source.type) {
                 Api.Source.insert(request.source)

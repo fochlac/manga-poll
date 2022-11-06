@@ -21,11 +21,11 @@ function fetchChapterListData (sources, urls): Promise<WorkerResult[]> {
         const terminateTimeout = setTimeout(() => {
             reject(new Error('Fetch-Timeout: Terminating worker!'))
             worker.terminate()
-        }, 1000 * 60 * 9.5)
+        }, 1000 * 60 * 59.5)
 
         const skipTimeout = setTimeout(() => {
             worker.postMessage({ type: 'FORCE_STOP' })
-        }, 1000 * 60 * 9)
+        }, 1000 * 60 * 59)
 
         worker.onmessage = (e) => {
             res(e.data)
@@ -71,7 +71,7 @@ async function fetchForSources (sources: Record<string, Source>, isNew?: boolean
                 updateSource(source.id, sourceInfo.update)
                 markLinksWithSourceChanged(source.id)
             }
-            if (shouldUpdateDescription && sourceInfo?.description && sourceInfo.imageUrl) {
+            if (shouldUpdateDescription && sourceInfo?.description && sourceInfo.imageUrl && !sourceInfo.imageUrl.includes('fmcdn.mfcdn.net')) {
                 console.log(`Updating source image + description for ${source.title}.`)
                 storeImage(source, sourceInfo.imageUrl)
                     .then((imageUrl) =>
@@ -104,7 +104,12 @@ async function fetchForSources (sources: Record<string, Source>, isNew?: boolean
                 const page = getHost(source.url)
                 console.log(`${urls.length} new urls for ${source.title} on "${page}".`)
                 resetStatsCache()
-                sendTopicMessage(source.id)
+                try {
+                    sendTopicMessage(source.id)
+                }
+                catch (e) {
+                    console.log(e)
+                }
                 const hasUrls = Object.values(storedUrls).some((url) => url.sourceId === source.id)
                 urls.forEach(addUrl(source, !hasUrls || isNew))
             }

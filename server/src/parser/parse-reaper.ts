@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, testForCloudFlare, createSource, categorizeRemoteUrls, fetchWithPuppeteer } from '../parser'
+import { registerParser, headers, testForCloudFlare, createSource, categorizeRemoteUrls } from '../parser'
 import { getHost, parseNAgoDateString } from '../utils/parse'
 
 const TYPE = 'reaper'
@@ -60,16 +60,9 @@ function parseReaper (source: Source, urls: Record<string, Url>, body): ChapterR
 async function fetchReaper (source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     try {
         const response = await fetch(source.url, { method: 'get', headers })
-        let body = await response.text()
+        const body = await response.text()
 
-        try {
-            testForCloudFlare(body, response.status)
-            console.log(body)
-        }
-        catch (e) {
-            console.log(`Cloudflare detected for ${source.title}. Trying puppeteer...`)
-            body = await fetchWithPuppeteer(source.url)
-        }
+        testForCloudFlare(body, response.status)
 
         return parseReaper(source, urls, body)
     }

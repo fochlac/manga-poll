@@ -18,12 +18,14 @@ declare global {
             update?: Partial<Source>
         }
         warnings?: (string | number)[][]
-        warning?: never
+        warning?: never,
+        source?: Source
     }
 
     interface Parser {
         type: string
         fetchFunction: (source: Source, urls: Record<string, Url>) => Promise<ChapterResult>
+        fetchFrontPageFunction?: (sources: Source[], urls: Record<string, Url>) => Promise<ChapterResult[]>
         parseLink: (body: string) => Promise<Partial<Source>>
         parseCondition: (body: string) => boolean | Promise<boolean>
     }
@@ -31,14 +33,18 @@ declare global {
 
 const defaultType = 'madara'
 const parserMap: Record<string, Parser['fetchFunction']> = {}
+const parserMapFront: Record<string, Parser['fetchFrontPageFunction']> = {}
 const linkParserList: Partial<Parser>[] = []
 let defaultLinkParser: Parser['parseLink']
 
-export function registerParser ({ type, fetchFunction, parseLink, parseCondition }: Parser) {
+export function registerParser ({ type, fetchFunction, parseLink, parseCondition, fetchFrontPageFunction }: Parser) {
     if (typeof fetchFunction !== 'function') {
         console.log(`Error registering parser for type '${type}': invalid fetch function.`)
     }
     parserMap[type] = fetchFunction
+    if (typeof fetchFrontPageFunction === 'function') {
+        parserMapFront[type] = fetchFrontPageFunction
+    }
     linkParserList.push({ parseLink, parseCondition, type })
     if (type === defaultType) {
         defaultLinkParser = parseLink
@@ -53,6 +59,14 @@ export function fetchChapterList (source: Source, urls: Record<string, Url>): Pr
         throw Error(`No fetch function for parser type '${type}'.`)
     }
     return fetchFunction(source, urls)
+}
+
+export function fetchFrontPage (type: string, sources: Source[], urls: Record<string, Url>): Promise<ChapterResult[]> {
+    const fetchFunction = parserMapFront[type || defaultType]
+    if (!fetchFunction) {
+        throw Error(`No fetch function for parser type '${type}'.`)
+    }
+    return fetchFunction(sources, urls)
 }
 
 export async function parseSourceLink (link) {
@@ -76,6 +90,10 @@ export async function parseSourceLink (link) {
 
 export function checkSourceType (type) {
     return !!parserMap[type]
+}
+
+export function isFrontPageFetchSupported (type) {
+    return !!parserMapFront[type || defaultType]
 }
 
 export const testForCloudFlare = (text, status) => {
@@ -115,7 +133,7 @@ export async function closePuppeteer () {
 }
 
 export async function fetchWithPuppeteer (url): Promise<string> {
-    return null
+    throw new Error('Puppeteer disabled')
 }
 
 export const headers = {

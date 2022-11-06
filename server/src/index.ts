@@ -22,6 +22,7 @@ import './parser/parse-genkan'
 import './parser/parse-leviathan'
 import './parser/parse-webtoons'
 import './parser/parse-reaper'
+import { findAndCleanDuplicates } from './duplicates'
 
 const app = express()
 const server = createServer(app)
@@ -41,6 +42,8 @@ app.get('*', (_req, res) => {
 })
 
 const port = !isNaN(Number(process.env.PORT)) ? Number(process.env.PORT) : 43214
+
+findAndCleanDuplicates()
 
 server.listen(port, '0.0.0.0', () => {
     console.log(`listening to http://localhost:${port}/`)

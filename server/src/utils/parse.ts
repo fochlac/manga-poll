@@ -10,7 +10,10 @@ export function parseNAgoDateString (dateString) {
     if (isNaN(amount)) {
         return baseDate.getTime()
     }
-    if (dateString.includes('inutes')) {
+    if (dateString.includes('econd')) {
+        return Date.now() - amount * 1000
+    }
+    if (dateString.includes('inut')) {
         return Date.now() - amount * 60 * 1000
     }
     if (dateString.includes('hour')) {

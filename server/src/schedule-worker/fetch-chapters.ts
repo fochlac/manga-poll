@@ -1,5 +1,5 @@
 /* globals postMessage */
-import { closePuppeteer, fetchChapterList } from '../parser'
+import { closePuppeteer, fetchChapterList, fetchFrontPage, isFrontPageFetchSupported } from '../parser'
 import { getHost } from '../utils/parse'
 
 import '../parser/parse-fanfox'
@@ -18,33 +18,92 @@ async function fetchAllUrls (sources: Record<string, Source>, urls: Record<strin
         let count = 0
         let complete = 0
         let next = 0.1
-        const fetchPromiseMap = Object.values(sources).reduce((promiseMap, source) => {
+        const hostDurations:Record<string, { count: number; completed: number; duration: number; host: string; cloudflare?: boolean }> = {}
+        const hostCloudFlareMap = {}
+        const promiseStack = []
+        const frontPageFetches = {}
+        Object.values(sources).forEach((source, index, list) => {
             const host = getHost(source.url)
+            hostDurations[host] = hostDurations[host] || { count: 0, completed: 0, duration: 0, host }
             count += 1
-            const previousFetch = promiseMap[host] || Promise.resolve()
-            promiseMap[host] = previousFetch.then(() => {
-                if (skip) {
-                    return Promise.resolve()
+            if (isFrontPageFetchSupported(source.type)) {
+                if (!frontPageFetches[host]) {
+                    frontPageFetches[host] = true
+                    hostDurations[host].count += 1
+                    const startTime = Date.now()
+                    const hostSources = list.filter((source) => host === getHost(source.url))
+                    promiseStack.push(() => fetchFrontPage(source.type, hostSources, urls)
+                        .then((resultList) => {
+                            resultList.forEach(({ source, ...result }) => {
+                                results.push({ hasError: false, source, error: null, result })
+                            })
+                            complete += hostSources.length
+                            hostDurations[host].duration += Date.now() - startTime
+                            hostDurations[host].completed += 1
+                        })
+                        .catch((error) => {
+                            hostSources.forEach((source) => {
+                                results.push({ hasError: true, error, source })
+                            })
+                            hostDurations[host].duration += Date.now() - startTime
+                            hostDurations[host].completed += 1
+                        }))
                 }
-                const fetchPromise = fetchChapterList(source, urls)
-                    .then((result) => ({ hasError: false, source, error: null, result }))
-                    .catch((error) => ({ hasError: true, error, source }))
-                    .then((result) => results.push(result))
+            }
+            else {
+                hostDurations[host].count += 1
+                promiseStack.push(() => {
+                    if (skip || hostCloudFlareMap[host]) {
+                        hostDurations[host].completed += 1
+                        return Promise.resolve()
+                    }
+                    const startTime = Date.now()
+                    const fetchPromise = fetchChapterList(source, urls)
+                        .then((result) => ({ hasError: false, source, error: null, result }))
+                        .catch((error) => ({ hasError: true, error, source }))
+                        .then((result) => {
+                            results.push(result)
+                            if (result.hasError && result.error.message.includes('Cloudflare')) {
+                                hostCloudFlareMap[host] = true
+                                hostDurations[host].cloudflare = true
+                            }
+                            hostDurations[host].duration += Date.now() - startTime
+                            hostDurations[host].completed += 1
+                        })
 
-                const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 2500))
-                complete += 1
-                if (complete / count >= next) {
-                    next += 0.1
-                    console.log(`Checked ${complete}/${count} series.`)
-                }
+                    const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 2500))
+                    complete += 1
+                    if (complete / count >= next) {
+                        next += 0.1
+                        console.log(`Checked ${complete}/${count} series.`)
+                    }
 
-                return Promise.all([fetchPromise, timeout])
-            })
+                    return Promise.all([fetchPromise, timeout])
+                })
+            }
+        })
 
-            return promiseMap
-        }, {})
+        const threads = !isNaN(Number(process.env.THREADS)) ? Number(process.env.THREADS) : 100
+        const starters = promiseStack.slice(0, threads)
+        const stack = promiseStack.slice(threads)
+        const startNext = () => {
+            if (!stack.length) {
+                return Promise.resolve()
+            }
+            const next = stack.shift()
+            return next().then(startNext)
+        }
+        await Promise.all(starters.map((promiseGen) => {
+            return promiseGen().then(startNext)
+        }))
 
-        await Promise.all(Object.values(fetchPromiseMap))
+        console.log('=============================================')
+        console.log(Object.values(hostDurations)
+            .sort((a, b) => a.host.localeCompare(b.host))
+            .map(({count, completed, duration, host}) => `${host}: ${completed}/${count} in ${Math.round(duration / 1000)}s.`)
+            .join('\n')
+        )
+        console.log('=============================================')
     }
     catch (e) {
         await closePuppeteer()

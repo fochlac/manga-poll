@@ -16,6 +16,12 @@ const config = {
             "react-dom": "preact/compat",     // Must be below test-utils
             "react/jsx-runtime": "preact/jsx-runtime"
         },
+        fallback: {
+            "stream": require.resolve("stream-browserify"),
+            "https": require.resolve("https-browserify"),
+            "http": require.resolve("stream-http"),
+            "zlib": require.resolve("browserify-zlib")
+        },
         extensions: ['.js', '.jsx', '.ts', '...']
     },
     entry: {
@@ -129,6 +135,9 @@ const config = {
         }),
         new webpack.DefinePlugin({
             __SWVERSION__: `"version_${Date.now()}"`,
+        }),
+        new webpack.ProvidePlugin({
+            process: 'process/browser.js',
         })
     ]
 }

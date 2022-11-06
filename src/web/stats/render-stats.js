@@ -183,8 +183,9 @@ function renderHostList (stats, hosts) {
                                         </td>
                                         <td><b>${stats[host].type
         .replace(/[aeiou]/g, '')
-        .slice(0, 3)
-        .toUpperCase()}</b></td>
+        .toUpperCase()
+        .replace(/^MNG/, 'M')
+        .slice(0, 3)}</b></td>
                                         <td><b>${date(stats[host].latest)}</b></td>
                                     </tr>
                                 </tbody>

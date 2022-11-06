@@ -6,10 +6,9 @@ import {
     createSource,
     checkNewUrlAvailability,
     categorizeRemoteUrls,
-    fetchWithPuppeteer,
     testForCloudFlare
 } from '../parser'
-import { getHost } from '../utils/parse'
+import { getHost, parseNAgoDateString } from '../utils/parse'
 
 const TYPE = 'mangastream'
 
@@ -123,6 +122,55 @@ async function parseMangastream (
     }
 }
 
+async function parseMangastreamFront (
+    sources: Source[],
+    urls: Record<string, Url>,
+    body: string
+): Promise<ChapterResult[]> {
+    const $ = cheerio.load(body)
+    const baseDate = new Date()
+    baseDate.setHours(0, 0, 0, 0)
+    const host = getHost(sources[0].url)
+    const trackedSeries:Record<string, Source> = sources.reduce((trackedSeries, source) => {
+        trackedSeries[source.url] = source
+        return trackedSeries
+    }, {})
+
+    return $('a.series:has(h4)')
+        .toArray()
+        .reduce((sourceResults, elem) => {
+            const url = $(elem).attr('href')
+
+            if (trackedSeries[url]) {
+                const chapters = $(elem).parent().find('li').toArray()
+                const source = trackedSeries[url]
+                const chapterList = chapters.map((li) => {
+                    const link = $(li).find('a')
+                    const url = link.attr('href')
+                    const rawChapter = link.text()
+                    const rawDate = parseNAgoDateString($(li).find('span').text())
+
+                    return {
+                        url,
+                        chapter: String(rawChapter).trim().match(/^Chapter ([\d.]+)/)?.[1],
+                        host,
+                        created: rawDate
+                    }
+                })
+
+                const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(chapterList, source, urls)
+
+                sourceResults.push({
+                    urls: newUrls,
+                    warnings: warnings,
+                    oldUrls,
+                    source
+                })
+            }
+            return sourceResults
+        }, [])
+}
+
 async function fetchMangastream (source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     try {
         let url = source.url
@@ -134,15 +182,8 @@ async function fetchMangastream (source: Source, urls: Record<string, Url>): Pro
             return res
         })
 
-        let body = await response.text()
-
-        try {
-            testForCloudFlare(body, response.status)
-        }
-        catch (e) {
-            console.log(`Cloudflare detected for ${source.title}. Trying puppeteer...`)
-            body = await fetchWithPuppeteer(url)
-        }
+        const body = await response.text()
+        testForCloudFlare(body, response.status)
 
         return parseMangastream(source, urls, body, response.url)
     }
@@ -161,8 +202,37 @@ async function fetchMangastream (source: Source, urls: Record<string, Url>): Pro
     }
 }
 
+async function fetchFrontPage (sources: Source[], urls: Record<string, Url>): Promise<ChapterResult[]> {
+    if (!sources.length) return []
+
+    try {
+        const url = sources[0].url.split('/').slice(0, 3).join('/')
+        const response = await fetch(url, { method: 'get', headers })
+        const body = await response.text()
+
+        testForCloudFlare(body, response.status)
+
+        return parseMangastreamFront(sources, urls, body)
+    }
+    catch (err) {
+        const host = getHost(sources[0].url)
+        return sources.map((source) => ({
+            urls: [],
+            source,
+            warnings: [
+                [
+                    host,
+                    `Error fetching frontpage for ${host}: ${err?.message || 'Unknown Error.'}`,
+                    0
+                ]
+            ]
+        }))
+    }
+}
+
 const mangastream: Parser = {
     fetchFunction: fetchMangastream,
+    fetchFrontPageFunction: fetchFrontPage,
     type: TYPE,
     parseLink: async (rawUrl) => {
         const sourcehtml: string = await fetch(rawUrl, { headers }).then((res) => res.text())
