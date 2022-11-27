@@ -10,17 +10,7 @@ export function createDB (storage) {
 
     async function readSources () {
         const { sources } = await read(NAMESPACES.LOCAL, { sources: null })
-        if (sources) {
-            return sources
-        }
-
-        const { registry } = await read(NAMESPACES.SYNC, { registry: '["sources-1"]' })
-        return parse(registry, ['sources-1'])
-            .reduce((sources, key) => {
-                return Promise.all([sources, read(NAMESPACES.SYNC, { [key]: '[]' })])
-                    .then(([sources, source]) => sources.concat(parse(source[key], [])))
-            }, Promise.resolve([]))
-            .then((sources) => sources.filter((source) => !!source))
+        return sources
     }
 
     function writeSources (sources) {
@@ -51,10 +41,10 @@ export function createDB (storage) {
     }
 
     async function getFilteredSortedUrls () {
-        const { hiddenChapters: hiddenChaptersString, hide } = await read(NAMESPACES.SYNC, { hiddenChapters: '{}', hide: 0 })
+        const { hide } = await read(NAMESPACES.SYNC, { hiddenChapters: '{}', hide: 0 })
         const { urls } = await read(NAMESPACES.LOCAL, { urls: '[]' })
 
-        const hiddenChapters = parse(hiddenChaptersString, {})
+        const hiddenChapters = await readHiddenChapters()
         const urlList = parse(urls, [])
 
         const checkOld = (chapter) => {
@@ -88,15 +78,57 @@ export function createDB (storage) {
         }
     }
 
+    async function readHiddenChapters () {
+        const { hiddenRegistry } = await read(NAMESPACES.SYNC, { hiddenRegistry: '["hiddenChapters"]' })
+        const registry = await parse(hiddenRegistry, ['hiddenChapters'])
+        const list = Array.isArray(registry) ? registry : registry.list
+        const storeDefaultMap = list.reduce((storeDefaultMap, store) => {
+            storeDefaultMap[store] = '{}'
+            return storeDefaultMap
+        }, {})
+
+        const result = await read(NAMESPACES.SYNC, storeDefaultMap)
+        const hiddenChapters = Object.values(result).reduce((hiddenChapters, store) => {
+            return {
+                ...hiddenChapters,
+                ...parse(store, {})
+            }
+        }, {})
+        return hiddenChapters
+    }
+
+    async function writeHiddenChapters (hiddenChapters) {
+        const stores = [{length: 0}]
+        Object.keys(hiddenChapters).forEach((chapter) => {
+            const currentStore = stores[stores.length - 1]
+            currentStore[chapter] = true
+            currentStore.length += chapter.length
+            if (currentStore.length > 2000) {
+                delete currentStore.length
+                stores.push({ length: 0 })
+            }
+        })
+        delete stores[stores.length - 1].length
+        const writeObject = stores.reduce((writeObject, store, index) => {
+            const name = `hiddenChapters_${index}`
+            writeObject.hiddenRegistry.list.push(name)
+            writeObject[name] = JSON.stringify(store)
+            return writeObject
+        }, {hiddenRegistry: {update: Date.now(), list: []}})
+        writeObject.hiddenRegistry = JSON.stringify(writeObject.hiddenRegistry)
+        console.log(writeObject)
+        return write(NAMESPACES.SYNC, writeObject)
+    }
+
     async function hideUrl (id) {
-        const result = await read(NAMESPACES.SYNC, { hiddenChapters: '{}' })
-        const hiddenChapters = parse(result.hiddenChapters, {})
+        const hiddenChapters = await readHiddenChapters()
         hiddenChapters[id] = true
-        return write(NAMESPACES.SYNC, { hiddenChapters: JSON.stringify(hiddenChapters) })
+        return writeHiddenChapters(hiddenChapters)
     }
 
     async function hideAllUrls (timestamp) {
-        return write(NAMESPACES.SYNC, { hiddenChapters: '{}', hide: timestamp })
+        writeHiddenChapters({})
+        return write(NAMESPACES.SYNC, { hide: timestamp })
     }
 
     function writeUrls (urls) {
@@ -166,8 +198,8 @@ export function createDB (storage) {
 
     async function getLinkData () {
         const sources = await readSources()
-        const { hiddenChapters: hiddenChaptersString, hide } = await read(NAMESPACES.SYNC, { hiddenChapters: '{}', hide: 0 })
-        const hiddenChapters = parse(hiddenChaptersString, {})
+        const { hide } = await read(NAMESPACES.SYNC, { hide: 0 })
+        const hiddenChapters = await readHiddenChapters()
 
         return {
             sources: sources.map((source) => source.id),
@@ -187,17 +219,17 @@ export function createDB (storage) {
         if (hasChangedSources) {
             promises.push(writeSources(sources))
         }
-        const settings = await read(NAMESPACES.SYNC, { hiddenChapters: '{}', hide: 0, uid: '' })
+        const settings = await read(NAMESPACES.SYNC, { hide: 0, uid: '' })
+        const currentHiddenChapters = await readHiddenChapters()
         if (
-            settings.hiddenChapters !== JSON.stringify(hiddenChapters) ||
+            JSON.stringify(currentHiddenChapters) !== JSON.stringify(hiddenChapters) ||
             String(settings.hide) !== String(hide) ||
             String(settings.uid) !== String(key)
         ) {
             promises.push(write(NAMESPACES.SYNC, {
-                hiddenChapters: JSON.stringify(hiddenChapters),
                 hide,
                 uid: key
-            }))
+            }), writeHiddenChapters(hiddenChapters))
         }
 
         await Promise.all(promises)

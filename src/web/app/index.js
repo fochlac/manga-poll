@@ -90,10 +90,10 @@ const interval = createSchedule({
 
 db.onChange(async (changes) => {
     await Links.pushLinkUpdate(changes)
-    if (['hide', 'hiddenChapters'].some(Object.prototype.hasOwnProperty.bind(changes))) {
+    if (['hide', 'hiddenRegistry'].some(Object.prototype.hasOwnProperty.bind(changes))) {
         navigator.serviceWorker.controller.postMessage('CLEAR_MESSAGES')
     }
-    if (['hide', 'hiddenChapters', 'urls'].some(Object.prototype.hasOwnProperty.bind(changes))) {
+    if (['hide', 'hiddenRegistry', 'urls'].some(Object.prototype.hasOwnProperty.bind(changes))) {
         urls.render()
     }
     if (Object.keys(changes).some((change) => change.includes('sources'))) {

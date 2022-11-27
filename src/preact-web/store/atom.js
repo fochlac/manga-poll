@@ -181,7 +181,7 @@ const interval = createSchedule({
     isActive: true,
     updater: (lastPing, nextPing) => {
         const { fetchTime } = atom.get()
-        if (!fetchTime?.lastPing || fetchTime.lastPing !== lastPing || fetchTime.nextPing !== nextPing) {
+        if (!fetchTime?.lastPing || fetchTime?.lastPing !== lastPing || fetchTime?.nextPing !== nextPing) {
             atom.set({
                 fetchTime: { lastPing, nextPing }
             })
@@ -191,10 +191,10 @@ const interval = createSchedule({
 
 db.onChange(async (changes) => {
     await Links.pushLinkUpdate(changes)
-    if (['hide', 'hiddenChapters'].some(Object.prototype.hasOwnProperty.bind(changes))) {
+    if (['hide', 'hiddenRegistry'].some(Object.prototype.hasOwnProperty.bind(changes))) {
         navigator.serviceWorker.controller.postMessage('CLEAR_MESSAGES')
     }
-    if (['hide', 'hiddenChapters', 'urls'].some(Object.prototype.hasOwnProperty.bind(changes))) {
+    if (['hide', 'hiddenRegistry', 'urls'].some(Object.prototype.hasOwnProperty.bind(changes))) {
         atom.set({ urls: await db.urls.read() })
     }
     if (Object.keys(changes).some((change) => change.includes('sources'))) {

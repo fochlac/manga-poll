@@ -46,7 +46,7 @@ async function refreshBadge () {
 db.onChange(async (changes) => {
     await Links.pushLinkUpdate(changes)
 
-    if (['hide', 'hiddenChapters', 'urls'].some((key) => Object.prototype.hasOwnProperty.call(changes, key))) {
+    if (['hide', 'hiddenRegistry', 'urls'].some((key) => Object.prototype.hasOwnProperty.call(changes, key))) {
         refreshBadge()
     }
     if (Object.keys(changes).some((change) => change.includes('sources')) || Object.prototype.hasOwnProperty.call(changes, 'maxOld')) {

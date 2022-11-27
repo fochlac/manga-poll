@@ -17,6 +17,7 @@ const StyledRow = styled(FlexRow)`
     margin: 0 8px 2px;
     width: calc(100% - 24px);
     flex-shrink: 1;
+    user-select: none;
 `
 
 export function ChapterRow ({ chapter, showTitle, isNew }) {

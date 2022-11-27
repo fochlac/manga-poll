@@ -1,4 +1,4 @@
-const linkFields = ['hide', 'hiddenChapters', 'sources']
+const linkFields = ['hide', 'hiddenRegistry', 'sources']
 
 function formatKey (key = '') {
     return `${key.slice(0, 5)}-${key.slice(5, 10)}-${key.slice(10, 15)}`
@@ -15,7 +15,7 @@ export function getLinkHelpers (db, Api) {
             if (changeset.includes('hide')) {
                 update.hide = local.hide
             }
-            if (changeset.includes('hiddenChapters')) {
+            if (changeset.includes('hiddenRegistry')) {
                 update.hiddenChapters = local.hiddenChapters
             }
             if (changeset.includes('sources')) {

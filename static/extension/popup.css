@@ -47,6 +47,7 @@ body {
   display: flex;
   justify-content: space-between;
   padding-right: 4px;
+  user-select: none;
 }
 #bookmark {
   width: 100%;
