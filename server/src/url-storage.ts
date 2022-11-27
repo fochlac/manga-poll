@@ -17,6 +17,9 @@ declare global {
 }
 
 const writeUrls = createWrite(urlsPath)
+const sourceIdMap = {}
+const createdIdMap = {}
+const createdLowerLimit: Record<string, number> = {}
 
 const urls = readFile<Url>(
     urlsPath,
@@ -54,6 +57,40 @@ const urls = readFile<Url>(
                 delete urls[urlKey]
                 modified = true
             }
+            else {
+                const url = urls[urlKey]
+                const timeKey = String(url.created).slice(0, 4)
+                if (!createdIdMap[timeKey]) {
+                    createdIdMap[timeKey] = {
+                        all: [],
+                        sources: {}
+                    }
+                }
+                if (!createdLowerLimit[url.sourceId] || Number(timeKey) < createdLowerLimit[url.sourceId]) {
+                    createdLowerLimit[url.sourceId] = Number(timeKey)
+                }
+                if (!createdLowerLimit.all || Number(timeKey) < createdLowerLimit.all) {
+                    createdLowerLimit.all = Number(timeKey)
+                }
+                if (!createdIdMap[timeKey].sources[url.sourceId]) {
+                    createdIdMap[timeKey].sources[url.sourceId] = []
+                }
+                createdIdMap[timeKey].sources[url.sourceId].push(urlKey)
+                createdIdMap[timeKey].all.push(urlKey)
+
+                if (!sourceIdMap[url.sourceId]) {
+                    sourceIdMap[url.sourceId] = []
+                }
+                const firstOlderItemIndex = sourceIdMap[url.sourceId].findIndex(
+                    (key) => url.created > urls[key].created
+                )
+                if (firstOlderItemIndex === -1) {
+                    sourceIdMap[url.sourceId].push(urlKey)
+                }
+                else {
+                    sourceIdMap[url.sourceId].splice(firstOlderItemIndex, 0, urlKey)
+                }
+            }
         })
         return modified
     },
@@ -90,6 +127,49 @@ export function addUrl (source: Source, isNew = false) {
 export function getUrls () {
     return urls
 }
+
+export const getUrlKeysAfter = (date: number, sourceList?: string[]) => {
+    const baseKey = Number(String(date).slice(0, 4))
+    const today = Number(String(Date.now()).slice(0, 4))
+    const diff = today - baseKey
+    const lowestCreated = sourceList.reduce(
+        (lowest, sourceId) => createdLowerLimit[sourceId] < lowest ? createdLowerLimit[sourceId] : lowest,
+        9999
+    )
+    let urls = []
+    const addByKey = (key) => {
+        if (!sourceList?.length) {
+            urls = urls.concat(createdIdMap[key]?.all || [])
+        }
+        else {
+            sourceList.forEach((sourceId) => {
+                urls = urls.concat(createdIdMap[key]?.sources?.[sourceId] || [])
+            })
+        }
+    }
+    for (let x = 0; x <= diff; x++) {
+        addByKey(today - x)
+    }
+    let previousCount = 0
+    const getPrevious = () => {
+        previousCount += 1
+        const oldLength = urls.length
+        const timeKey = baseKey - previousCount
+        addByKey(timeKey)
+        return {
+            urls,
+            additionalUrls: urls.slice(oldLength),
+            isLast: timeKey <= lowestCreated
+        }
+    }
+
+    return {
+        urls,
+        getPrevious
+    }
+}
+
+export const getSortedUrlKeysForSource = (sourceId) => sourceIdMap[sourceId] || []
 
 export function deleteUrlBySource (sourceId) {
     Object.keys(urls).forEach((key) => {

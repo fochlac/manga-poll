@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { resolve } from 'path'
 import { getSources, registerSourceChangeCallback } from './source-storage'
-import { getUrls } from './url-storage'
+import { getSortedUrlKeysForSource, getUrls } from './url-storage'
 import { adminUrl } from './utils/authentication'
 import { createWrite, readFile } from './utils/db'
 import { getUrlKey } from './utils/keys'
@@ -347,11 +347,8 @@ async function getStatsDefault (): Promise<Stats> {
         const host = getHost(source.url)
         const url = source.url.split('/').slice(0, 3).join('/')
         stats[host] = stats[host] || emptyStats(url, source.type, warnings[host]?.warnings)
-        const sourceChapters = Object.values(urls).filter((url) => url.sourceId === source.id)
-        const latest = sourceChapters.reduce(
-            (latest, url) => (latest > Number(url.created) ? latest : Number(url.created)),
-            0
-        )
+        const sourceChapters = getSortedUrlKeysForSource(source.id).map((key) => urls[key])
+        const latest = Number(sourceChapters[0]?.created || 0)
 
         const chapterWarnings = Object.keys(warnings[host]?.chapterWarnings || {})
             .filter((key) => key.includes(getUrlKey({ host, chapter: '' }, source.id)))
