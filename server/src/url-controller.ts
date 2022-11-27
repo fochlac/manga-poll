@@ -50,7 +50,6 @@ export function urlController (app) {
                     sortedUrlKeys.push(...additionalUrlsSorted)
                 }
                 if (!sortedUrlKeys[index]) {
-                    console.log('No more Urls')
                     break
                 }
                 if (urls[sortedUrlKeys[index]].created < filters.date) {
