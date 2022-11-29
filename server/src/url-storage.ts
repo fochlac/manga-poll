@@ -21,38 +21,6 @@ let sourceIdMap = {}
 let createdIdMap = {}
 let createdLowerLimit: Record<string, number> = {}
 
-const addUrlToMaps = (url: Url) => {
-    const timeKey = String(url.created).slice(0, 4)
-    if (!createdIdMap[timeKey]) {
-        createdIdMap[timeKey] = {
-            all: [],
-            sources: {}
-        }
-    }
-    if (!createdLowerLimit[url.sourceId] || Number(timeKey) < createdLowerLimit[url.sourceId]) {
-        createdLowerLimit[url.sourceId] = Number(timeKey)
-    }
-    if (!createdLowerLimit.all || Number(timeKey) < createdLowerLimit.all) {
-        createdLowerLimit.all = Number(timeKey)
-    }
-    if (!createdIdMap[timeKey].sources[url.sourceId]) {
-        createdIdMap[timeKey].sources[url.sourceId] = []
-    }
-    createdIdMap[timeKey].sources[url.sourceId].push(url.id)
-    createdIdMap[timeKey].all.push(url.id)
-
-    if (!sourceIdMap[url.sourceId]) {
-        sourceIdMap[url.sourceId] = []
-    }
-    const firstOlderItemIndex = sourceIdMap[url.sourceId].findIndex((key) => url.created > urls[key].created)
-    if (firstOlderItemIndex === -1) {
-        sourceIdMap[url.sourceId].push(url.id)
-    }
-    else {
-        sourceIdMap[url.sourceId].splice(firstOlderItemIndex, 0, url.id)
-    }
-}
-
 const urls = readFile<Url>(
     urlsPath,
     (urls) => {
@@ -91,13 +59,45 @@ const urls = readFile<Url>(
             }
             else {
                 const url = urls[urlKey]
-                addUrlToMaps(url)
+                addUrlToMaps(urls, url)
             }
         })
         return modified
     },
     writeUrls
 )
+
+function addUrlToMaps (urls: Record<string, Url>, url:Url) {
+    const timeKey = String(url.created).slice(0, 4)
+    if (!createdIdMap[timeKey]) {
+        createdIdMap[timeKey] = {
+            all: [],
+            sources: {}
+        }
+    }
+    if (!createdLowerLimit[url.sourceId] || Number(timeKey) < createdLowerLimit[url.sourceId]) {
+        createdLowerLimit[url.sourceId] = Number(timeKey)
+    }
+    if (!createdLowerLimit.all || Number(timeKey) < createdLowerLimit.all) {
+        createdLowerLimit.all = Number(timeKey)
+    }
+    if (!createdIdMap[timeKey].sources[url.sourceId]) {
+        createdIdMap[timeKey].sources[url.sourceId] = []
+    }
+    createdIdMap[timeKey].sources[url.sourceId].push(url.id)
+    createdIdMap[timeKey].all.push(url.id)
+
+    if (!sourceIdMap[url.sourceId]) {
+        sourceIdMap[url.sourceId] = []
+    }
+    const firstOlderItemIndex = sourceIdMap[url.sourceId].findIndex((key) => url.created > urls[key].created)
+    if (firstOlderItemIndex === -1) {
+        sourceIdMap[url.sourceId].push(url.id)
+    }
+    else {
+        sourceIdMap[url.sourceId].splice(firstOlderItemIndex, 0, url.id)
+    }
+}
 
 export function updateUrl (source: Source, newUrl: Partial<Url>) {
     const key = getUrlKey(newUrl, source.id)
@@ -121,7 +121,7 @@ export function addUrl (source: Source, isNew = false) {
             sourceId: source.id
         }
         urls[entry.id] = entry
-        addUrlToMaps(entry)
+        addUrlToMaps(urls, entry)
         writeUrls(urls)
         return entry
     }
