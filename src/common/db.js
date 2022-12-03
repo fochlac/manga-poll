@@ -58,7 +58,7 @@ export function createDB (storage) {
             .sort((url1, url2) => {
                 const diff = url2.created - url1.created
                 if (Math.abs(diff) < 500) {
-                    return String(url1).localeCompare(url2)
+                    return String(url2.chapter).localeCompare(url1.chapter)
                 }
                 return diff
             })

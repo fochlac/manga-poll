@@ -12,7 +12,7 @@ import { API } from '../../common/api'
 import { API_ADDRESS } from '../shared/constants'
 import { initIntro } from './intro'
 import { renderHostList } from '../../common/hosts'
-import { fetchUrls } from '../shared/fetch-urls'
+import { checkSources, fetchUrls } from '../shared/fetch-urls'
 
 const Api = API(API_ADDRESS, db)
 
@@ -31,6 +31,8 @@ db.onChange((changes) => {
 })
 
 fetchUrls(db, Api)
+    .then(() => checkSources(db, Api))
+
 markRefreshed()
 
 const interval = createSchedule({
