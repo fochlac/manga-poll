@@ -71,7 +71,7 @@ function addUrlToMaps (urls: Record<string, Url>, url:Url) {
     const timeKey = String(url.created).slice(0, 4)
     if (!createdIdMap[timeKey]) {
         createdIdMap[timeKey] = {
-            all: [],
+            all: {},
             sources: {}
         }
     }
@@ -82,15 +82,22 @@ function addUrlToMaps (urls: Record<string, Url>, url:Url) {
         createdLowerLimit.all = Number(timeKey)
     }
     if (!createdIdMap[timeKey].sources[url.sourceId]) {
-        createdIdMap[timeKey].sources[url.sourceId] = []
+        createdIdMap[timeKey].sources[url.sourceId] = {}
     }
-    createdIdMap[timeKey].sources[url.sourceId].push(url.id)
-    createdIdMap[timeKey].all.push(url.id)
+    createdIdMap[timeKey].sources[url.sourceId][url.id] = true
+    createdIdMap[timeKey].all[url.id] = true
 
     if (!sourceIdMap[url.sourceId]) {
         sourceIdMap[url.sourceId] = []
     }
-    const firstOlderItemIndex = sourceIdMap[url.sourceId].findIndex((key) => url.created > urls[key].created)
+    if (sourceIdMap[url.sourceId].includes(url.id)) {
+        return
+    }
+    const firstOlderItemIndex = sourceIdMap[url.sourceId]
+        .findIndex((key) => url.created === urls[key].created
+            ? String(url.chapter).localeCompare(urls[key].chapter) > 0
+            : url.created > urls[key].created
+        )
     if (firstOlderItemIndex === -1) {
         sourceIdMap[url.sourceId].push(url.id)
     }
@@ -139,16 +146,25 @@ export const getUrlKeysAfter = (date: number, sourceList?: string[]) => {
         (lowest, sourceId) => (createdLowerLimit[sourceId] < lowest ? createdLowerLimit[sourceId] : lowest),
         9999
     )
-    let urls = []
+    let urls = {}
     const addByKey = (key) => {
+        let newUrls = {}
         if (!sourceList?.length) {
-            urls = urls.concat(createdIdMap[key]?.all || [])
+            newUrls = {
+                ...newUrls,
+                ...(createdIdMap[key]?.all || {})
+            }
         }
         else {
             sourceList.forEach((sourceId) => {
-                urls = urls.concat(createdIdMap[key]?.sources?.[sourceId] || [])
+                newUrls = {
+                    ...newUrls,
+                    ...(createdIdMap[key]?.sources?.[sourceId] || {})
+                }
             })
         }
+        urls = {...urls, ...newUrls}
+        return newUrls
     }
     for (let x = 0; x <= diff; x++) {
         addByKey(today - x)
@@ -156,18 +172,17 @@ export const getUrlKeysAfter = (date: number, sourceList?: string[]) => {
     let previousCount = 0
     const getPrevious = () => {
         previousCount += 1
-        const oldLength = urls.length
         const timeKey = baseKey - previousCount
-        addByKey(timeKey)
+        const additionalUrls = addByKey(timeKey)
         return {
-            urls,
-            additionalUrls: urls.slice(oldLength),
+            urls: Object.keys(urls),
+            additionalUrls: Object.keys(additionalUrls),
             isLast: timeKey <= lowestCreated
         }
     }
 
     return {
-        urls,
+        urls: Object.keys(urls),
         getPrevious
     }
 }

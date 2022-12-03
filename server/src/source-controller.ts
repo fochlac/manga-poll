@@ -5,6 +5,7 @@ import { addSource, getSources, removeSource, updateSource } from './source-stor
 import { deleteUrlBySource } from './url-storage'
 import { deleteSourceFromLinks, markLinksWithSourceChanged } from './link-controller'
 import { adminUrl } from './utils/authentication'
+import { checkForDuplicate } from './duplicates'
 
 async function createSourceIfNeeded (rawSource) {
     const { title, url, mangaId, type } = rawSource
@@ -41,6 +42,51 @@ export function sourceController (app) {
 
             if (entry) {
                 res.status(200).json({ valid: true, payload: entry })
+            }
+            else {
+                res.status(400).json({ valid: false })
+            }
+        }
+        catch (err) {
+            console.log('Unexpected Error while creating source:', err?.message, req?.body)
+            res.status(500).json({ valid: false })
+        }
+    })
+
+    app.post('/api/sources/bulkMatch', async (req, res) => {
+        try {
+            if (Array.isArray(req.body?.sources)) {
+                const sources = await getSources()
+                const responseBody = []
+                const sourceList = req.body.sources as Source[]
+                let hasChanges = false
+                for (const source of sourceList) {
+                    if (sources[checkForDuplicate(source.id)]) {
+                        responseBody.push(sources[checkForDuplicate(source.id)])
+                        if (!hasChanges) {
+                            hasChanges = source.id !== checkForDuplicate(source.id)
+                        }
+                        continue
+                    }
+                    hasChanges = true
+                    const { url, mangaId } = source
+                    if (!url || !mangaId) {
+                        console.log('Error matching source, url or mangaid are missing')
+                        continue
+                    }
+
+                    const entry = Object.values(sources).find(
+                        (source) => source.url === url && String(source.mangaId) === String(mangaId)
+                    )
+                    if (entry) {
+                        responseBody.push(entry)
+                    }
+                    else {
+                        console.log(`Error matching source entry:\n${JSON.stringify(source)}`)
+                    }
+                }
+
+                res.status(200).json({ valid: true, payload: { sources: responseBody, hasChanges } })
             }
             else {
                 res.status(400).json({ valid: false })

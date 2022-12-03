@@ -32,6 +32,16 @@ function createApi (baseUrl, db) {
             .catch((error) => ({ valid: false, error }))
     }
 
+    async function checkSources (sources) {
+        return fetch(`${baseUrl}/api/sources/bulkMatch`, {
+            method: 'post',
+            body: JSON.stringify({ sources }),
+            headers: await getHeader()
+        })
+            .then((res) => res.json())
+            .catch((error) => ({ valid: false, error }))
+    }
+
     async function readUrls (sources = [], limit = '', date = '') {
         return fetch(
             `${baseUrl}/api/urls/fetch`,
@@ -119,7 +129,8 @@ function createApi (baseUrl, db) {
         },
         Source: {
             insert: postSource,
-            fromUrl: addSourceFromUrl
+            fromUrl: addSourceFromUrl,
+            checkSources
         },
         Subscription: {
             subscribe: addSubscriptions,

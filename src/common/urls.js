@@ -91,7 +91,7 @@ export function urlRenderer (db) {
         const newRows = newUrls.map(createUrlRenderer(false))
         const oldRows = oldUrls.map(createUrlRenderer(true))
 
-        if (!sources.length) {
+        if (!sources?.length) {
             urls.innerHTML = ''
             intro.style.display = 'flex'
         }

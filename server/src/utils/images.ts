@@ -10,12 +10,16 @@ if (!existsSync(folder)) {
     mkdirSync(folder, { recursive: true })
 }
 
+const blacklist = {}
+
 export const storeImage = async (source: Source, url: string): Promise<string> => {
+    if (blacklist[source.id]) return Promise.reject(`Image fetching for ${source.title} is blacklisted.`)
     const ext = url.split('.').pop()?.match(/^\w*/)?.[0] || 'jpg'
     const name = `img_${source.id}.${ext}`
     const path = join(folder, name)
     const response = await fetch(url, { headers })
     if (response.status !== 200) {
+        blacklist[source.id] = true
         throw new Error(`Cannot fetch image for source ${source.title} with url "${url}".`)
     }
     const fileStream = createWriteStream(path)
