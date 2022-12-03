@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { resolve } from 'path'
 
-import { getSources, removeSource } from './source-storage'
+import { getSources, removeSource, updateSource } from './source-storage'
 import { deleteUrlBySource } from './url-storage'
 
 const duplicatesPath = resolve(__dirname, '../db/duplicates.json')
@@ -21,8 +21,32 @@ function write () {
 export function findAndCleanDuplicates () {
     const sourceList = Object.values(getSources())
     const defaultList: {ids: Record<string, string>; duplicates: {originalId: string;duplicate: Source; }[]} = { ids: {}, duplicates: [] }
+    const asuraOldSources = {}
     const result = sourceList.reduce((result, source) => {
+        if (source.type === 'mangastream' && source.mangaId !== source.url.split('/')[4]) {
+            const key = source.url + '_-_' + source.url.split('/')[4]
+            if (result.ids[key]) {
+                result.duplicates.push({
+                    originalId: result.ids[key],
+                    duplicate: source
+                })
+            }
+            else {
+                asuraOldSources[source.url] = asuraOldSources[source.url] || []
+                asuraOldSources[source.url].push(source)
+            }
+            return result
+        }
         const key = source.url + '_-_' + source.mangaId
+        if (asuraOldSources[source.url]) {
+            asuraOldSources[source.url].forEach((oldSource) => {
+                result.duplicates.push({
+                    originalId: source.id,
+                    duplicate: oldSource
+                })
+            })
+            delete asuraOldSources[source.url]
+        }
         if (!result.ids[key]) {
             result.ids[key] = source.id
         }
@@ -35,6 +59,19 @@ export function findAndCleanDuplicates () {
 
         return result
     }, defaultList)
+
+    Object.values(asuraOldSources).forEach((sources: Source[]) => {
+        const firstSource = sources.pop()
+        const newSource = {
+            ...firstSource,
+            mangaId: firstSource.url.split('/')[4]
+        }
+        updateSource(firstSource.id, newSource)
+        result.duplicates.push(...sources.map((duplicate) => ({
+            duplicate,
+            originalId: firstSource.id
+        })))
+    })
 
     result.duplicates.forEach(({duplicate, originalId}) => {
         duplicates[duplicate.id] = originalId

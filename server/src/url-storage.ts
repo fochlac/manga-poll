@@ -140,9 +140,9 @@ export function getUrls () {
 
 export const getUrlKeysAfter = (date: number, sourceList?: string[]) => {
     const baseKey = Number(String(date).slice(0, 4))
-    const today = Number(String(Date.now()).slice(0, 4))
+    const today = Number(String(Date.now()).slice(0, 4)) + 1
     const diff = today - baseKey
-    const lowestCreated = sourceList.reduce(
+    const lowestCreated = (sourceList || []).reduce(
         (lowest, sourceId) => (createdLowerLimit[sourceId] < lowest ? createdLowerLimit[sourceId] : lowest),
         9999
     )
@@ -162,6 +162,9 @@ export const getUrlKeysAfter = (date: number, sourceList?: string[]) => {
                     ...(createdIdMap[key]?.sources?.[sourceId] || {})
                 }
             })
+            if (createdIdMap[key]?.sources?.['7tiCIGXKfs']) {
+                console.log(key, createdIdMap[key]?.sources?.['7tiCIGXKfs'])
+            }
         }
         urls = {...urls, ...newUrls}
         return newUrls
@@ -220,7 +223,7 @@ export function deleteUrlBySource (sourceId) {
         if (!newSourceIdMap[url.sourceId]) {
             newSourceIdMap[url.sourceId] = []
         }
-        const firstOlderItemIndex = newSourceIdMap[url.sourceId].findIndex((key) => url.created > urls[key].created)
+        const firstOlderItemIndex = newSourceIdMap[url.sourceId].findIndex((key) => url.created > urls[key]?.created ?? 0)
         if (firstOlderItemIndex === -1) {
             newSourceIdMap[url.sourceId].push(url.id)
         }
