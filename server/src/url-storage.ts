@@ -195,8 +195,7 @@ export function deleteUrlBySource (sourceId) {
         if (key.includes(getUrlKey({ host: '', chapter: '' }, sourceId))) {
             const timeKey = String(url.created).slice(0, 4)
             delete createdIdMap[timeKey]?.sources?.[sourceId]
-            const index = createdIdMap[timeKey].all.findIndex((urlKey) => key === urlKey)
-            createdIdMap[timeKey].all.splice(index, 1)
+            delete createdIdMap[timeKey]?.all?.[url.id]
             delete urls[key]
         }
     })
