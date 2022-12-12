@@ -1,5 +1,5 @@
 /* globals postMessage */
-import { closePuppeteer, fetchChapterList, fetchFrontPage, isFrontPageFetchSupported } from '../parser'
+import { closePuppeteer, fetchChapterList, fetchFrontPage, isFrontPageFetchSupported, startPuppeteer } from '../parser'
 import { getHost } from '../utils/parse'
 
 import '../parser/parse-fanfox'
@@ -12,7 +12,7 @@ import '../parser/parse-webtoons'
 import '../parser/parse-reaper'
 
 let skip = false
-async function fetchAllUrls (sources: Record<string, Source>, urls: Record<string, Url>) {
+async function fetchAllUrls (sources: Record<string, Source>, urls: Record<string, Url>, allowPuppeteer?: boolean) {
     const results = []
     try {
         let count = 0
@@ -22,6 +22,9 @@ async function fetchAllUrls (sources: Record<string, Source>, urls: Record<strin
         const hostCloudFlareMap = {}
         const promiseStack = []
         const frontPageFetches = {}
+        if (allowPuppeteer) {
+            await startPuppeteer()
+        }
         Object.values(sources).forEach((source, index, list) => {
             const host = getHost(source.url)
             hostDurations[host] = hostDurations[host] || { count: 0, completed: 0, duration: 0, host }
@@ -105,9 +108,8 @@ async function fetchAllUrls (sources: Record<string, Source>, urls: Record<strin
         )
         console.log('=============================================')
     }
-    catch (e) {
+    finally {
         await closePuppeteer()
-        throw e
     }
 
     return results
@@ -116,7 +118,7 @@ async function fetchAllUrls (sources: Record<string, Source>, urls: Record<strin
 // eslint-disable-next-line no-undef
 onmessage = async function (e) {
     if (e.data.type === 'FETCH_ALL' && e.data.sources) {
-        const data = await fetchAllUrls(e.data.sources, e.data.urls)
+        const data = await fetchAllUrls(e.data.sources, e.data.urls, e.data.allowPuppeteer)
         postMessage(data)
     }
     else if (e.data.type === 'FORCE_STOP') {

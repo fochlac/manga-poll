@@ -17,9 +17,9 @@ declare global {
 }
 
 const writeUrls = createWrite(urlsPath)
-let sourceIdMap = {}
-let createdIdMap = {}
-let createdLowerLimit: Record<string, number> = {}
+const sourceIdMap = {}
+const createdIdMap = {}
+const createdLowerLimit: Record<string, number> = {}
 
 const urls = readFile<Url>(
     urlsPath,
@@ -162,9 +162,6 @@ export const getUrlKeysAfter = (date: number, sourceList?: string[]) => {
                     ...(createdIdMap[key]?.sources?.[sourceId] || {})
                 }
             })
-            if (createdIdMap[key]?.sources?.['7tiCIGXKfs']) {
-                console.log(key, createdIdMap[key]?.sources?.['7tiCIGXKfs'])
-            }
         }
         urls = {...urls, ...newUrls}
         return newUrls
@@ -193,47 +190,17 @@ export const getUrlKeysAfter = (date: number, sourceList?: string[]) => {
 export const getSortedUrlKeysForSource = (sourceId) => sourceIdMap[sourceId] || []
 
 export function deleteUrlBySource (sourceId) {
-    const newSourceIdMap = {}
-    const newCreatedIdMap = {}
-    const newCreatedLowerLimit: Record<string, number> = {}
     Object.keys(urls).forEach((key) => {
         const url = urls[key]
         if (key.includes(getUrlKey({ host: '', chapter: '' }, sourceId))) {
+            const timeKey = String(url.created).slice(0, 4)
+            delete createdIdMap[timeKey]?.sources?.[sourceId]
+            const index = createdIdMap[timeKey].all.findIndex((urlKey) => key === urlKey)
+            createdIdMap[timeKey].all.splice(index, 1)
             delete urls[key]
         }
-        const timeKey = String(url.created).slice(0, 4)
-        if (!newCreatedIdMap[timeKey]) {
-            newCreatedIdMap[timeKey] = {
-                all: [],
-                sources: {}
-            }
-        }
-        if (!newCreatedLowerLimit[url.sourceId] || Number(timeKey) < newCreatedLowerLimit[url.sourceId]) {
-            newCreatedLowerLimit[url.sourceId] = Number(timeKey)
-        }
-        if (!newCreatedLowerLimit.all || Number(timeKey) < newCreatedLowerLimit.all) {
-            newCreatedLowerLimit.all = Number(timeKey)
-        }
-        if (!newCreatedIdMap[timeKey].sources[url.sourceId]) {
-            newCreatedIdMap[timeKey].sources[url.sourceId] = []
-        }
-        newCreatedIdMap[timeKey].sources[url.sourceId].push(url.id)
-        newCreatedIdMap[timeKey].all.push(url.id)
-
-        if (!newSourceIdMap[url.sourceId]) {
-            newSourceIdMap[url.sourceId] = []
-        }
-        const firstOlderItemIndex = newSourceIdMap[url.sourceId].findIndex((key) => url.created > urls[key]?.created ?? 0)
-        if (firstOlderItemIndex === -1) {
-            newSourceIdMap[url.sourceId].push(url.id)
-        }
-        else {
-            newSourceIdMap[url.sourceId].splice(firstOlderItemIndex, 0, url.id)
-        }
     })
-    sourceIdMap = newSourceIdMap
-    createdIdMap = newCreatedIdMap
-    createdLowerLimit = newCreatedLowerLimit
+    delete sourceIdMap[sourceId]
 
     writeUrls(urls)
 }

@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, testForCloudFlare, createSource, categorizeRemoteUrls } from '../parser'
+import { registerParser, headers, testForCloudFlare, createSource, categorizeRemoteUrls, queuePuppeteerFetch } from '../parser'
 import { getHost, parseNAgoDateString } from '../utils/parse'
 
 const TYPE = 'reaper'
@@ -81,6 +81,86 @@ async function fetchReaper (source: Source, urls: Record<string, Url>): Promise<
     }
 }
 
+async function parseFrontPage (
+    sources: Source[],
+    urls: Record<string, Url>,
+    body: string
+): Promise<ChapterResult[]> {
+    const $ = cheerio.load(body)
+    const baseDate = new Date()
+    baseDate.setHours(0, 0, 0, 0)
+    const host = getHost(sources[0].url)
+    const trackedSeries:Record<string, Source> = sources.reduce((trackedSeries, source) => {
+        trackedSeries[source.url] = source
+        return trackedSeries
+    }, {})
+
+    return $('h2:contains(\'Latest Comics\')').parent().find('p > a[href*="/comics/"]')
+        .toArray()
+        .reduce((sourceResults, elem) => {
+            const url = $(elem).attr('href')
+
+            if (trackedSeries[url]) {
+                const chapters = $(elem).parent().parent().find('a[href*="/chapters/"]').toArray()
+                const source = trackedSeries[url]
+                const chapterList = chapters.map((linkEl) => {
+                    const link = $(linkEl)
+                    const url = link.attr('href')
+                    const rawChapter = link.contents().not(link.children()).text().trim()
+                    const rawDate = parseNAgoDateString(link.find('p').text())
+
+                    return {
+                        url,
+                        chapter: String(rawChapter).trim().match(/^Chapter ([\d.]+)/)?.[1],
+                        host,
+                        created: rawDate
+                    }
+                })
+
+                const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(chapterList, source, urls)
+
+                sourceResults.push({
+                    urls: newUrls,
+                    warnings: warnings,
+                    oldUrls,
+                    source
+                })
+            }
+            return sourceResults
+        }, [])
+}
+
+async function fetchFrontPage (sources: Source[], urls: Record<string, Url>): Promise<ChapterResult[]> {
+    try {
+        const url = `${sources[0].url.split('/').slice(0, 3).join('/')}/latest/comics`
+        const response = await fetch(url, { method: 'get', headers })
+        let body = await response.text()
+
+        try {
+            testForCloudFlare(body, response.status)
+        }
+        catch (e) {
+            body = await queuePuppeteerFetch(url)
+        }
+
+        return parseFrontPage(sources, urls, body)
+    }
+    catch (err) {
+        const host = getHost(sources[0].url)
+        return sources.map((source) => ({
+            urls: [],
+            source,
+            warnings: [
+                [
+                    host,
+                    `Error fetching frontpage for ${host}: ${err?.message || 'Unknown Error.'}`,
+                    0
+                ]
+            ]
+        }))
+    }
+}
+
 async function parseReaperPage (rawUrl: string) {
     const sourcehtml: string = await fetch(rawUrl, { headers }).then((res) =>
         res.text()
@@ -95,6 +175,7 @@ async function parseReaperPage (rawUrl: string) {
 
 const reaper: Parser = {
     fetchFunction: fetchReaper,
+    fetchFrontPageFunction: fetchFrontPage,
     type: TYPE,
     parseLink: parseReaperPage,
     parseCondition: (url) => url.includes('reaperscans.com')

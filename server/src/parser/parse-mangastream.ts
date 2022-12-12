@@ -6,7 +6,8 @@ import {
     createSource,
     checkNewUrlAvailability,
     categorizeRemoteUrls,
-    testForCloudFlare
+    testForCloudFlare,
+    queuePuppeteerFetch
 } from '../parser'
 import { getHost, parseNAgoDateString } from '../utils/parse'
 
@@ -208,9 +209,15 @@ async function fetchFrontPage (sources: Source[], urls: Record<string, Url>): Pr
     try {
         const url = sources[0].url.split('/').slice(0, 3).join('/')
         const response = await fetch(url, { method: 'get', headers })
-        const body = await response.text()
 
-        testForCloudFlare(body, response.status)
+        let body = await response.text()
+
+        try {
+            testForCloudFlare(body, response.status)
+        }
+        catch (e) {
+            body = await queuePuppeteerFetch(url)
+        }
 
         return parseMangastreamFront(sources, urls, body)
     }

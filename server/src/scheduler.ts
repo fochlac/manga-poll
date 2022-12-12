@@ -15,7 +15,7 @@ interface WorkerResult {
     result: ChapterResult
 }
 
-function fetchChapterListData (sources, urls): Promise<WorkerResult[]> {
+function fetchChapterListData (sources, urls, allowPuppeteer?: boolean): Promise<WorkerResult[]> {
     return new Promise((res, reject) => {
         const worker = new Worker('../../../dist/schedule-worker/fetch-chapters.js', [], { esm: true })
         const terminateTimeout = setTimeout(() => {
@@ -42,16 +42,21 @@ function fetchChapterListData (sources, urls): Promise<WorkerResult[]> {
             clearTimeout(skipTimeout)
         }
 
-        worker.postMessage({ type: 'FETCH_ALL', sources, urls })
+        worker.postMessage({ type: 'FETCH_ALL', sources, urls, allowPuppeteer })
     })
 }
 
 let isRunning = 0
+let lastPuppeteer = 0
 async function fetchForSources (sources: Record<string, Source>, isNew?: boolean) {
     const start = Date.now()
     console.log('Fetching new chapters...')
     const storedUrls = getUrls()
-    const results = await fetchChapterListData(sources, storedUrls)
+    const allowPuppeteer = Object.keys(sources).length > 2 && Date.now() - lastPuppeteer >= 60 * 60 * 1000
+    if (allowPuppeteer) {
+        lastPuppeteer = Date.now()
+    }
+    const results = await fetchChapterListData(sources, storedUrls, allowPuppeteer)
     console.log('Fetching chapters took ' + Math.floor((Date.now() - start) / 1000) + ' seconds.')
 
     results.forEach(({ hasError, result, error, source }) => {

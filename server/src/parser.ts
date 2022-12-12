@@ -125,17 +125,90 @@ export async function getResponseBody (response): Promise<string> {
 }
 
 let puppeteerInstance
+export async function startPuppeteer () {
+    if (!puppeteerInstance) {
+        puppeteerInstance = puppeteer.launch({ args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process', // <- this one doesn't works in Windows
+            '--disable-gpu'
+        ], headless: true })
+    }
+    await puppeteerInstance
+}
 export async function closePuppeteer () {
     if (puppeteerInstance) {
         const browser = await puppeteerInstance
         await browser.close()
+        puppeteerInstance = undefined
     }
 }
 
-export async function fetchWithPuppeteer (url): Promise<string> {
-    throw new Error('Puppeteer disabled')
+let queue = Promise.resolve()
+export function queuePuppeteerFetch (url) {
+    if (!puppeteerInstance) {
+        console.log(`Cloudflare detected for ${url}.`)
+        return ''
+    }
+    console.log(`Cloudflare detected for ${url}. Queueing fetch via puppeteer.`)
+    const promise = queue
+        .then(() => fetchWithPuppeteer(url))
+    queue = promise.then((str) => {
+        if (str?.length) {
+            console.log(`Fetched ${url} via puppeteer.`)
+        }
+        else {
+            console.log(`Error fetching ${url} via puppeteer.`)
+        }
+    }).catch((e) => console.log(e))
+    return promise
 }
 
+export async function fetchWithPuppeteer (url): Promise<string> {
+    if (!puppeteerInstance) {
+        console.log('Puppeteer inactive, skipping request for ' + url)
+        return ''
+    }
+
+    const browser = await puppeteerInstance
+    const page = await browser.newPage()
+    try {
+        await page.goto(url)
+        await page.waitForFunction(
+            () => {
+                // eslint-disable-next-line no-undef
+                const text = document.body.innerHTML
+                if (
+                    text.includes('<title>Please Wait... | Cloudflare</title>') ||
+                    (text.toLowerCase().includes('cloudflare') && text.includes('form id="challenge-form"'))
+                ) {
+                    return false
+                }
+                else if (
+                    text.includes('<title>Attention Required! | Cloudflare</title>') ||
+                    (text.includes('Access denied') && text.includes('Cloudflare')) ||
+                    text.includes('id="cf-bubbles"')
+                ) {
+                    return false
+                }
+                return true
+            },
+            { timeout: 10000 }
+        )
+        // eslint-disable-next-line no-undef
+        const body = await page.evaluate(() => document.body.innerHTML)
+        await page.close()
+        return body
+    }
+    catch (e) {
+        await page.close()
+        return ''
+    }
+}
 export const headers = {
     accept:
         'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
