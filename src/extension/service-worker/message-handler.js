@@ -14,7 +14,7 @@ export function initMessageHandler (db, Api) {
         if (request?.action === 'PAGE_MATCH') {
             if (request?.source?.id && request.source.title && request.source.url) {
                 db.sources.read().then(async (sources) => {
-                    const source = sources.find((source) => getHost(source.url) === getHost(request.source.url) && String(source.mangaId) === String(request.source.id))
+                    const source = sources?.find((source) => getHost(source.url) === getHost(request.source.url) && String(source.mangaId) === String(request.source.id))
                     if (!source) {
                         return sendResponse({ action: 'SHOW_BOOKMARK' })
                     }
