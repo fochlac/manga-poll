@@ -10,7 +10,7 @@ export function createDB (storage) {
 
     async function readSources () {
         const { sources } = await read(NAMESPACES.LOCAL, { sources: null })
-        return sources
+        return sources || []
     }
 
     function writeSources (sources) {
