@@ -53,10 +53,6 @@ const urls = readFile<Url>(
                 delete urls[urlKey]
                 modified = true
             }
-            else if (url.url.includes('asurascans.com')) {
-                delete urls[urlKey]
-                modified = true
-            }
             else {
                 const url = urls[urlKey]
                 addUrlToMaps(urls, url)

@@ -133,7 +133,9 @@ async function parseMangastreamFront (
     baseDate.setHours(0, 0, 0, 0)
     const host = getHost(sources[0].url)
     const trackedSeries:Record<string, Source> = sources.reduce((trackedSeries, source) => {
-        trackedSeries[source.url] = source
+        const path = source.url.split('/').slice(3).join('/')
+        trackedSeries[path] = source
+        trackedSeries[source.title] = source
         return trackedSeries
     }, {})
 
@@ -141,10 +143,21 @@ async function parseMangastreamFront (
         .toArray()
         .reduce((sourceResults, elem) => {
             const url = $(elem).attr('href')
+            const title = $(elem).attr('title')
+            const path = url.split('/').slice(3).join('/')
+            const source = trackedSeries[path] || trackedSeries[title]
 
-            if (trackedSeries[url]) {
+            if (source) {
                 const chapters = $(elem).parent().find('li').toArray()
-                const source = trackedSeries[url]
+                let update
+                if (source.url !== url || source.title !== title) {
+                    update = {
+                        ...source,
+                        url,
+                        title
+                    }
+                }
+
                 const chapterList = chapters.map((li) => {
                     const link = $(li).find('a')
                     const url = link.attr('href')
@@ -165,7 +178,8 @@ async function parseMangastreamFront (
                     urls: newUrls,
                     warnings: warnings,
                     oldUrls,
-                    source
+                    source,
+                    sourceInfo: update ? { update } : undefined
                 })
             }
             return sourceResults
