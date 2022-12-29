@@ -22,8 +22,9 @@ const writeSources = createWrite(sourcesPath)
 
 const sources: Record<string, Source> = readFile<Source>(sourcesPath, (sources) => {
     let modified = false
+    const isIn2022 = Date.now() <= new Date('2023-01-01').getTime()
     Object.keys(sources).forEach((key) => {
-        if (sources[key].url?.includes('asura.gg')) {
+        if (sources[key].url?.includes('asura.gg') && isIn2022) {
             sources[key].url = sources[key].url.replace('asura.gg', 'asurascans.com')
             modified = true
         }
