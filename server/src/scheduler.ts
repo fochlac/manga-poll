@@ -61,7 +61,7 @@ async function fetchForSources (sources: Record<string, Source>, isNew?: boolean
 
     results.forEach(({ hasError, result, error, source }) => {
         if (hasError) {
-            console.log(`Error fetching urls for source ${source?.title}:\n`, error)
+            console.log(`Error fetching urls for source ${source?.title} on ${getHost(source?.url)}:\n`, error)
             logWarning(getHost(source.url), 'Unknown Error while fetching chapters.', 0)
         }
         else if (result) {
