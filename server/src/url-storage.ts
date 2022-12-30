@@ -1,6 +1,7 @@
 import { resolve } from 'path'
 import { createWrite, readFile } from './utils/db'
 import { getUrlKey } from './utils/keys'
+import { getHost } from './utils/parse'
 
 const urlsPath = resolve(__dirname, '../db/urls.json')
 
@@ -27,11 +28,11 @@ const urls = readFile<Url>(
         let modified = false
         Object.keys(urls).forEach((urlKey) => {
             const url = urls[urlKey]
-            if (url.url.includes('asura.gg')) {
-                const newKey = `${urlKey}`.replace('asura.gg', 'www.asurascans.com')
-                url.id = newKey
-                url.host = 'www.asurascans.com'
+            if (urlKey.includes('asura.gg')) {
                 url.url = url.url.replace('asura.gg', 'www.asurascans.com')
+                const newKey = getUrlKey(url, url.sourceId)
+                url.id = newKey
+                url.host = getHost(url.url)
                 urls[newKey] = url
                 delete urls[urlKey]
                 modified = true
