@@ -25,6 +25,18 @@ const urls = readFile<Url>(
     urlsPath,
     (urls) => {
         let modified = false
+        Object.keys(urls).forEach((urlKey) => {
+            const url = urls[urlKey]
+            if (url.url.includes('asura.gg')) {
+                const newKey = `${urlKey}`.replace('asura.gg', 'www.asurascans.com')
+                url.id = newKey
+                url.host = 'www.asurascans.com'
+                url.url = url.url.replace('asura.gg', 'www.asurascans.com')
+                urls[newKey] = url
+                delete urls[urlKey]
+                modified = true
+            }
+        })
         const uniqueMap = Object.values(urls).reduce((uniqueMap, url) => {
             const duplicateUrlId = uniqueMap[url.url]
             uniqueMap[url.url] = duplicateUrlId && urls[duplicateUrlId].created > url.created ? duplicateUrlId : url.id
