@@ -150,9 +150,10 @@ async function parseMangastreamFront (
             if (source) {
                 const chapters = $(elem).parent().find('li').toArray()
                 let update
-                if (source.url !== url || source.title !== title) {
+                if (source.url !== url || source.title !== title || source.mangaId !== url?.split('/')[4]) {
                     update = {
                         ...source,
+                        mangaId: url?.split('/')[4],
                         url,
                         title
                     }
