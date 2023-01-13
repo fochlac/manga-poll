@@ -67,16 +67,9 @@ async function fetchForSources (sources: Record<string, Source>, isNew?: boolean
         else if (result) {
             const { sourceInfo, urls, oldUrls, warnings } = result
             const shouldUpdateDescription = !source.description || !source.imageUrl
-            if (sourceInfo?.update && !shouldUpdateDescription) {
-                console.log(
-                    `Source has changed - updating from "${JSON.stringify(source)}" to "${JSON.stringify(
-                        sourceInfo.update
-                    )}".`
-                )
-                updateSource(source.id, sourceInfo.update)
-                markLinksWithSourceChanged(source.id)
-            }
-            if (shouldUpdateDescription && sourceInfo?.description && sourceInfo.imageUrl && !sourceInfo.imageUrl.includes('fmcdn.mfcdn.net')) {
+            const canUpdateDescription = sourceInfo?.description && sourceInfo.imageUrl && !sourceInfo.imageUrl.includes('fmcdn.mfcdn.net')
+
+            if (shouldUpdateDescription && canUpdateDescription) {
                 console.log(`Updating source image + description for ${source.title}.`)
                 storeImage(source, sourceInfo.imageUrl)
                     .then((imageUrl) =>
@@ -95,6 +88,15 @@ async function fetchForSources (sources: Record<string, Source>, isNew?: boolean
                             description: sourceInfo.description
                         })
                     })
+            }
+            else if (sourceInfo?.update) {
+                console.log(
+                    `Source has changed - updating from "${JSON.stringify(source)}" to "${JSON.stringify(
+                        sourceInfo.update
+                    )}".`
+                )
+                updateSource(source.id, sourceInfo.update)
+                markLinksWithSourceChanged(source.id)
             }
             if (oldUrls?.length) {
                 console.log(`Updating ${oldUrls.length} urls for source ${source.title}.`)
