@@ -135,7 +135,7 @@ async function parseMangastreamFront (
     const trackedSeries:Record<string, Source> = sources.reduce((trackedSeries, source) => {
         const path = source.url.split('/').slice(3).join('/')
         trackedSeries[path] = source
-        trackedSeries[source.title] = source
+        trackedSeries[source.title.replace(/[\W_]+/g, '')] = source
         return trackedSeries
     }, {})
 
@@ -145,7 +145,7 @@ async function parseMangastreamFront (
             const url = $(elem).attr('href')
             const title = $(elem).attr('title')
             const path = url.split('/').slice(3).join('/')
-            const source = trackedSeries[path] || trackedSeries[title]
+            const source = trackedSeries[path] || trackedSeries[title.replace(/[\W_]+/g, '')]
 
             if (source) {
                 const chapters = $(elem).parent().find('li').toArray()

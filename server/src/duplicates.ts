@@ -3,6 +3,7 @@ import { resolve } from 'path'
 
 import { getSources, removeSource, updateSource } from './source-storage'
 import { deleteUrlBySource } from './url-storage'
+import { getHost } from './utils/parse'
 
 const duplicatesPath = resolve(__dirname, '../db/duplicates.json')
 
@@ -22,6 +23,7 @@ export function findAndCleanDuplicates () {
     const sourceList = Object.values(getSources())
     const defaultList: {ids: Record<string, string>; duplicates: {originalId: string;duplicate: Source; }[]} = { ids: {}, duplicates: [] }
     const asuraOldSources = {}
+    const nameDuplicates = {}
     const result = sourceList.reduce((result, source) => {
         if (source.type === 'mangastream' && source.mangaId !== source.url.split('/')[4]) {
             const key = source.url + '_-_' + source.url.split('/')[4]
@@ -37,6 +39,20 @@ export function findAndCleanDuplicates () {
             }
             return result
         }
+        if (source.type === 'mangastream') {
+            const key2 = getHost(source.url) + '_-_' + source.title
+            if (!nameDuplicates[key2]) {
+                nameDuplicates[key2] = source
+            }
+            else {
+                result.duplicates.push({
+                    originalId: nameDuplicates[key2],
+                    duplicate: source
+                })
+                return result
+            }
+        }
+
         const key = source.url + '_-_' + source.mangaId
         if (asuraOldSources[source.url]) {
             asuraOldSources[source.url].forEach((oldSource) => {
