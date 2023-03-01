@@ -5,7 +5,7 @@ export function testMangastream () {
 
     const thumbnail = document.querySelector('#content .hentry .thumb img')
     const url = document.querySelector('.readingnavtop .backseries a')?.href || breadcrumpLink?.href
-    const id = url?.split('/')[4]
+    const id = url?.split('/').filter((str) => str.trim().length).slice(-1)[0]
 
     if (!breadcrumpLink && thumbnail) {
         return {

@@ -153,7 +153,7 @@ async function parseMangastreamFront (
                 if (source.url !== url || source.title !== title || source.mangaId !== url?.split('/')[4]) {
                     update = {
                         ...source,
-                        mangaId: url?.split('/')[4],
+                        mangaId: url?.split('/').filter((str) => str.trim().length).slice(-1)[0],
                         url,
                         title
                     }
