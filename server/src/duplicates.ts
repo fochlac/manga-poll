@@ -25,8 +25,8 @@ export function findAndCleanDuplicates () {
     const asuraOldSources = {}
     const nameDuplicates = {}
     const result = sourceList.reduce((result, source) => {
-        if (source.type === 'mangastream' && source.mangaId !== source.url.split('/')[4]) {
-            const key = source.url + '_-_' + source.url.split('/')[4]
+        if (source.type === 'mangastream' && source.mangaId !== source.url.split('/').filter((str) => str.trim().length).slice(-1)[0]) {
+            const key = source.url + '_-_' + source.url.split('/').filter((str) => str.trim().length).slice(-1)[0]
             if (result.ids[key]) {
                 result.duplicates.push({
                     originalId: result.ids[key],
@@ -80,7 +80,7 @@ export function findAndCleanDuplicates () {
         const firstSource = sources.pop()
         const newSource = {
             ...firstSource,
-            mangaId: firstSource.url.split('/')[4]
+            mangaId: firstSource.url.split('/').filter((str) => str.trim().length).slice(-1)[0]
         }
         updateSource(firstSource.id, newSource)
         result.duplicates.push(...sources.map((duplicate) => ({
