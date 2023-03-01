@@ -33,8 +33,7 @@ function testMangastream (rawUrl, sourcehtml) {
             .text()
             .split(/( –|\s+chapter)/i)?.[0] ||
         breadcrumpLink.find('span').text()
-    const mangaId =
-        $('.bookmark[data-id]').data('id') || sourcehtml.match(/"manga_ID":"(\d+)"/)?.[1] || url?.split('/')[4]
+    const mangaId = url?.split('/').filter((str) => str.trim().length).slice(-1)[0]
 
     return createSource(TYPE, mangaId, name, url)
 }
