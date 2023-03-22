@@ -91,7 +91,7 @@ async function parseMangastream (
     catch (e) {
         console.log(e)
     } // eslint-disable-line no-empty
-    if (source.url !== updatedSource.url || updatedSource.mangaId !== source.mangaId) {
+    if (updatedSource && (source.url !== updatedSource.url || updatedSource.mangaId !== source.mangaId)) {
         sourceInfo = sourceInfo || {}
         sourceInfo.update = updatedSource
     }
@@ -149,7 +149,7 @@ async function parseMangastreamFront (
             if (source) {
                 const chapters = $(elem).parent().find('li').toArray()
                 let update
-                if (source.url !== url || source.title !== title || source.mangaId !== url?.split('/')[4]) {
+                if (source.url !== url || source.title !== title || source.mangaId !== url?.split('/').filter((str) => str.trim().length).slice(-1)[0]) {
                     update = {
                         ...source,
                         mangaId: url?.split('/').filter((str) => str.trim().length).slice(-1)[0],

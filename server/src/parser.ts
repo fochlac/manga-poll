@@ -98,6 +98,7 @@ export function isFrontPageFetchSupported (type) {
 
 export const testForCloudFlare = (text, status) => {
     if (
+        text.includes('id="challenge-form"') ||
         text.includes('<title>Please Wait... | Cloudflare</title>') ||
         (status > 400 && text.toLowerCase().includes('cloudflare') && text.includes('form id="challenge-form"'))
     ) {
