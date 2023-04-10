@@ -9,7 +9,7 @@ export async function hideChapter (db, id) {
         await db.urls.hideAll(latestChapterDate + 1)
     }
     else {
-        await db.urls.hide(id)
+        await db.urls.hide(id).catch(console.log)
     }
 }
 

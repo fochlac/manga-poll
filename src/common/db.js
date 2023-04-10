@@ -41,7 +41,7 @@ export function createDB (storage) {
     }
 
     async function getFilteredSortedUrls () {
-        const { hide } = await read(NAMESPACES.SYNC, { hiddenChapters: '{}', hide: 0 })
+        const { hide } = await read(NAMESPACES.SYNC, { hide: 0 })
         const { urls } = await read(NAMESPACES.LOCAL, { urls: '[]' })
 
         const hiddenChapters = await readHiddenChapters()
@@ -79,7 +79,7 @@ export function createDB (storage) {
     }
 
     async function readHiddenChapters () {
-        const { hiddenRegistry } = await read(NAMESPACES.SYNC, { hiddenRegistry: '["hiddenChapters"]' })
+        const { hiddenRegistry } = await read(NAMESPACES.LOCAL, { hiddenRegistry: '["hiddenChapters"]' })
         const registry = await parse(hiddenRegistry, ['hiddenChapters'])
         const list = Array.isArray(registry) ? registry : registry.list
         const storeDefaultMap = list.reduce((storeDefaultMap, store) => {
@@ -87,7 +87,7 @@ export function createDB (storage) {
             return storeDefaultMap
         }, {})
 
-        const result = await read(NAMESPACES.SYNC, storeDefaultMap)
+        const result = await read(NAMESPACES.LOCAL, storeDefaultMap)
         const hiddenChapters = Object.values(result).reduce((hiddenChapters, store) => {
             return {
                 ...hiddenChapters,
@@ -103,7 +103,7 @@ export function createDB (storage) {
             const currentStore = stores[stores.length - 1]
             currentStore[chapter] = true
             currentStore.length += chapter.length
-            if (currentStore.length > 2000) {
+            if (currentStore.length > 1500) {
                 delete currentStore.length
                 stores.push({ length: 0 })
             }
@@ -116,8 +116,8 @@ export function createDB (storage) {
             return writeObject
         }, {hiddenRegistry: {update: Date.now(), list: []}})
         writeObject.hiddenRegistry = JSON.stringify(writeObject.hiddenRegistry)
-        console.log(writeObject)
-        return write(NAMESPACES.SYNC, writeObject)
+        console.log(writeObject, ...Object.values(writeObject).map((entry) => entry.length))
+        return write(NAMESPACES.LOCAL, writeObject)
     }
 
     async function hideUrl (id) {
