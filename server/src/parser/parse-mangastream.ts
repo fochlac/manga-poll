@@ -130,7 +130,10 @@ async function parseMangastreamFront (
     const $ = cheerio.load(body)
     const baseDate = new Date()
     baseDate.setHours(0, 0, 0, 0)
-    const host = getHost(sources[0].url)
+    let host = getHost(sources[0].url)
+    if (host === 'asura.gg') {
+        host = 'www.asurascans.com'
+    }
     const trackedSeries:Record<string, Source> = sources.reduce((trackedSeries, source) => {
         const path = source.url.split('/').slice(3).join('/')
         trackedSeries[path] = source
@@ -251,7 +254,7 @@ async function fetchFrontPage (sources: Source[], urls: Record<string, Url>): Pr
     }
 }
 
-const mangastream: Parser = {
+export const mangastream: Parser = {
     fetchFunction: fetchMangastream,
     fetchFrontPageFunction: fetchFrontPage,
     type: TYPE,
