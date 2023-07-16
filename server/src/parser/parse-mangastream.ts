@@ -132,7 +132,7 @@ async function parseMangastreamFront (
     baseDate.setHours(0, 0, 0, 0)
     let host = getHost(sources[0].url)
     if (host === 'asura.gg') {
-        host = 'www.asurascans.com'
+        host = 'asurascans.com'
     }
     const trackedSeries:Record<string, Source> = sources.reduce((trackedSeries, source) => {
         const path = source.url.split('/').slice(3).join('/')

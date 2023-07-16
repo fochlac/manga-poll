@@ -29,7 +29,16 @@ const urls = readFile<Url>(
         Object.keys(urls).forEach((urlKey) => {
             const url = urls[urlKey]
             if (urlKey.includes('asura.gg')) {
-                url.url = url.url.replace('asura.gg', 'www.asurascans.com')
+                url.url = url.url.replace('asura.gg', 'asurascans.com')
+                const newKey = getUrlKey(url, url.sourceId)
+                url.id = newKey
+                url.host = getHost(url.url)
+                urls[newKey] = url
+                delete urls[urlKey]
+                modified = true
+            }
+            if (urlKey.includes('www.asurascans.com')) {
+                url.url = url.url.replace('www.asurascans.com', 'asurascans.com')
                 const newKey = getUrlKey(url, url.sourceId)
                 url.id = newKey
                 url.host = getHost(url.url)
