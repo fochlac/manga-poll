@@ -46,6 +46,15 @@ const urls = readFile<Url>(
                 delete urls[urlKey]
                 modified = true
             }
+            if (urlKey.includes('realmscans.com')) {
+                url.url = url.url.replace('realmscans.com', 'realmscans.xyz')
+                const newKey = getUrlKey(url, url.sourceId)
+                url.id = newKey
+                url.host = getHost(url.url)
+                urls[newKey] = url
+                delete urls[urlKey]
+                modified = true
+            }
         })
         const uniqueMap = Object.values(urls).reduce((uniqueMap, url) => {
             const duplicateUrlId = uniqueMap[url.url]
