@@ -55,6 +55,14 @@ const urls = readFile<Url>(
                 delete urls[urlKey]
                 modified = true
             }
+            if (url.host === 'nacm.xyz') {
+                url.host = getHost(url.url)
+                const newKey = getUrlKey(url, url.sourceId)
+                url.id = newKey
+                urls[newKey] = url
+                delete urls[urlKey]
+                modified = true
+            }
         })
         const uniqueMap = Object.values(urls).reduce((uniqueMap, url) => {
             const duplicateUrlId = uniqueMap[url.url]

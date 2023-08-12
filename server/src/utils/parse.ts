@@ -1,6 +1,11 @@
 
 export function getHost (url) {
-    return url.replace(/https?:\/\//, '').split('/')[0]?.split('.').slice(-2).join('.')
+    const host = url.replace(/https?:\/\//, '').split('/')[0]?.split('.').slice(-2).join('.')
+
+    if (host === 'asura.gg' || host === 'nacm.xyz') {
+        return 'asurascans.com'
+    }
+    return host
 }
 
 export function parseNAgoDateString (dateString) {

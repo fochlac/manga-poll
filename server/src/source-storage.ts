@@ -27,6 +27,10 @@ const sources: Record<string, Source> = readFile<Source>(sourcesPath, (sources) 
             sources[key].url = sources[key].url.replace('realmscans.com', 'realmscans.xyz')
             modified = true
         }
+        if (sources[key].url?.includes('asura.nacm.xyz')) {
+            sources[key].url = sources[key].url.replace('asura.nacm.xyz', 'asurascans.com')
+            modified = true
+        }
     })
     return modified
 }, writeSources)
