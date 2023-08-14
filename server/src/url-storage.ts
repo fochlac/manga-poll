@@ -46,8 +46,8 @@ const urls = readFile<Url>(
                 delete urls[urlKey]
                 modified = true
             }
-            if (urlKey.includes('realmscans.com')) {
-                url.url = url.url.replace('realmscans.com', 'realmscans.xyz')
+            if (urlKey.includes('realmscans.xyz')) {
+                url.url = url.url.replace('realmscans.xyz', 'realmscans.to')
                 const newKey = getUrlKey(url, url.sourceId)
                 url.id = newKey
                 url.host = getHost(url.url)

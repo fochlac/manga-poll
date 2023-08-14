@@ -23,8 +23,8 @@ const writeSources = createWrite(sourcesPath)
 const sources: Record<string, Source> = readFile<Source>(sourcesPath, (sources) => {
     let modified = false
     Object.keys(sources).forEach((key) => {
-        if (sources[key].url?.includes('realmscans.com')) {
-            sources[key].url = sources[key].url.replace('realmscans.com', 'realmscans.xyz')
+        if (sources[key].url?.includes('realmscans.xyz')) {
+            sources[key].url = sources[key].url.replace('realmscans.xyz', 'realmscans.to')
             modified = true
         }
         if (sources[key].url?.includes('asura.nacm.xyz')) {
