@@ -46,6 +46,15 @@ const urls = readFile<Url>(
                 delete urls[urlKey]
                 modified = true
             }
+            if (urlKey.includes('asuracomics.gg')) {
+                url.url = url.url.replace('asuracomics.gg', 'asurascans.com')
+                const newKey = getUrlKey(url, url.sourceId)
+                url.id = newKey
+                url.host = getHost(url.url)
+                urls[newKey] = url
+                delete urls[urlKey]
+                modified = true
+            }
             if (urlKey.includes('www.asurascans.com')) {
                 url.url = url.url.replace('www.asurascans.com', 'asurascans.com')
                 const newKey = getUrlKey(url, url.sourceId)
