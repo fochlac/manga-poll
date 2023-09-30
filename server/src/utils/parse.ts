@@ -2,7 +2,7 @@
 export function getHost (url) {
     const host = url.replace(/https?:\/\//, '').split('/')[0]?.split('.').slice(-2).join('.')
 
-    if (host === 'asura.gg' || host === 'nacm.xyz') {
+    if (host === 'asura.gg' || host === 'nacm.xyz' || host === 'asuratoon.com') {
         return 'asurascans.com'
     }
     return host

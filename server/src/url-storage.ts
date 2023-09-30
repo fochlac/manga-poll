@@ -37,6 +37,15 @@ const urls = readFile<Url>(
                 delete urls[urlKey]
                 modified = true
             }
+            if (urlKey.includes('asuratoon.com')) {
+                url.url = url.url.replace('asuratoon.com', 'asurascans.com')
+                const newKey = getUrlKey(url, url.sourceId)
+                url.id = newKey
+                url.host = getHost(url.url)
+                urls[newKey] = url
+                delete urls[urlKey]
+                modified = true
+            }
             if (urlKey.includes('www.asurascans.com')) {
                 url.url = url.url.replace('www.asurascans.com', 'asurascans.com')
                 const newKey = getUrlKey(url, url.sourceId)
@@ -66,7 +75,7 @@ const urls = readFile<Url>(
         })
         const uniqueMap = Object.values(urls).reduce((uniqueMap, url) => {
             const duplicateUrlId = uniqueMap[url.url]
-            uniqueMap[url.url] = duplicateUrlId && urls[duplicateUrlId].created > url.created ? duplicateUrlId : url.id
+            uniqueMap[url.url] = duplicateUrlId || url.id
 
             return uniqueMap
         }, {})
@@ -81,6 +90,7 @@ const urls = readFile<Url>(
                 String(url?.chapter).startsWith('-') ||
                 String(url?.chapter).startsWith('_')
             ) {
+                urls[uniqueMap[url.url]].url = urls[urlKey].url
                 delete urls[urlKey]
                 modified = true
             }
@@ -96,6 +106,10 @@ const urls = readFile<Url>(
                 const url = urls[urlKey]
                 addUrlToMaps(urls, url)
             }
+        })
+        Object.keys(urls).forEach((urlKey) => {
+            const url = urls[urlKey]
+            addUrlToMaps(urls, url)
         })
         return modified
     },
