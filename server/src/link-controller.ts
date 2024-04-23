@@ -169,7 +169,19 @@ export function linksController (app) {
     const updateFields = ['hiddenChapters', 'hide', 'sources']
     app.put('/api/links/:key', (req, res) => {
         try {
-            const id = checkKey(req.params.key)
+            const { id, pw } = fromKey(req.params.key)
+            if (!links[fromKey(req.params.key)?.id]) {
+                links[id] = {
+                    hiddenChapters: req.body.hiddenChapters,
+                    hide: req.body.hide,
+                    sources: req.body.sources,
+                    id,
+                    pw,
+                    lastModified: Date.now()
+                }
+            }
+
+            checkKey(req.params.key)
 
             let changes = 0
             updateFields.forEach((key) => {
@@ -190,6 +202,7 @@ export function linksController (app) {
             })
         }
         catch (e) {
+            console.log(e.message)
             handleKeyError(res)
         }
     })
@@ -209,6 +222,7 @@ export function linksController (app) {
             }
         }
         catch (e) {
+            console.log(e.message)
             handleKeyError(res)
         }
     })
