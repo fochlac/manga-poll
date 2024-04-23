@@ -13,10 +13,10 @@ export async function renderStats () {
     const sortedHosts = Object.keys(stats).sort((a, b) => String(a).localeCompare(b))
 
     renderHostList(stats, sortedHosts)
-    renderHostDiagram(
-        stats,
-        sortedHosts.filter((host) => Object.keys(stats[host].warnings || {}).length)
-    )
+    // renderHostDiagram(
+    //     stats,
+    //     sortedHosts.filter((host) => Object.keys(stats[host].warnings || {}).length)
+    // )
 }
 
 document.querySelector('#globalLegend').addEventListener('click', (e) => {
@@ -125,6 +125,8 @@ function renderHostDiagram (stats, hosts) {
     }
 }
 
+let cache = new Map()
+
 function renderHostList (stats, hosts) {
     const expandedHosts = Array.from(document.querySelectorAll('.host.expanded')).reduce((hostMap, el) => {
         hostMap[el.dataset.id] = el.querySelector('.details').getBoundingClientRect().height
@@ -133,7 +135,13 @@ function renderHostList (stats, hosts) {
 
     document.querySelector('#stats').innerHTML = ''
 
+    let innerHTML
+
     hosts.forEach((host) => {
+        if (cache.has(host) && cache.get(host).sources === JSON.stringify(stats[host].sources)) {
+            innerHTML += cache.get(host).html
+        }
+
         const tableRows = Object.values(stats[host].sources)
             .sort((a, b) => String(a.title).localeCompare(b.title))
             .map(
@@ -162,11 +170,11 @@ function renderHostList (stats, hosts) {
         else if (stats[host].failureRate.day > 0.02) {
             weight = ''
         }
-        const warnings = mergeWarningCollections(stats[host].warnings, stats[host].chapterWarnings)
+        const warnings = {} // mergeWarningCollections(stats[host].warnings, stats[host].chapterWarnings)
         const warning = Object.keys(warnings).length ? getIcon(weight) : ''
 
         const title = `${host}&nbsp;(${Object.keys(stats[host].sources).length})`
-        document.querySelector('#stats').innerHTML += `
+        const html = `
                         <div class="host${expandedHosts[host] !== undefined ? ' expanded' : ''}" 
                             data-id="${host}"
                             data-sources='${Object.keys(stats[host].sources).length}'
@@ -209,8 +217,16 @@ function renderHostList (stats, hosts) {
                             </div>
                         </div>
                     `
+                                            
+        cache.set(host, {
+            html,
+            sources: JSON.stringify(stats[host].sources)
+        })
+
+        innerHTML += html
     })
-    document.querySelector('#stats').innerHTML += `<div class="updated">Updated: ${time(Date.now())}</div>`
+
+    document.querySelector('#stats').innerHTML = `${innerHTML}<div class="updated">Updated: ${time(Date.now())}</div>`
 }
 
 function renderUserCount () {
