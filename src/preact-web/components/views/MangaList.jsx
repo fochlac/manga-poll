@@ -66,7 +66,6 @@ export function MangaList () {
             return map
         }, urlMapNew)
     }, [urls])
-    console.log(order)
     const sortedSources = useMemo(
         () =>
             Array.from(urlMap.entries())
