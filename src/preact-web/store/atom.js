@@ -45,7 +45,8 @@ export const atom = createAtom(
             await api.Urls.read(
                 sourceList.map((source) => source.id),
                 maxOld,
-                hide
+                hide,
+                2
             ).then(db.urls.import)
 
             set({
@@ -168,7 +169,8 @@ const interval = createSchedule({
         const freshUrls = await api.Urls.read(
             sources.map((source) => source.id),
             maxOld,
-            hide
+            hide,
+            2
         )
 
         const { newUrls, oldUrls } = await db.urls.read()

@@ -46,7 +46,7 @@ export function MangaCard ({ chapters, sourceId, showDetails, search }) {
     const { source } = useSelector((store) => ({ source: store.sources[sourceId] }))
     const dispatch = useDispatch()
 
-    if (!source || search?.length && !source.title.includes(search)) return null
+    if (!source || search?.length && !source.title.toLowerCase().includes(search.toLowerCase())) return null
 
     const continueChapter = chapters.reduce((cont, chapter) => (chapter.isNew ? chapter : cont), null)
 
