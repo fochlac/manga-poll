@@ -42,12 +42,18 @@ export const atom = createAtom(
                 settings,
                 route: get().route
             })
-            await api.Urls.read(
+            const freshUrls = await api.Urls.read(
                 sourceList.map((source) => source.id),
                 maxOld,
                 hide,
                 2
-            ).then(db.urls.import)
+            )
+            const { newUrls, oldUrls } = await db.urls.read()
+            const merged = [...newUrls, ...oldUrls, ...freshUrls].reduce((map, url) => {
+                map[url.id] = url
+                return map
+            }, {})
+            await db.urls.import(Object.values(merged))
 
             set({
                 urls: await db.urls.read()
@@ -102,15 +108,11 @@ export const atom = createAtom(
                 [sourceId], undefined, undefined, 10000
             )
             const { newUrls, oldUrls } = await db.urls.read()
-            const currentUrls = [...newUrls, ...oldUrls]
-            const urlIds = new Set(currentUrls.map((url) => url.id))
-            const merged = sourceUrls.reduce((urls, url) => {
-                if (!urlIds.has(url.id)) {
-                    urls.push(url)
-                }
-                return urls
-            }, currentUrls)
-            return db.urls.import(merged)
+            const merged = [...newUrls, ...oldUrls, ...sourceUrls].reduce((map, url) => {
+                map[url.id] = url
+                return map
+            }, {})
+            return db.urls.import(Object.values(merged))
         },
         async subscribeNotifications ({ get }, messagingToken) {
             const settings = await db.settings.local.read()
@@ -140,7 +142,6 @@ export const atom = createAtom(
         },
         async deleteSource ({ set }, id) {
             await db.sources.delete(id)
-            set({ sources: await db.sources.read() })
         },
         async hideChapter (_atom, id) {
             await hideChapter(db, id)
@@ -172,17 +173,12 @@ const interval = createSchedule({
             hide,
             2
         )
-
         const { newUrls, oldUrls } = await db.urls.read()
-        const currentUrls = [...newUrls, ...oldUrls]
-        const urlIds = new Set(currentUrls.map((url) => url.id))
-        const merged = freshUrls.reduce((urls, url) => {
-            if (!urlIds.has(url.id)) {
-                urls.push(url)
-            }
-            return urls
-        }, currentUrls)
-        await db.urls.import(merged)
+        const merged = [...newUrls, ...oldUrls, ...freshUrls].reduce((map, url) => {
+            map[url.id] = url
+            return map
+        }, {})
+        return db.urls.import(Object.values(merged))
     },
     interval: 60 * 1000,
     isActive: true,

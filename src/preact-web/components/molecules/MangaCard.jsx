@@ -1,5 +1,6 @@
 import { ExternalLink, Eye, MoreVertical } from 'preact-feather'
 import { Fragment } from 'preact'
+import { memo } from 'preact/compat'
 import styled from 'styled-components'
 import { getHost } from '../../../common/utils'
 import { useDispatch, useSelector } from '../../utils/atom'
@@ -42,7 +43,7 @@ const MangaCardContent = styled(FlexColumn)`
     }
 `
 
-export function MangaCard ({ chapters, sourceId, showDetails, search }) {
+export const MangaCard = memo(({ chapters, sourceId, showDetails, search }) => {
     const { source } = useSelector((store) => ({ source: store.sources[sourceId] }))
     const dispatch = useDispatch()
 
@@ -60,7 +61,7 @@ export function MangaCard ({ chapters, sourceId, showDetails, search }) {
                             as={Link}
                             href={source.url}
                             data-title={`Open Manga on ${getHost(source.url)}`}
-                            style={{ marginBottom: '3px' }}
+                            style={{ cursor: 'pointer' }}
                             newTab
                         >
                             <ExternalLink size={18} />
@@ -110,4 +111,4 @@ export function MangaCard ({ chapters, sourceId, showDetails, search }) {
             </CardContent>
         </Card>
     )
-}
+})

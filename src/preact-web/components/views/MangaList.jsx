@@ -1,10 +1,11 @@
-import { useState } from 'preact/hooks'
+import { useMemo, useState } from 'preact/hooks'
 import { Fragment } from 'preact'
 import styled from 'styled-components'
 import { useSelector } from '../../utils/atom'
 import { DetailView } from '../molecules/DetailView'
 import { MangaCard } from '../molecules/MangaCard'
-import { InputField } from '../molecules/InputField'
+import { InputField, SelectField } from '../molecules/InputField'
+import { usePersistedState } from '../../hooks/use-persisted-state'
 
 const List = styled.ul`
     list-style: none;
@@ -21,7 +22,7 @@ const List = styled.ul`
     grid-template-rows: auto;
 `
 const Bar = styled.div`
-    display:flex;
+    display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
@@ -29,36 +30,67 @@ const Bar = styled.div`
     padding: 0 8px;
 `
 
+const FILTERS = {
+    CHANGED: 'CHANGED',
+    ALPHABET: 'ALPHABET'
+}
+
+const sortFunctions = {
+    [FILTERS.CHANGED]: () => (a, b) => a[1]?.created - b[1]?.created,
+    [FILTERS.ALPHABET]: (sources) => (a, b) =>
+        String(sources[a[0]]?.title?.trim()).localeCompare(sources[b[0]]?.title?.trim())
+}
+
 export function MangaList () {
-    const { urls, sources } = useSelector((store) => ({
-        urls: store.urls,
-        maxOld: store.maxOld,
-        sources: store.sources
-    }))
+    const urls = useSelector((store) => store.urls)
+    const sources = useSelector((store) => store.sources)
+
     const [detail, showDetails] = useState('')
     const [search, setSearch] = useState('')
+    const [order, setOrder] = usePersistedState('manga-list-filter', FILTERS.ALPHABET)
 
-    if (!Array.isArray(urls?.newUrls) || !Array.isArray(urls?.oldUrls)) return null
-
-    const urlMapNew = urls.newUrls.reduce((map, url) => {
-        if (!map.has(url.sourceId)) map.set(url.sourceId, [])
-        map.get(url.sourceId).push({ ...url, isNew: true })
-        return map
-    }, new Map())
-    const urlMap = urls.oldUrls.reduce((map, url) => {
-        if (!map.has(url.sourceId)) map.set(url.sourceId, [])
-        map.get(url.sourceId).push({ ...url, isNew: false })
-        return map
-    }, urlMapNew)
     const detailSource = detail && sources?.[detail]
+
+    const urlMap = useMemo(() => {
+        if (!Array.isArray(urls?.newUrls) || !Array.isArray(urls?.oldUrls)) {
+            return new Map()
+        }
+        const urlMapNew = urls.newUrls.reduce((map, url) => {
+            if (!map.has(url.sourceId)) map.set(url.sourceId, [])
+            map.get(url.sourceId).push({ ...url, isNew: true })
+            return map
+        }, new Map())
+        return urls.oldUrls.reduce((map, url) => {
+            if (!map.has(url.sourceId)) map.set(url.sourceId, [])
+            map.get(url.sourceId).push({ ...url, isNew: false })
+            return map
+        }, urlMapNew)
+    }, [urls])
+    console.log(order)
+    const sortedSources = useMemo(
+        () =>
+            Array.from(urlMap.entries())
+                .filter(([sourceId]) => sources[sourceId])
+                .sort(sortFunctions[order](sources)),
+        [order, urlMap, sources]
+    )
 
     return (
         <Fragment>
             <Bar>
-                <InputField label="Filter" value={search} onChange={setSearch} placeholder='Search' />
+                <InputField label="Filter" value={search} onChange={setSearch} placeholder="Search" />
+                <SelectField
+                    onChange={(e) => setOrder(e.target.value)}
+                    value={order}
+                    label="Sort By"
+                    options={[
+                        { label: 'Title', value: FILTERS.ALPHABET },
+                        { label: 'Last Update', value: FILTERS.CHANGED }
+                    ]}
+                />
             </Bar>
             <List>
-                {Array.from(urlMap.entries()).map(([sourceId, chapters]) => (
+                {sortedSources.map(([sourceId, chapters]) => (
                     <MangaCard
                         search={search}
                         chapters={chapters}
