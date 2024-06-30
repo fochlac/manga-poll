@@ -42,7 +42,6 @@ export function ChapterRow ({ chapter, showTitle, isNew }) {
     const hideChapter = async () => {
         setHide(true)
         await dispatch('hideChapter', chapter.id).catch(() => setHide(false))
-        setHide(false)
     }
 
     const newChap = chapter.isNew || isNew
