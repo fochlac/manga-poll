@@ -19,8 +19,8 @@ export function RefreshTimer () {
     const timer = useRef()
     useEffect(() => {
         timer.current = setInterval(() => {
-            const diffToLast = Date.now() - fetchTime.lastPing
-            const diffToNext = fetchTime.nextPing - Date.now()
+            const diffToLast = Date.now() - (fetchTime?.lastPing ?? 0)
+            const diffToNext = (fetchTime?.nextPing ?? Date.now()) - Date.now()
             let text = `Next refresh: ${Math.max(Math.ceil(diffToNext / 1000), 0)}s`
             if (diffToLast <= 2500) {
                 text = 'Refreshed'

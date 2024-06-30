@@ -8,7 +8,6 @@ import { Provider } from './utils/atom'
 import { Router } from './components/molecules/Router'
 import { Header } from './components/molecules/Header'
 import { TabBar } from './components/molecules/TabBar'
-import { db } from './storage'
 import { Footer } from './components/molecules/Footer'
 import { Theme } from './components/atoms/CssVariables'
 import { LinkDetector } from './components/molecules/LinkDetector'
@@ -22,8 +21,6 @@ firebase.initializeApp({
     messagingSenderId: '246007842230',
     appId: '1:246007842230:web:46d93150bc98eaecb0ed17'
 })
-
-db.urls.setMaxOld(100)
 
 function App () {
     useEffect(() => {

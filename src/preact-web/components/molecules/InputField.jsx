@@ -41,7 +41,7 @@ const SelectField = ({ value, onChange, label, options }) => {
             <Label style={{margin: '0 0 -2px 2px'}}>{label}</Label>
             <Select onChange={(e) => onChange(e.target.value)}>
                 {options.map((option) => (
-                    <option key={value} value={option.value} selected={value === option.value}>{option.label}</option>
+                    <option key={option.value} value={option.value} selected={value === option.value}>{option.label}</option>
                 ))}
             </Select>
         </InputWrapper>

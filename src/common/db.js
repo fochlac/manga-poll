@@ -160,7 +160,7 @@ export function createDB (storage) {
     }
 
     async function getMaxOld () {
-        const { maxOld } = await read(NAMESPACES.LOCAL, { maxOld: 25 })
+        const { maxOld } = await read(NAMESPACES.LOCAL, { maxOld: 150 })
         return maxOld
     }
 

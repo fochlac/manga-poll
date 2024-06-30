@@ -24,8 +24,7 @@ export const atom = createAtom(
             }
             catch (e) {}
         },
-        async initStore ({swap, set, get}) {
-            const maxOld = await db.urls.getMaxOld()
+        async initStore ({swap, get}) {
             const hide = await db.urls.getHide()
             const sourceList = await db.sources.read()
             const urls = await db.urls.read()
@@ -34,29 +33,13 @@ export const atom = createAtom(
 
             swap({
                 isLoading: false,
-                maxOld,
+                maxOld: 150,
                 hide,
                 sources: sourceList.reduce((map, source) => ({ ...map, [source.id]: source }), {}),
                 urls,
                 link,
                 settings,
                 route: get().route
-            })
-            const freshUrls = await api.Urls.read(
-                sourceList.map((source) => source.id),
-                maxOld,
-                hide,
-                2
-            )
-            const { newUrls, oldUrls } = await db.urls.read()
-            const merged = [...newUrls, ...oldUrls, ...freshUrls].reduce((map, url) => {
-                map[url.id] = url
-                return map
-            }, {})
-            await db.urls.import(Object.values(merged))
-
-            set({
-                urls: await db.urls.read()
             })
         },
         navigate ({ set }, key, params, query) {

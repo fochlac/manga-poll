@@ -3,7 +3,7 @@ import { createDB } from '../common/db'
 
 let onChange = Function.prototype
 
-function read(_namespace, keyMap) {
+function read (_namespace, keyMap) {
     const values = (Array.isArray(keyMap) ? keyMap : Object.keys(keyMap)).map(async (key) => ({
         [key]: (await localForage.getItem(key)) || keyMap[key]
     }))
@@ -11,12 +11,12 @@ function read(_namespace, keyMap) {
     return Promise.all(values).then((values) => values.reduce((map, data) => ({ ...map, ...data }), {}))
 }
 
-async function write(_namespace, keyPairs) {
+async function write (_namespace, keyPairs) {
     await Promise.all(Object.keys(keyPairs).map(async (key) => await localForage.setItem(key, keyPairs[key])))
     onChange(keyPairs)
 }
 
-function addListener(callback = Function.prototype) {
+function addListener (callback = Function.prototype) {
     onChange = callback
     return window.addEventListener('storage', () => {
         callback(Object.keys(localStorage))
