@@ -3,7 +3,7 @@ import { DefaultText } from './Typography'
 
 export const Card = styled.div`
     box-shadow: 0px 3px 2px -1px rgb(0 0 0 / 20%), 0px 1px 2px 1px rgb(0 0 0 / 14%), 0px 1px 4px 1px rgb(0 0 0 / 12%);
-    background: white;
+    background: var(--background-off);
     width: calc(100% - 16px);
     margin: 4px 8px 12px;
     cursor: ${({ onClick }) => (typeof onClick === 'function' ? 'pointer' : 'default')};
@@ -13,6 +13,9 @@ export const CardContent = styled.div`
     flex-direction: column;
     flex-grow: 1;
     padding-right: 16px;
+    padding-left: 16px;
+    max-width: 100;
+    overflow: hidden;
 `
 export const CardActionIcon = styled.div`
     margin-left: 4px;
@@ -24,6 +27,7 @@ export const CardActionIcon = styled.div`
     user-select: none;
     margin-bottom: -1px;
     margin-top: -1px;
+    cursor: default;
 
     &[data-title]:hover:before {
         content: attr(data-title);
@@ -32,8 +36,10 @@ export const CardActionIcon = styled.div`
         font-weight: 700;
         position: absolute;
         z-index: 1000;
-        ${(props) => (props.left ? 'right: calc(100% + 4px)' : 'left: calc(100% + 6px)')};
-        background: white;
+        right: 50%;
+        transform: translateX(50%);
+        top: calc(100% + 12px);
+        background: var(--background);
         color: #062832;
         border: #062832 solid 1px;
         text-align: center;
@@ -45,10 +51,12 @@ export const CardActionIcon = styled.div`
         width: 0;
         height: 0;
         position: absolute;
-        ${(props) => (props.left ? 'right: calc(100% - 1px)' : 'left: calc(100% + 1px)')};
-        border-top: 5px solid transparent;
-        border-bottom: 5px solid transparent;
-        ${(props) => (props.left ? 'border-left' : 'border-right')}: 6px solid #062832;
+        right: 50%;
+        transform: translateX(50%);
+        top: calc(100% + 8px);
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-bottom: 6px solid #062832;
     }
 `
 

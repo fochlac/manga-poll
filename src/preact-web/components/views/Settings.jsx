@@ -18,7 +18,7 @@ const LinkNumber = styled.p`
     margin: 1rem 0;
     text-align: center;
     font-size: 1.2rem;
-    color: ${({ linked }) => (linked ? '#000c21' : '#c3cbd2')};
+    color: ${({ linked }) => (linked ? 'var(--font)' : 'var(--font-disabled)')};
     font-weight: 700;
     letter-spacing: 2px;
 `

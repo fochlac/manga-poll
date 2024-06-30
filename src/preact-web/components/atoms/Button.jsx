@@ -1,20 +1,44 @@
 import styled from 'styled-components'
 
-export const Button = styled.button`
-    padding: 4px 16px;
-    border: 1px solid rgb(191, 199, 207);
-    background-color: rgb(239, 239, 239);
-    color: rgb(32, 38, 45);
+export const BaseButton = styled.button`
+    border: 1px solid var(--contrast);
+    background-color: var(--default-button-background);
+    color: var(--font);    
+    cursor: ${(props) => props.disabled ? 'default' : 'pointer'};
+    opacity: ${(props) => props.disabled ? 0.5 : 1};
+    pointer-events: ${(props) => props.disabled ? 'none' : 'all'};
     border-radius: 3px;
-    cursor: pointer;
 
     &:hover {
-        border-color: rgb(181, 189, 197);
-        background-color: rgb(229, 229, 229);
+        background: var(--default-button-hover);
+        border-color: var(--contrast-dark);
     }
 
     &:active {
-        background-color: rgb(239, 239, 239);
-        border-color: rgb(171, 179, 187);
+        background: var(--default-button-active);
+        border-color: var(--contrast-dark);
+    }
+`
+
+export const Button = styled(BaseButton)`
+    padding: 4px 16px;
+`
+
+export const DestructiveButton = styled(Button)`
+    background: var(--destructive);
+    border-color: var(--destructive-dark);
+    color: var(--destructive-lightest);
+    font-weight: 700;
+    margin-right: 1px;
+    margin-left: auto;
+
+    &:hover {
+        background: var(--destructive-button-hover);
+        border-color: var(--destructive-darker);
+    }
+
+    &:active {
+        background: var(--destructive-button-active);
+        border-color: var(--destructive-darker);
     }
 `

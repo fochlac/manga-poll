@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import { useSelector } from '../../utils/atom'
 import { DetailView } from '../molecules/DetailView'
 import { MangaCard } from '../molecules/MangaCard'
+import { InputField } from '../molecules/InputField'
 
 const List = styled.ul`
     list-style: none;
@@ -12,14 +13,20 @@ const List = styled.ul`
     overflow-x: hidden;
     margin: 0;
     width: 100%;
-    padding: 0 max(calc((100vw - 1200px) / 3), 4px) 0 max(8px, calc((100vw - 1200px) / 3));
     box-sizing: border-box;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
     padding-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-auto-flow: row;
+    grid-template-rows: auto;
 `
+const Bar = styled.div`
+    display:flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+`
+
 export function MangaList () {
     const { urls, sources } = useSelector((store) => ({
         urls: store.urls,
@@ -27,6 +34,7 @@ export function MangaList () {
         sources: store.sources
     }))
     const [detail, showDetails] = useState('')
+    const [search, setSearch] = useState('')
 
     if (!Array.isArray(urls?.newUrls) || !Array.isArray(urls?.oldUrls)) return null
 
@@ -44,9 +52,13 @@ export function MangaList () {
 
     return (
         <Fragment>
+            <Bar>
+                <InputField label="Filter" value={search} onChange={setSearch} placeholder='Search' />
+            </Bar>
             <List>
                 {Array.from(urlMap.entries()).map(([sourceId, chapters]) => (
                     <MangaCard
+                        search={search}
                         chapters={chapters}
                         key={sourceId}
                         sourceId={sourceId}

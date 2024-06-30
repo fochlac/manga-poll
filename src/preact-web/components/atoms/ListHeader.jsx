@@ -2,13 +2,13 @@ import styled from 'styled-components'
 
 export const ListHeader = styled.li`
     display: flex;
-    border-bottom: solid 1px #555;
-    color: black;
+    border-bottom: solid 1px var(--background-off-strong);
+    color: var(--font);
     position: sticky;
     top: 0;
-    background: white;
+    background: var(--background);
     z-index: 1;
-    outline: white solid 2px;
+    outline: var(--background) solid 2px;
     padding: 0 5px;
     margin-bottom: 4px;
     padding-top: 20px;

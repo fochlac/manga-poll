@@ -4,9 +4,9 @@ import { useDispatch, useSelector } from '../../utils/atom'
 import { Badge } from '../atoms/Badge'
 
 const Bar = styled.nav`
-    height: ${({ theme }) => theme.tabBarHeight};
-    color: ${({ theme }) => theme.colorPrimary};
-    background: ${({ theme }) => theme.colorPrimaryLight};
+    height: 36px;
+    color: var(--brand);
+    background: var(--brand-lightest);
     margin: 0;
     display: flex;
     justify-content: space-between;
@@ -18,25 +18,17 @@ const Bar = styled.nav`
 `
 const Tab = styled.a`
     display: flex;
-    border-bottom: solid 2px ${({ active, theme }) => (active ? theme.colorPrimary : 'transparent')};
+    border-bottom: solid 2px ${({ active }) => (active ? 'var(--font)' : 'transparent')};
     cursor: ${({ active }) => (active ? 'default' : 'pointer')};
     user-select: none;
-    line-height: ${({ theme }) => theme.tabBarHeight};
+    line-height: 36px;
     height: 100%;
     flex-basis: ${({count}) => `${Math.floor(1 / count * 100)}%`};
     flex-grow: 1;
     text-align: center;
     justify-content: center;
+    color: var(--font);
 `
-const defaultProps = {
-    theme: {
-        colorPrimary: '#062832',
-        colorPrimaryLight: 'rgb(230, 241, 242)',
-        tabBarHeight: '36px'
-    }
-}
-Bar.defaultProps = defaultProps
-Tab.defaultProps = defaultProps
 
 const NavigationTab = ({ children, link, count }) => {
     const dispatch = useDispatch()

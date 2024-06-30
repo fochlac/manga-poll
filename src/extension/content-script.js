@@ -1,6 +1,5 @@
 import { renderBookmark } from './page-scripts/bookmark-banner'
 import { extractSource } from './page-scripts/extract-source'
-import { renderList } from './page-scripts/migrate-kenmei'
 import { trackProgress } from './page-scripts/track-reading-progress'
 
 const controller = chrome || browser
@@ -22,13 +21,18 @@ function test () {
         })
     }
 
-    // if (location.href.includes('kenmei.co')) {
+    // if (
+    //     document.documentElement.innerHTML.includes('ts-breadcrumb bixbox') ||
+    //     document.querySelector('.readingnavtop .backseries a, .headpost .allc a, #content .hentry .thumb img')
+    // ) {
     //     controller.runtime.sendMessage({
-    //         action: 'KENMEI'
+    //         action: 'SOURCES'
     //     }, (response) => {
-    //         console.log(response)
-    //         renderList(response.sources)
+
     //     })
+    // }
+    // else if (window.location.host.includes('reaperscans.com')) {
+
     // }
 }
 

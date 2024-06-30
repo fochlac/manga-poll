@@ -1,6 +1,6 @@
 export function testMangastream () {
-    const breadcrumpLink = document.querySelector('ol[itemtype="http://schema.org/BreadcrumbList"] meta[itemprop="position"][content="2"]')
-        ?.closest('li')
+    const breadcrumpLink = document.querySelector('[itemtype="http://schema.org/BreadcrumbList"] meta[itemprop="position"][content="2"]')
+        ?.closest('[itemtype="http://schema.org/ListItem"]')
         ?.querySelector('a')
 
     const thumbnail = document.querySelector('#content .hentry .thumb img')

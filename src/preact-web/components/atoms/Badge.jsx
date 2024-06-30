@@ -20,7 +20,7 @@ export const Badge = styled.span`
 `
 Badge.defaultProps = {
     theme: {
-        colorPrimary: '#062832',
-        colorPrimaryLight: 'rgb(230, 241, 242)'
+        colorPrimary: 'var(--destructive-dark)',
+        colorPrimaryLight: 'var(--brand-contrast)'
     }
 }

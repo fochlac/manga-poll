@@ -9,7 +9,7 @@ import { Link } from '../atoms/Link'
 
 const StyledRow = styled(FlexRow)`
     padding: 4px 4px;
-    border-bottom: solid 1px #c6dafd;
+    border-bottom: solid 1px var(--background-off-strong);
     box-sizing: border-box;
     width: '100%';
     margin: 2px;

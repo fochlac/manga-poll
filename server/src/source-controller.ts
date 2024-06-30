@@ -53,6 +53,23 @@ export function sourceController (app) {
         }
     })
 
+    app.post('/api/sources/:id/upload', async (req, res) => {
+        try {
+            const entry = await createSourceIfNeeded(req.body)
+
+            if (entry) {
+                res.status(200).json({ valid: true, payload: entry })
+            }
+            else {
+                res.status(400).json({ valid: false })
+            }
+        }
+        catch (err) {
+            console.log('Unexpected Error while creating source:', err?.message, req?.body)
+            res.status(500).json({ valid: false })
+        }
+    })
+
     app.post('/api/sources/bulkMatch', async (req, res) => {
         try {
             if (Array.isArray(req.body?.sources)) {

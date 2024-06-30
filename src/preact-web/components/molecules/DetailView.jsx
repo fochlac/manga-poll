@@ -5,8 +5,9 @@ import { FlexColumn, FlexRow } from '../atoms/Layout'
 import { Link } from '../atoms/Link'
 import { ChapterRow } from './ChapterRow'
 import { Dialog } from './Dialog'
-
-const background = '#c6dafd'
+import { Button, DestructiveButton } from '../atoms/Button'
+import { ButtonBar } from '../atoms/ButtonBar'
+import { useDispatch } from '../../utils/atom'
 
 const DetailImageContainer = styled.div`
     max-width: 30%;
@@ -14,14 +15,14 @@ const DetailImageContainer = styled.div`
     flex-grow: 0;
     margin-right: 4px;
     height: calc(100% - 4px);
-    background: rgb(198, 218, 253);
+    background: var(--brand);
     border-bottom-left-radius: 4px;
     max-height: 200px;
     min-height: calc(100% - 4px);
     height: 200px;
     width: 140px;
-    
-    @media(max-width: 500px) {
+
+    @media (max-width: 500px) {
         height: 120px;
         width: 100px;
         min-height: unset;
@@ -32,7 +33,7 @@ const DetailTitle = styled.h3`
     margin: 0;
     width: 100%;
 
-    @media(max-width: 500px) {
+    @media (max-width: 500px) {
         font-size: 1.5rem;
     }
 `
@@ -50,14 +51,15 @@ const Subtitle = styled.h5`
     padding-left: 16px;
     box-sizing: border-box;
 
-    @media(max-width: 500px) {
+    @media (max-width: 500px) {
         display: none;
     }
 `
 const ChapterDescription = styled.p`
     padding: 8px 16px;
     text-align: justify;
-    background: ${() => background};
+    background: var(--brand);
+    color: var(--brand-contrast);
     margin-top: 4px;
     margin-bottom: 0;
     border-bottom-right-radius: 4px;
@@ -76,7 +78,7 @@ const TitleContainer = styled.div`
     padding-left: 16px;
     margin-bottom: 16px;
 
-    @media(max-width: 500px) {
+    @media (max-width: 500px) {
         height: 0;
         margin-left: min(125px, calc(30vw + 25px));
         width: calc(100% - min(125px, calc(30vw + 5px)));
@@ -88,12 +90,16 @@ const TitleContainer = styled.div`
 const InfoContainer = styled(FlexColumn)`
     min-height: 204px;
 
-    @media(max-width: 500px) {
+    @media (max-width: 500px) {
         min-height: unset;
     }
 `
 
 export function DetailView ({ onClose, source, urls }) {
+    const dispatch = useDispatch()
+
+    if (!source) return null
+
     return (
         <Dialog
             title={''}
@@ -106,14 +112,14 @@ export function DetailView ({ onClose, source, urls }) {
                 marginTop: '54px',
                 borderRadius: 'min(4px, calc(4px + 100vw - 700px))'
             }}
-            bodyStyle={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', marginTop: -32 }}
+            bodyStyle={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', marginTop: -32, height: '100%' }}
         >
             <FlexRow align="flex-start" style={{ marginBottom: 16, flexShrink: 0 }} flip={500}>
                 <DetailImageContainer>
                     <ContainedImage
                         size="cover"
                         src={source.imageUrl}
-                        style={{ marginRight: 0, border: `solid 2px ${background}` }}
+                        style={{ marginRight: 0, border: 'solid 2px var(--brand)' }}
                     />
                 </DetailImageContainer>
                 <InfoContainer>
@@ -135,6 +141,17 @@ export function DetailView ({ onClose, source, urls }) {
                     <ChapterRow chapter={chapter} key={chapter.id} />
                 ))}
             </ChapterList>
+            <ButtonBar>
+                <DestructiveButton
+                    onClick={() => dispatch('deleteSource', source.id).then(() => onClose())}
+                    style={{ marginLeft: 'auto' }}
+                >
+                    Unfollow
+                </DestructiveButton>
+                <Button onClick={onClose} style={{ marginLeft: 8 }}>
+                    Close
+                </Button>
+            </ButtonBar>
         </Dialog>
     )
 }

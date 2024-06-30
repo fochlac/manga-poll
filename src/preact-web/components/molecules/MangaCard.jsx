@@ -4,8 +4,7 @@ import styled from 'styled-components'
 import { getHost } from '../../../common/utils'
 import { useDispatch, useSelector } from '../../utils/atom'
 import { ActionLink } from '../atoms/ActionLink'
-import { Card, CardActionIcon, CardContent, CardTextShort } from '../atoms/Card'
-import { CardImage } from '../atoms/CardImage'
+import { Card, CardActionIcon, CardContent } from '../atoms/Card'
 import { CardMenu, CardMenuItem, CardTitle, CardTitleContainer, CardTitleText } from '../atoms/CardTitle'
 import { FlexColumn, FlexRow } from '../atoms/Layout'
 import { Link } from '../atoms/Link'
@@ -15,10 +14,6 @@ import { ChapterRowSimple } from './ChapterRowSimple'
 const Row = styled.li`
     display: flex;
     justify-content: space-between;
-
-    @media(max-width: 350px) {
-        flex-direction: column;
-    }
 `
 const ChapterInfo = styled(FlexColumn)`
     white-space: nowrap;
@@ -30,58 +25,37 @@ const ChapterInfo = styled(FlexColumn)`
         margin-top: 0px !important;
     }
 `
-const MangaImage = styled(CardImage)`
-    @media(max-width: 350px) {
-        height: 100px;
-        width: 100px;
-        min-height: unset;
-    }
-`
 const MangaTitleContainer = styled(CardTitleContainer)`
-    @media(max-width: 350px) {
-        margin-left: 110px;
-        margin-top: -100px;
-        margin-bottom: 106px;
-        height: 0px;
-        align-items: flex-start;
-        width: calc(100% + 16px - 110px);
-    }
+    max-width: calc(100% + 16px);
 `
 const MangaTitle = styled(CardTitle)`
-    max-Width: min(240px, calc(100vw - 190px));
-
-    @media(max-width: 350px) {
-        align-items: flex-start;
-    }
+    max-width: calc(100% - 30px);
 `
 const MangaTitleText = styled(CardTitleText)`
-    @media(max-width: 350px) {
+    @media (max-width: 350px) {
         white-space: normal;
     }
 `
-const MangaCardContent = styled(FlexColumn) `
-    @media(max-width: 350px) {
+const MangaCardContent = styled(FlexColumn)`
+    @media (max-width: 350px) {
         padding-left: 8px;
     }
 `
 
-export function MangaCard ({ chapters, sourceId, showDetails }) {
+export function MangaCard ({ chapters, sourceId, showDetails, search }) {
     const { source } = useSelector((store) => ({ source: store.sources[sourceId] }))
     const dispatch = useDispatch()
 
-    if (!source) return null
+    if (!source || search?.length && !source.title.includes(search)) return null
 
     const continueChapter = chapters.reduce((cont, chapter) => (chapter.isNew ? chapter : cont), null)
 
     return (
-        <Card as={Row} onClick={showDetails} style={{ maxWidth: 400 }}>
-            <MangaImage src={source.imageUrl} />
+        <Card as={Row} onClick={showDetails}>
             <CardContent>
                 <MangaTitleContainer>
                     <MangaTitle>
-                        <MangaTitleText title={source.title}>
-                            {source.title}
-                        </MangaTitleText>
+                        <MangaTitleText title={source.title}>{source.title}</MangaTitleText>
                         <CardActionIcon
                             as={Link}
                             href={source.url}
@@ -99,12 +73,15 @@ export function MangaCard ({ chapters, sourceId, showDetails }) {
                     </CardMenu>
                 </MangaTitleContainer>
                 <MangaCardContent align="flex-start" style={{ height: '100%' }}>
-                    <CardTextShort style={{ paddingRight: '16px' }}>{source.description}</CardTextShort>
                     <ChapterInfo align="stretch">
-                        <FlexColumn align="flex-start" justify="flex-start" style={{ marginBottom: 8, marginTop: -24 }}>
-                            <Label style={{ marginBottom: 4 }}>Continue where you left off:</Label>
-                            <FlexRow style={{ width: '100%' }}>
-                                {continueChapter ? (
+                        {continueChapter ? (
+                            <FlexColumn
+                                align="flex-start"
+                                justify="flex-start"
+                                style={{ marginBottom: 8, marginTop: -24 }}
+                            >
+                                <Label style={{ marginBottom: 4 }}>Continue where you left off:</Label>
+                                <FlexRow style={{ width: '100%' }}>
                                     <Fragment>
                                         <Link newTab href={continueChapter.url}>
                                             <b>{`Chapter ${continueChapter.chapter}`}</b>
@@ -119,23 +96,14 @@ export function MangaCard ({ chapters, sourceId, showDetails }) {
                                             </ActionLink>
                                         </CardActionIcon>
                                     </Fragment>
-                                ) : (
-                                    <span>All Read</span>
-                                )}
-                            </FlexRow>
-                        </FlexColumn>
+                                </FlexRow>
+                            </FlexColumn>
+                        ) : null}
                         <FlexColumn align="flex-start" style={{ marginBottom: 8 }}>
                             <Label style={{ marginBottom: 4 }}>Latest Updates:</Label>
                             {chapters.slice(0, 2).map((chapter) => (
                                 <ChapterRowSimple chapter={chapter} key={chapter.id} />
                             ))}
-                            <FlexRow style={{ width: '100%' }} justify="center">
-                                <ActionLink onClick={showDetails} style={{ margin: 0 }}>
-                                    <small>
-                                        <b>Show All Chapters</b>
-                                    </small>
-                                </ActionLink>
-                            </FlexRow>
                         </FlexColumn>
                     </ChapterInfo>
                 </MangaCardContent>

@@ -32,13 +32,13 @@ const hideAnimation = css`
 
 const OverlayBody = styled(FlexColumn)`
     position: absolute;
-    background: white;
+    background: var(--background);
     height: 100%;
     z-index: 100;
     top: 0;
     transform: translateX(calc(100% + max(calc((100vw - 800px) / 3), 8px)));
     width: calc(90% - max(calc((100vw - 800px) / 1.5), 8px));
-    margin: 0 max(calc((100vw - 800px) / 3), 0px) 0 max(64px, calc(10% + (100vw - 800px) / 3));
+    right: 0;
     box-sizing: border-box;
     ${({ hideOverlay, instantVisible, instantHidden }) =>
         hideOverlay ? !instantHidden && hideAnimation : !instantVisible && showAnimation}
@@ -47,8 +47,9 @@ const OverlayBody = styled(FlexColumn)`
 
     @media (max-width: 800px) {
         transform: unset;
+        animation: unset;
         right: 0;
-        width: calc(100% - 32px);
+        width: 100%;
     }
 `
 
@@ -61,7 +62,7 @@ const OverlayContent = styled(FlexColumn)`
 
     &:after {
         content: '';
-        background: white;
+        background: var(--background);
         height: 16px;
         position: absolute;
         bottom: 0;
@@ -75,7 +76,7 @@ const OverlayTitle = styled(FlexRow)`
     padding: 8px 16px;
     min-height: 20px;
     color: #e6f1f2;
-    background: #224049;
+    background: var(--brand-light);
     font-size: 18px;
     letter-spacing: 0.8px;
     margin: 0;
@@ -89,7 +90,7 @@ const Close = styled.div`
     top: 0;
     height: 36px;
     width: 36px;
-    background: #224049;
+    background-color: var(--brand-light);
     display: flex;
     justify-content: center;
     align-items: center;

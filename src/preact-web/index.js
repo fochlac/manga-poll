@@ -10,6 +10,7 @@ import { Header } from './components/molecules/Header'
 import { TabBar } from './components/molecules/TabBar'
 import { db } from './storage'
 import { Footer } from './components/molecules/Footer'
+import { Theme } from './components/atoms/CssVariables'
 
 firebase.initializeApp({
     apiKey: 'AIzaSyBe2mv85Y9-oQJhDFeqzCLrTaetRp_Cm50',
@@ -24,6 +25,7 @@ db.urls.setMaxOld(100)
 function App () {
     return (
         <Provider atom={atom}>
+            <Theme />
             <Header />
             <TabBar />
             <Router />

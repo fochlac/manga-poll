@@ -16,21 +16,22 @@ export const atom = createAtom(
         route: { key: URL_LIST, params: null }
     },
     {
-        async init ({ set, swap, get, dispatch }) {
+        async init ({ dispatch }) {
+            await dispatch('initStore')
+
             const link = await db.link.read()
 
             if (!link?.key && sessionStorage.getItem('hasMangaScout')) {
                 try {
                     const start = Date.now()
-                    await new Promise((resolve, reject) => {
+                    const key = await new Promise((resolve, reject) => {
                         const interval = setInterval(async () => {
                             if (sessionStorage.getItem('MangaScoutLinkKey')) {
                                 clearInterval(interval)
                                 const extLinkKey = sessionStorage.getItem('MangaScoutLinkKey')
                                 if (extLinkKey) {
-                                    await dispatch('connectToLink', extLinkKey)
+                                    resolve(extLinkKey)
                                 }
-                                resolve()
                             }
                             else if (Date.now() - start >= 50) {
                                 clearInterval(interval)
@@ -38,6 +39,7 @@ export const atom = createAtom(
                             }
                         }, 5)
                     })
+                    await dispatch('connectToLink', key)
                 }
                 catch (err) {}
             }
@@ -46,7 +48,8 @@ export const atom = createAtom(
                 await Links.fetchLinkUpdate()
             }
             catch (e) {}
-
+        },
+        async initStore ({swap, set, get}) {
             const maxOld = await db.urls.getMaxOld()
             const hide = await db.urls.getHide()
             const sourceList = await db.sources.read()
@@ -59,11 +62,10 @@ export const atom = createAtom(
                 hide,
                 sources: sourceList.reduce((map, source) => ({ ...map, [source.id]: source }), {}),
                 urls,
-                link,
+                link: get().link,
                 settings,
                 route: get().route
             })
-
             await api.Urls.read(
                 sourceList.map((source) => source.id),
                 maxOld,
@@ -87,11 +89,12 @@ export const atom = createAtom(
         triggerFetch () {
             interval.triggerInstantly()
         },
-        async connectToLink (_atom, linkId) {
+        async connectToLink ({dispatch}, linkId) {
             const linkResult = await api.Link.read(linkId)
             if (linkResult?.valid) {
                 await db.link.set(linkResult.payload)
                 await db.link.setLocal(linkResult.payload)
+                await dispatch('initStore')
             }
             else {
                 throw new Error('Invalid link-id.')

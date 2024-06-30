@@ -41,7 +41,7 @@ export const DialogBox = styled.aside`
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    background-color: #ffffff;
+    background-color: var(--background);
     border-radius: 4px;
     max-width: 90vw;
     overflow: hidden;

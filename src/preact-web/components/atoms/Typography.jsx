@@ -6,7 +6,7 @@ export const DefaultText = styled.p`
     font-size: 14px;
     line-height: 16px;
     letter-spacing: 0.01071em;
-    color: rgba(0, 0, 0, 0.87);
+    color: var(--font);
 `
 
 export const SmallerText = styled.p`
@@ -35,7 +35,7 @@ export const Label = styled.legend`
 export const H6 = styled.h6`
     font-size: 0.8rem;
     margin: 16px 0 4px;
-    border-bottom: solid 1px lightslategrey;
+    border-bottom: solid 1px var(--font);
     padding-left: 2px;
 `
 

@@ -33,10 +33,10 @@ export function initMessageHandler (db, Api) {
                 return true
             }
         }
-        else if (request?.action === 'KENMEI') {
+        else if (request?.action === 'SOURCES') {
             db.sources.read().then((sources) => {
                 sendResponse({
-                    sources: sources.map(({ title }) => ({ title }))
+                    sources: sources.reduce((source) => source.url)
                 })
             })
             return true

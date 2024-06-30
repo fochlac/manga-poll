@@ -25,12 +25,12 @@ const LinkRaw = styled.a`
 
 LinkRaw.defaultProps = {
     theme: {
-        linkColor: '#1e6bf7',
-        linkColorHover: '#407ef1',
-        linkColorActive: '#0e46af',
-        linkColorVisited: '#5e28cc',
-        linkColorVisitedHover: '#855adb',
-        linkColorVisitedActive: '#511fb6'
+        linkColor: 'var(--link)',
+        linkColorHover: 'var(--link-hover)',
+        linkColorActive: 'var(--link-active)',
+        linkColorVisited: 'var(--link-visited)',
+        linkColorVisitedHover: 'var(--link-visited-hover)',
+        linkColorVisitedActive: 'var(--link-visited-active)'
     }
 }
 

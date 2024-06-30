@@ -1,12 +1,12 @@
 /* eslint-disable max-lines */
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import puppeteer from 'puppeteer-extra'
+import { chromium } from 'playwright-extra'
 import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 
 import { getUrlKey } from './utils/keys'
 
-puppeteer.use(StealthPlugin())
+chromium.use(StealthPlugin())
 
 declare global {
     interface ChapterResult {
@@ -125,33 +125,17 @@ export async function getResponseBody (response): Promise<string> {
     return body
 }
 
-let puppeteerInstance
+let puppeteerEnabled
 export async function startPuppeteer () {
-    if (!puppeteerInstance) {
-        puppeteerInstance = puppeteer.launch({ args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--no-first-run',
-            '--no-zygote',
-            '--single-process', // <- this one doesn't works in Windows
-            '--disable-gpu'
-        ], headless: true })
-    }
-    await puppeteerInstance
+    puppeteerEnabled = true
 }
 export async function closePuppeteer () {
-    if (puppeteerInstance) {
-        const browser = await puppeteerInstance
-        await browser.close()
-        puppeteerInstance = undefined
-    }
+    puppeteerEnabled = false
 }
 
 let queue = Promise.resolve()
 export function queuePuppeteerFetch (url) {
-    if (!puppeteerInstance) {
+    if (!puppeteerEnabled) {
         console.log(`Cloudflare detected for ${url}.`)
         return ''
     }
@@ -170,14 +154,11 @@ export function queuePuppeteerFetch (url) {
 }
 
 export async function fetchWithPuppeteer (url): Promise<string> {
-    if (!puppeteerInstance) {
-        console.log('Puppeteer inactive, skipping request for ' + url)
-        return ''
-    }
-
-    const browser = await puppeteerInstance
-    const page = await browser.newPage()
+    const browser = await chromium.launch({headless: true})
+    let context
     try {
+        context = await browser.newContext()
+        const page = await context.newPage()
         await page.goto(url)
         await page.waitForFunction(
             () => {
@@ -196,17 +177,25 @@ export async function fetchWithPuppeteer (url): Promise<string> {
                 ) {
                     return false
                 }
+                else if (text.includes('Verifying you are human')) {
+                    return false
+                }
                 return true
             },
             { timeout: 10000 }
         )
         // eslint-disable-next-line no-undef
         const body = await page.evaluate(() => document.body.innerHTML)
-        await page.close()
+        await context.close()
+        await browser.close()
         return body
     }
     catch (e) {
-        await page.close()
+        console.log('catch close', e)
+        if (context) {
+            await context.close().catch((e) => console.log('close failed'))
+        }
+        await browser.close()
         return ''
     }
 }

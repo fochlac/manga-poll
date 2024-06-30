@@ -9,14 +9,14 @@ import { useOverlayDelay } from './Router'
 
 const Bar = styled.header`
     height: 54px;
-    background: ${({ theme }) => theme.colorPrimary};
-    color: ${({ theme }) => theme.colorPrimaryLight};
+    background: var(--brand);
+    color: var(--brand-contrast);
     margin: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-direction: row;
-    padding: 0 max(calc((100vw - 800px) / 3 + 16px), 16px) 0 max(16px, calc((100vw - 800px) / 3 + 16px));
+    padding: 0 16px 0 max(16px, calc((100vw - 800px) / 3 + 16px));
 `
 const Title = styled.h1`
     font-size: 22px;
@@ -28,13 +28,6 @@ const HeaderImage = styled.img`
     margin-right: 12px;
     border-radius: 15%;
 `
-
-Bar.defaultProps = {
-    theme: {
-        colorPrimary: '#062832',
-        colorPrimaryLight: 'rgb(230, 241, 242)'
-    }
-}
 
 export function Header () {
     const dispatch = useDispatch()
