@@ -15,7 +15,10 @@ export function urlController (app) {
         let payload = []
         const filters: FetchFilter = {}
 
-        if (Array.isArray(req?.body?.sources) && req.body.sources.length > 0) {
+        if (Array.isArray(req?.body?.sources)) {
+            if (!req.body.sources.length) {
+                return res.status(200).json({ valid: true, payload: [] })
+            }
             filters.sources = req.body.sources.reduce((map, sourceId) => {
                 const id = checkForDuplicate(sourceId)
                 if (sources[id]) {
@@ -33,7 +36,6 @@ export function urlController (app) {
         }
 
         const urls = getUrls()
-        let oldestCreated
         if (filters.date) {
             const keys = getUrlKeysAfter(filters.date, Object.keys(filters.sources || {}))
             const sortedUrlKeys = keys.urls.sort((key1, key2) => urls[key2].created - urls[key1].created)
@@ -54,7 +56,6 @@ export function urlController (app) {
                 }
                 if (urls[sortedUrlKeys[index]].created < filters.date) {
                     old++
-                    oldestCreated = urls[sortedUrlKeys[index]].created
                 }
 
                 index++
@@ -65,9 +66,7 @@ export function urlController (app) {
             Object.keys(filters.sources).forEach((sourceId) => {
                 const keys = getSortedUrlKeysForSource(sourceId).slice(0, filters.requiredPerSource)
                 keys.forEach((key) => {
-                    if (urls[key].created <= oldestCreated) {
-                        payload.push(urls[key])
-                    }
+                    payload.push(urls[key])
                 })
             })
         }

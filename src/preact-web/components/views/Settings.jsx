@@ -35,7 +35,7 @@ export function SettingsView ({ hideOverlay }) {
     }, [link?.key, externalKey])
 
     return (
-        <Overlay visible={!hideOverlay} onClose={() => dispatch('overlay', '')} title="Settings">
+        <Overlay showTopbar visible={!hideOverlay} onClose={() => dispatch('overlay', '')} title="Settings">
             {showLinkWarning && (
                 <div id="link-link-warning">
                     <span>

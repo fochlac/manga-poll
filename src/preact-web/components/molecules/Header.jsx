@@ -11,6 +11,7 @@ const Bar = styled.header`
     height: 54px;
     background: var(--brand);
     color: var(--brand-contrast);
+    z-index: 1000;
     margin: 0;
     display: flex;
     justify-content: space-between;

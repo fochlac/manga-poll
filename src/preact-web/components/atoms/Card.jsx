@@ -40,8 +40,8 @@ export const CardActionIcon = styled.div`
         transform: translateX(50%);
         top: calc(100% + 12px);
         background: var(--background);
-        color: #062832;
-        border: #062832 solid 1px;
+        color: var(--font);
+        border: var(--font) solid 1px;
         text-align: center;
         padding: 2px;
         min-width: 70px;
@@ -56,7 +56,7 @@ export const CardActionIcon = styled.div`
         top: calc(100% + 8px);
         border-left: 5px solid transparent;
         border-right: 5px solid transparent;
-        border-bottom: 6px solid #062832;
+        border-bottom: 6px solid var(--font);
     }
 `
 

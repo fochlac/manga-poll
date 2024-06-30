@@ -2,7 +2,7 @@ import styled from 'styled-components'
 
 export const ListHeader = styled.li`
     display: flex;
-    border-bottom: solid 1px var(--background-off-strong);
+    border-bottom: solid 1px var(--font);
     color: var(--font);
     position: sticky;
     top: 0;

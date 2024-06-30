@@ -19,31 +19,6 @@ export const atom = createAtom(
         async init ({ dispatch }) {
             await dispatch('initStore')
 
-            const link = await db.link.read()
-
-            if (!link?.key && sessionStorage.getItem('hasMangaScout')) {
-                try {
-                    const start = Date.now()
-                    const key = await new Promise((resolve, reject) => {
-                        const interval = setInterval(async () => {
-                            if (sessionStorage.getItem('MangaScoutLinkKey')) {
-                                clearInterval(interval)
-                                const extLinkKey = sessionStorage.getItem('MangaScoutLinkKey')
-                                if (extLinkKey) {
-                                    resolve(extLinkKey)
-                                }
-                            }
-                            else if (Date.now() - start >= 50) {
-                                clearInterval(interval)
-                                reject()
-                            }
-                        }, 5)
-                    })
-                    await dispatch('connectToLink', key)
-                }
-                catch (err) {}
-            }
-
             try {
                 await Links.fetchLinkUpdate()
             }
@@ -55,6 +30,7 @@ export const atom = createAtom(
             const sourceList = await db.sources.read()
             const urls = await db.urls.read()
             const settings = await db.settings.local.read()
+            const link = await db.link.read()
 
             swap({
                 isLoading: false,
@@ -62,7 +38,7 @@ export const atom = createAtom(
                 hide,
                 sources: sourceList.reduce((map, source) => ({ ...map, [source.id]: source }), {}),
                 urls,
-                link: get().link,
+                link,
                 settings,
                 route: get().route
             })
@@ -120,6 +96,21 @@ export const atom = createAtom(
         async unlinkAccount () {
             await db.link.set(null)
         },
+        async fetchSourceChapters (_atom, sourceId) {
+            const sourceUrls = await api.Urls.read(
+                [sourceId], undefined, undefined, 10000
+            )
+            const { newUrls, oldUrls } = await db.urls.read()
+            const currentUrls = [...newUrls, ...oldUrls]
+            const urlIds = new Set(currentUrls.map((url) => url.id))
+            const merged = sourceUrls.reduce((urls, url) => {
+                if (!urlIds.has(url.id)) {
+                    urls.push(url)
+                }
+                return urls
+            }, currentUrls)
+            return db.urls.import(merged)
+        },
         async subscribeNotifications ({ get }, messagingToken) {
             const settings = await db.settings.local.read()
             const sourceKeyList = Object.keys(get().sources)
@@ -174,11 +165,22 @@ const interval = createSchedule({
         const maxOld = await db.urls.getMaxOld()
         const hide = await db.urls.getHide()
         const sources = await db.sources.read()
-        await api.Urls.read(
+        const freshUrls = await api.Urls.read(
             sources.map((source) => source.id),
             maxOld,
             hide
-        ).then(db.urls.import)
+        )
+
+        const { newUrls, oldUrls } = await db.urls.read()
+        const currentUrls = [...newUrls, ...oldUrls]
+        const urlIds = new Set(currentUrls.map((url) => url.id))
+        const merged = freshUrls.reduce((urls, url) => {
+            if (!urlIds.has(url.id)) {
+                urls.push(url)
+            }
+            return urls
+        }, currentUrls)
+        await db.urls.import(merged)
     },
     interval: 60 * 1000,
     isActive: true,

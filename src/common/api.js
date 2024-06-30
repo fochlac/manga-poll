@@ -42,7 +42,7 @@ function createApi (baseUrl, db) {
             .catch((error) => ({ valid: false, error }))
     }
 
-    async function readUrls (sources = [], limit = '', date = '') {
+    async function readUrls (sources = [], limit, date, requiredPerSource) {
         return fetch(
             `${baseUrl}/api/urls/fetch`,
             {
@@ -50,7 +50,8 @@ function createApi (baseUrl, db) {
                 body: JSON.stringify({
                     sources,
                     date,
-                    limit
+                    limit,
+                    requiredPerSource
                 }),
                 headers: await getHeader()
             }
@@ -64,7 +65,7 @@ function createApi (baseUrl, db) {
             method: 'post',
             body: JSON.stringify({
                 topics,
-                key: key
+                key
             }),
             headers: await getHeader()
         })
@@ -77,7 +78,7 @@ function createApi (baseUrl, db) {
             method: 'delete',
             body: JSON.stringify({
                 topics,
-                key: key
+                key
             }),
             headers: await getHeader()
         })

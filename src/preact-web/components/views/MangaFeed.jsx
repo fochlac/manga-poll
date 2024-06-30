@@ -7,6 +7,7 @@ import { CenteredDiv } from '../atoms/CenteredDiv'
 import { ListHeader } from '../atoms/ListHeader'
 import { ChapterRow } from '../molecules/ChapterRow'
 import { RefreshTimer } from '../molecules/RefreshTimer'
+import { FlexRow } from '../atoms/Layout'
 
 const List = styled.ul`
     list-style: none;
@@ -20,7 +21,7 @@ const List = styled.ul`
 `
 
 export function MangaFeed () {
-    const { urls, maxOld } = useSelector((store) => ({ urls: store.urls, maxOld: store.maxOld }))
+    const { urls } = useSelector((store) => ({ urls: store.urls, maxOld: store.maxOld }))
     const dispatch = useDispatch()
     const listRef = useRef()
     const oldChapterRef = useRef()
@@ -28,36 +29,34 @@ export function MangaFeed () {
     const scrollHandler = useCallback(() => {
         const urls = listRef.current
         if (!urls) {
-            return () => null
+            return
         }
         let maxScroll = urls.scrollHeight - urls.offsetHeight - urls.scrollTop
         const getRefTop = (ref) => ref?.current?.getBoundingClientRect()?.top
+        const scrollHeight = urls.offsetHeight + urls.scrollTop
 
-        return () => {
-            const scrollHeight = urls.offsetHeight + urls.scrollTop
-            if (urls.scrollHeight - scrollHeight <= 50 && maxScroll !== urls.scrollHeight) {
-                maxScroll = urls.scrollHeight
-                dispatch('incrementMaxOld')
-            }
-            if (urls.scrollTop > 0 && oldChapterRef.current && getRefTop(listRef) === getRefTop(oldChapterRef)) {
-                setTopButtonVisible(true)
-            }
-            else {
-                setTopButtonVisible(false)
-            }
+        if (urls.scrollHeight - scrollHeight <= 50 && maxScroll !== urls.scrollHeight) {
+            maxScroll = urls.scrollHeight
+            dispatch('incrementMaxOld')
+        }
+        if (urls.scrollTop > 0 && oldChapterRef.current && Math.abs(getRefTop(listRef) - getRefTop(oldChapterRef)) < 10) {
+            setTopButtonVisible(true)
+        }
+        else {
+            setTopButtonVisible(false)
         }
     }, [listRef, setTopButtonVisible, dispatch, oldChapterRef])
 
     return (
-        <List onScroll={scrollHandler()} ref={listRef}>
+        <List onScroll={scrollHandler} ref={listRef}>
             {Boolean(urls?.newUrls?.length) && (
                 <Fragment>
                     <ListHeader>
-                        <span>
+                        <FlexRow>
                             <span>New Chapters</span>
-                        </span>
-                        <CenteredDiv>
                             <RefreshTimer />
+                        </FlexRow>
+                        <CenteredDiv>
                             <ActionLink>Hide all</ActionLink>
                         </CenteredDiv>
                     </ListHeader>
@@ -70,14 +69,17 @@ export function MangaFeed () {
                 <Fragment>
                     <ListHeader ref={oldChapterRef}>
                         <span>Old Chapters</span>
-                        {topButtonVisible && <ActionLink>Top &#8593;</ActionLink>}
+                        {topButtonVisible && (
+                            <ActionLink onClick={() => listRef.current && (listRef.current.scrollTop = 0)}>
+                                Top &#8593;
+                            </ActionLink>
+                        )}
                     </ListHeader>
                     {urls.oldUrls.map((chapter) => (
                         <ChapterRow key={chapter.url} chapter={chapter} showTitle />
                     ))}
                 </Fragment>
             )}
-            {urls?.oldUrls?.length >= maxOld && <li class="action load-more">Load up to 100 more old chapters...</li>}
         </List>
     )
 }

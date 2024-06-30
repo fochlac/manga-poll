@@ -51,7 +51,7 @@ export function MangaCard ({ chapters, sourceId, showDetails, search }) {
     const continueChapter = chapters.reduce((cont, chapter) => (chapter.isNew ? chapter : cont), null)
 
     return (
-        <Card as={Row} onClick={showDetails}>
+        <Card style={{userSelect: 'none'}} as={Row} onClick={showDetails}>
             <CardContent>
                 <MangaTitleContainer>
                     <MangaTitle>

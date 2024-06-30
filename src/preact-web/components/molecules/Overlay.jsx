@@ -103,9 +103,9 @@ const Close = styled.div`
     }
 `
 
-export function Overlay ({ visible, children, onClose, title, instantVisible, instantHidden, ...props }) {
+export function Overlay ({ visible, children, onClose, title, instantVisible, instantHidden, showTopbar, ...props }) {
     return (
-        <Backdrop visible={visible} showTopbar onClick={onClose}>
+        <Backdrop style={{ zIndex: 1000 }} visible={visible} onClick={onClose} showTopbar={showTopbar}>
             <OverlayBody
                 align="stretch"
                 hideOverlay={!visible}

@@ -19,8 +19,8 @@ export function Footer () {
 
     return (
         <FooterBar>
-            <SmallerText style={{ margin: 0 }}>Designed and developed by Florian Riedel. © 2020</SmallerText>
-            <ActionLink onClick={() => dispatch('overlay', IMPRESSUM)} style={{ whiteSpace: 'nowrap' }}>
+            <SmallerText style={{ margin: 0, fontSize: '0.8rem' }}>Designed and developed by Florian Riedel. © 2020</SmallerText>
+            <ActionLink onClick={() => dispatch('overlay', IMPRESSUM)} style={{ whiteSpace: 'nowrap', fontSize: '0.8rem' }}>
                 Legal Disclosure
             </ActionLink>
         </FooterBar>

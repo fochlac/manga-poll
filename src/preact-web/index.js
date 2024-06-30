@@ -11,6 +11,9 @@ import { TabBar } from './components/molecules/TabBar'
 import { db } from './storage'
 import { Footer } from './components/molecules/Footer'
 import { Theme } from './components/atoms/CssVariables'
+import { LinkDetector } from './components/molecules/LinkDetector'
+import { useEffect } from 'preact/hooks'
+import { Cover } from './components/atoms/Cover'
 
 firebase.initializeApp({
     apiKey: 'AIzaSyBe2mv85Y9-oQJhDFeqzCLrTaetRp_Cm50',
@@ -23,13 +26,22 @@ firebase.initializeApp({
 db.urls.setMaxOld(100)
 
 function App () {
+    useEffect(() => {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+        }
+    }, [])
+
     return (
         <Provider atom={atom}>
             <Theme />
-            <Header />
-            <TabBar />
-            <Router />
-            <Footer />
+            <Cover>
+                <Header />
+                <LinkDetector />
+                <TabBar />
+                <Router />
+                <Footer />
+            </Cover>
         </Provider>
     )
 }

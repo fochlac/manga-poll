@@ -14,7 +14,7 @@ const List = styled.ul`
     margin: 0;
     width: 100%;
     box-sizing: border-box;
-    padding-top: 16px;
+    padding-top: 0;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     grid-auto-flow: row;
@@ -25,6 +25,8 @@ const Bar = styled.div`
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    margin-bottom: 8px;
+    padding: 0 8px;
 `
 
 export function MangaList () {

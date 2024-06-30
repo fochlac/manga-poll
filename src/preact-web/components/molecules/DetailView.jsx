@@ -8,6 +8,8 @@ import { Dialog } from './Dialog'
 import { Button, DestructiveButton } from '../atoms/Button'
 import { ButtonBar } from '../atoms/ButtonBar'
 import { useDispatch } from '../../utils/atom'
+import { Fragment } from 'preact'
+import { useEffect, useState } from 'preact/hooks'
 
 const DetailImageContainer = styled.div`
     max-width: 30%;
@@ -15,7 +17,7 @@ const DetailImageContainer = styled.div`
     flex-grow: 0;
     margin-right: 4px;
     height: calc(100% - 4px);
-    background: var(--brand);
+    background: var(--background-off-strong);
     border-bottom-left-radius: 4px;
     max-height: 200px;
     min-height: calc(100% - 4px);
@@ -58,8 +60,8 @@ const Subtitle = styled.h5`
 const ChapterDescription = styled.p`
     padding: 8px 16px;
     text-align: justify;
-    background: var(--brand);
-    color: var(--brand-contrast);
+    background: var(--background-off-strong);
+    color: var(--font);
     margin-top: 4px;
     margin-bottom: 0;
     border-bottom-right-radius: 4px;
@@ -79,11 +81,11 @@ const TitleContainer = styled.div`
     margin-bottom: 16px;
 
     @media (max-width: 500px) {
-        height: 0;
-        margin-left: min(125px, calc(30vw + 25px));
-        width: calc(100% - min(125px, calc(30vw + 5px)));
-        margin-top: -120px;
-        margin-bottom: 120px;
+        height: ${({noImage}) => !noImage ? '0' : 'auto'};
+        margin-left: ${({noImage}) => !noImage ? 'min(125px, calc(30vw + 25px))' : '0'};
+        width: ${({noImage}) => !noImage ? 'calc(100% - min(125px, calc(30vw + 5px)))' : 'calc(100% - 32px)'};
+        margin-top: ${({noImage}) => !noImage ? '-120px' : '0'};
+        margin-bottom: ${({noImage}) => !noImage ? '120px' : '8px'};
         padding-right: 25px;
     }
 `
@@ -97,6 +99,13 @@ const InfoContainer = styled(FlexColumn)`
 
 export function DetailView ({ onClose, source, urls }) {
     const dispatch = useDispatch()
+    const [imageError, setImageError] = useState(false)
+
+    useEffect(() => {
+        if (source?.id) {
+            dispatch('fetchSourceChapters', source.id)
+        }
+    }, [source]) // eslint-disable-line react-hooks/exhaustive-deps
 
     if (!source) return null
 
@@ -115,15 +124,20 @@ export function DetailView ({ onClose, source, urls }) {
             bodyStyle={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', marginTop: -32, height: '100%' }}
         >
             <FlexRow align="flex-start" style={{ marginBottom: 16, flexShrink: 0 }} flip={500}>
-                <DetailImageContainer>
-                    <ContainedImage
-                        size="cover"
-                        src={source.imageUrl}
-                        style={{ marginRight: 0, border: 'solid 2px var(--brand)' }}
-                    />
-                </DetailImageContainer>
+                {
+                    (!imageError && source.imageUrl) && (
+                        <DetailImageContainer>
+                            <ContainedImage
+                                size="cover"
+                                src={source.imageUrl}
+                                onError={(e) => setImageError(true)}
+                                style={{ marginRight: 0, border: 'solid 2px var(--background-off-strong)' }}
+                            />
+                        </DetailImageContainer>
+                    )
+                }
                 <InfoContainer>
-                    <TitleContainer>
+                    <TitleContainer noImage={imageError || !source.imageUrl}>
                         <DetailTitle>{source.title}</DetailTitle>
                         <Host>
                             <span>Host: </span>
@@ -132,8 +146,12 @@ export function DetailView ({ onClose, source, urls }) {
                             </Link>
                         </Host>
                     </TitleContainer>
-                    <Subtitle>Synopsis</Subtitle>
-                    <ChapterDescription>{source.description}</ChapterDescription>
+                    {!!source.description?.length && (
+                        <Fragment>
+                            <Subtitle>Synopsis</Subtitle>
+                            <ChapterDescription>{source.description}</ChapterDescription>
+                        </Fragment>
+                    )}
                 </InfoContainer>
             </FlexRow>
             <ChapterList>

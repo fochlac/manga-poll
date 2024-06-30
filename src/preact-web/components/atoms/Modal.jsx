@@ -1,25 +1,5 @@
-import styled, { keyframes, css } from 'styled-components'
-
-const fadeIn = keyframes`
-  from {
-    background-color: #00000010;
-  }
-
-  to {
-    background-color: #00000040;
-  }
-`
-const fadeOut = keyframes`
-  from {
-    background-color: #00000040;
-  }
-
-  to {
-    background-color: #00000000;
-  }
-`
-const showAnimation = css`animation: ${fadeIn} 0.2s linear forwards`
-const hideAnimation = css`animation: ${fadeOut} 0.2s linear forwards`
+import styled from 'styled-components'
+import { hideAnimation, showAnimation } from './animations'
 
 export const Backdrop = styled.div`
     display: flex;
@@ -33,7 +13,8 @@ export const Backdrop = styled.div`
     right: 0;
     bottom: 0;
     cursor: pointer;
-    ${(props) => (props.visible ? showAnimation : hideAnimation)};
+    background-color: #00000060;
+    ${(props) => (props.visible ? showAnimation : hideAnimation)}
 `
 
 export const DialogBox = styled.aside`

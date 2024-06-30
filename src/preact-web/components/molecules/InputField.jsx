@@ -11,7 +11,6 @@ justify-content: center;
 width: 300px;
 max-width: 100%;
 margin-top: 8px;
-margin-bottom: -6px;
 position: relative;
 `
 const ClearButton = styled.span`

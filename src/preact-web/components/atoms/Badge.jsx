@@ -6,21 +6,15 @@ export const Badge = styled.span`
     &::before {
         content: ${({ value }) => (['string', 'number'].includes(typeof value) ? `'${value}'` : null)};
         position: absolute;
-        bottom: -2px;
-        right: -20px;
-        transform: translateY(-50%);
-        background-color: ${({ theme }) => theme.colorPrimary};
-        color: ${({ theme }) => theme.colorPrimaryLight};
+        bottom: 6px;
+        right: -2px;
+        transform: translateX(100%);
+        background-color: var(--destructive-dark);
+        color: var(--brand-contrast);
         font-size: 10px;
         line-height: 12px;
-        padding: 1px 3px;
+        padding: 1px 4px 1px 4px;
         border-radius: 7px;
-        width: 12px;
+        min-width: 12px;
     }
 `
-Badge.defaultProps = {
-    theme: {
-        colorPrimary: 'var(--destructive-dark)',
-        colorPrimaryLight: 'var(--brand-contrast)'
-    }
-}
