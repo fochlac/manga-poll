@@ -79,7 +79,7 @@ export function MangaList () {
             <Bar>
                 <InputField label="Filter" value={search} onChange={setSearch} placeholder="Search" />
                 <SelectField
-                    onChange={(e) => setOrder(e.target.value)}
+                    onChange={setOrder}
                     value={order}
                     label="Sort By"
                     options={[
