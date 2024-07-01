@@ -20,6 +20,7 @@
   "author": "",
   "license": "UNLICENSED",
   "dependencies": {
+    "@wojtekmaj/react-qr-svg": "^2.0.0",
     "assert": "^2.0.0",
     "axios": "0.27.2",
     "axios-auth-refresh": "^3.3.4",

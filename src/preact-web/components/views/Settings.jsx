@@ -10,9 +10,10 @@ import { db } from '../../storage'
 import { Fragment } from 'preact'
 import { NotificationsToggle } from '../molecules/NotificationsToggle'
 import { Button } from '../atoms/Button'
-import { FlexRow } from '../atoms/Layout'
+import { FlexColumn, FlexRow } from '../atoms/Layout'
 import { LinkingSection } from '../molecules/LinkingSection'
 import { Overlay } from '../molecules/Overlay'
+import QrSvg from '@wojtekmaj/react-qr-svg'
 
 const LinkNumber = styled.p`
     margin: 1rem 0;
@@ -21,6 +22,14 @@ const LinkNumber = styled.p`
     color: ${({ linked }) => (linked ? 'var(--font)' : 'var(--font-disabled)')};
     font-weight: 700;
     letter-spacing: 2px;
+`
+const StyledQr = styled(QrSvg)`
+    height: 100px;
+`
+const StyledFlexColumn = styled(FlexColumn)`
+    width: 100px;
+    margin-right: 50px;
+    margin-left: 10px;
 `
 
 export function SettingsView ({ hideOverlay }) {
@@ -60,29 +69,36 @@ export function SettingsView ({ hideOverlay }) {
                     <div class="link-id-block">
                         <H6>Link-Number</H6>
                         <SmallerText>
-                                You can use this number to synchronize with other clients or the extension.
+                                        You can use this number to synchronize with other clients or the extension.
                         </SmallerText>
-                        <LinkNumber linked={link?.key}>
-                            {link?.key
-                                ? `${link.key.slice(0, 5)}-${link.key.slice(5, 10)}-${link.key.slice(10)}`
-                                : 'Unlinked'}
-                        </LinkNumber>
-                        {link?.key && (
-                            <Fragment>
-                                <SmallerText style={{ marginBottom: 0 }}>
-                                        Or simply use the following link:
-                                </SmallerText>
-                                <FlexRow>
-                                    <Link
-                                        newTab
-                                        href={`https://manga.fochlac.com?link=${link.key}`}
-                                        style={{ margin: '0 auto' }}
-                                    >
-                                            https://manga.fochlac.com?link={link.key}
-                                    </Link>
-                                </FlexRow>
-                            </Fragment>
-                        )}
+                        <FlexRow>
+                            <FlexColumn>
+                                <LinkNumber linked={link?.key}>
+                                    {link?.key
+                                        ? `${link.key.slice(0, 5)}-${link.key.slice(5, 10)}-${link.key.slice(10)}`
+                                        : 'Unlinked'}
+                                </LinkNumber>
+                                {link?.key && (
+                                    <Fragment>
+                                        <SmallerText style={{ marginBottom: 0 }}>
+                                                Or simply use the following link:
+                                        </SmallerText>
+                                        <FlexRow>
+                                            <Link
+                                                newTab
+                                                href={`https://manga.fochlac.com?link=${link.key}`}
+                                                style={{ margin: '0 auto' }}
+                                            >
+                                                    https://manga.fochlac.com?link={link.key}
+                                            </Link>
+                                        </FlexRow>
+                                    </Fragment>
+                                )}
+                            </FlexColumn>
+                            <StyledFlexColumn>
+                                <StyledQr value={`https://manga.fochlac.com?link=${link.key}`} />
+                            </StyledFlexColumn>
+                        </FlexRow>
                     </div>
                     <LinkingSection />
                     {!!link?.key && (
