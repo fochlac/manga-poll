@@ -49,7 +49,7 @@ export function ChapterRow ({ chapter, showTitle, isNew }) {
     return (
         <StyledRow as="li" key={chapter.id} hide={hide}>
             <FlexRow style={{ width: '100%', marginRight: 4 }}>
-                <Link newTab href={chapter.url}>
+                <Link onClick={hideChapter} newTab href={chapter.url}>
                     {showTitle ? `${chapter.title} - ` : ''}
                     <wbr />
                     {`Ch. ${chapter.chapter}`}
