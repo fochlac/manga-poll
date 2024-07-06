@@ -20,6 +20,15 @@ const List = styled.ul`
     box-sizing: border-box;
 `
 
+function createUnique (key) {
+    const rendered = {}
+    return (func) => (entity) => {
+        if (!entity?.[key] || rendered[entity[key]]) return null
+        rendered[entity[key]] = true
+        return func(entity)
+    }
+}
+
 export function MangaFeed () {
     const { urls } = useSelector((store) => ({ urls: store.urls, maxOld: store.maxOld }))
     const dispatch = useDispatch()
@@ -47,6 +56,8 @@ export function MangaFeed () {
         }
     }, [listRef, setTopButtonVisible, dispatch, oldChapterRef])
 
+    const unique = createUnique('url')
+
     return (
         <List onScroll={scrollHandler} ref={listRef}>
             {Boolean(urls?.newUrls?.length) && (
@@ -60,9 +71,9 @@ export function MangaFeed () {
                             <ActionLink>Hide all</ActionLink>
                         </CenteredDiv>
                     </ListHeader>
-                    {urls.newUrls.map((chapter) => (
+                    {urls.newUrls.map(unique((chapter) => (
                         <ChapterRow key={chapter.url} chapter={chapter} isNew showTitle />
-                    ))}
+                    )))}
                 </Fragment>
             )}
             {Boolean(urls?.oldUrls?.length) && (
@@ -75,9 +86,9 @@ export function MangaFeed () {
                             </ActionLink>
                         )}
                     </ListHeader>
-                    {urls.oldUrls.map((chapter) => (
+                    {urls.oldUrls.map(unique((chapter) => (
                         <ChapterRow key={chapter.url} chapter={chapter} showTitle />
-                    ))}
+                    )))}
                 </Fragment>
             )}
         </List>
