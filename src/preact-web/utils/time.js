@@ -5,10 +5,10 @@ const hourInMs = 60 * minInMs
 const dayInMs = 24 * hourInMs
 
 export function formatTime (timestamp) {
-    const diff = Date.now() - timestamp
+    const diff = new Date().setHours(0, 0, 0, 0) - timestamp
 
     if (diff < dayInMs) {
-        return ''
+        return `${date.getHours()}:${pad(date.getMinutes())}`
     }
 
     const date = new Date(Number(timestamp))
