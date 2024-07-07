@@ -37,8 +37,15 @@ urlController(app)
 subscriptionsController(app)
 linksController(app)
 
-app.get('*', (_req, res) => {
-    res.status(404).send('Not Found... :(')
+app.get('/api/*', (_req, res) => {
+    res.status(404).json({
+        valid: false,
+        message: 'Unknown Endpoint.'
+    })
+})
+
+app.get('/*', (_req, res) => {
+    res.status(200).sendFile(resolve(__dirname, '../../dist/web/index.html'))
 })
 
 const port = !isNaN(Number(process.env.PORT)) ? Number(process.env.PORT) : 43214

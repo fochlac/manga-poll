@@ -4,16 +4,27 @@ import { createSchedule } from '../../common/schedule'
 import { getLinkHelpers } from '../../common/settings'
 import { hideChapter } from '../../common/urls'
 import { getMessagingToken } from '../utils/sw'
-import { URL_LIST } from '../constants/routes'
+import { routeList, URL_LIST, routes } from '../constants/routes'
 import { db } from '../storage'
 
 const api = API('', db)
 const Links = getLinkHelpers(db, api)
 
+const getCurrentLocation = () => {
+    const match = routeList.find(([url]) => String(location.pathname).toLowerCase() === url)
+    if (match) {
+        return match[1]
+    }
+    return URL_LIST
+}
+
+const initialKey = getCurrentLocation()
+history.replaceState(null, '', routes[initialKey])
+
 export const atom = createAtom(
     {
         isLoading: true,
-        route: { key: URL_LIST, params: null }
+        route: { key: initialKey, params: null }
     },
     {
         async init ({ dispatch }) {
@@ -43,6 +54,7 @@ export const atom = createAtom(
             })
         },
         navigate ({ set }, key, params, query) {
+            routes[key] && history.pushState(null, '', routes[key])
             set({
                 route: { key, params, query }
             })
@@ -136,6 +148,26 @@ export const atom = createAtom(
         }
     }
 )
+
+const eventPopstate = 'popstate'
+const eventPushState = 'pushState'
+const eventReplaceState = 'replaceState'
+const eventHashchange = 'hashchange'
+const events = [
+    eventPopstate,
+    eventPushState,
+    eventReplaceState,
+    eventHashchange
+]
+
+function handleLocationUpdate () {
+    atom.set({
+        route: { key: getCurrentLocation() }
+    })
+}
+for (const event of events) {
+    addEventListener(event, handleLocationUpdate)
+}
 
 atom.observe((atom) => {
     console.log('changed', atom.get())
