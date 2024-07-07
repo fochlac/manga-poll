@@ -26,8 +26,8 @@ const config = {
     },
     entry: {
         preact: {
-            import: './src/preact-web/index.js',
-            filename: webappPath + 'index-preact.js'
+            import: './src/web/index.js',
+            filename: webappPath + 'index.js'
         },
         bookmark: {
             import: './src/extension/test-bookmark.js',
