@@ -4,8 +4,40 @@ import styled from 'styled-components'
 import { useSelector } from '../../utils/atom'
 import { DetailView } from '../molecules/DetailView'
 import { MangaCard } from '../molecules/MangaCard'
-import { InputField, SelectField } from '../molecules/InputField'
+import { FieldGroup, InputField, SelectField } from '../molecules/InputField'
 import { usePersistedState } from '../../hooks/use-persisted-state'
+import { List as ListIcon, Grid } from 'preact-feather'
+import { BaseButton } from '../atoms/Button'
+import { MangaRow } from '../molecules/MangaRow'
+
+const ToggleBar = styled.div`
+    display: flex;
+    flex-direction: row;
+    margin-top: 5px;
+
+    & > * {
+        border-radius: 0;
+        padding: 2px 4px;
+        display:flex;
+        align-items: center;
+        justify-content: center;
+    }
+    & > [disabled] {
+        background-color: var(--brand-light) !important;
+        color: var(--brand-contrast) !important;
+        opacity: 1;
+    }
+
+    & > *:first-child {
+        border-top-left-radius: 3px;
+        border-bottom-left-radius: 3px;
+    }
+
+    & > *:last-child {
+        border-top-right-radius: 3px;
+        border-bottom-right-radius: 3px;
+    }
+`
 
 const List = styled.ul`
     list-style: none;
@@ -16,10 +48,13 @@ const List = styled.ul`
     width: 100%;
     box-sizing: border-box;
     padding-top: 0;
-    display: grid;
+    display: ${({type}) => type};
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     grid-auto-flow: row;
     grid-template-rows: auto;
+    flex-direction: column;
+    padding-bottom: 64px;
+    margin-top: 8px;
 `
 const Bar = styled.div`
     display: flex;
@@ -33,6 +68,10 @@ const Bar = styled.div`
 const FILTERS = {
     CHANGED: 'CHANGED',
     ALPHABET: 'ALPHABET'
+}
+const TYPE = {
+    CARD: 'CARD',
+    LIST: 'LIST'
 }
 
 const sortFunctions = {
@@ -48,6 +87,9 @@ export function MangaList () {
     const [detail, showDetails] = useState('')
     const [search, setSearch] = useState('')
     const [order, setOrder] = usePersistedState('manga-list-filter', FILTERS.ALPHABET)
+    const [listType, setListType] = usePersistedState('manga-list-type', TYPE.CARD)
+
+    const ListComponent = listType === TYPE.CARD ? MangaCard : MangaRow
 
     const detailSource = detail && sources?.[detail]
 
@@ -87,10 +129,16 @@ export function MangaList () {
                         { label: 'Last Update', value: FILTERS.CHANGED }
                     ]}
                 />
+                <FieldGroup label="Display" style={{ width: 50 }}>
+                    <ToggleBar>
+                        <BaseButton disabled={listType === TYPE.CARD} onClick={() => setListType(TYPE.CARD)}><Grid size={14} /></BaseButton>
+                        <BaseButton disabled={listType === TYPE.LIST} onClick={() => setListType(TYPE.LIST)}><ListIcon size={14} /></BaseButton>
+                    </ToggleBar>
+                </FieldGroup>
             </Bar>
-            <List>
+            <List type={listType === TYPE.CARD ? 'grid' : 'flex'}>
                 {sortedSources.map(([sourceId, chapters]) => (
-                    <MangaCard
+                    <ListComponent
                         search={search}
                         chapters={chapters}
                         key={sourceId}

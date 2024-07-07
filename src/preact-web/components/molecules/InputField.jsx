@@ -26,29 +26,37 @@ const Select = styled.select`
     margin-top: 6px;
 `
 
+const FieldGroup = ({ label, style, children }) => {
+    return (
+        <InputWrapper style={style}>
+            <Label style={{margin: '0 0 -2px 2px'}}>{label}</Label>
+            {children}
+        </InputWrapper>
+    )
+}
+
 const InputField = ({ value, onChange, placeholder, label }) => {
     return (
-        <InputWrapper>
-            <Label style={{margin: '0 0 -2px 2px'}}>{label}</Label>
+        <FieldGroup label={label}>
             <Input value={value} onInput={(e) => onChange(e.target.value)} placeholder={placeholder} />
             {!!value?.length && <ClearButton onClick={() => onChange('')}>x</ClearButton>}
-        </InputWrapper>
+        </FieldGroup>
     )
 }
 const SelectField = ({ value, onChange, label, options }) => {
     return (
-        <InputWrapper style={{width: 200}}>
-            <Label style={{margin: '0 0 -2px 2px'}}>{label}</Label>
+        <FieldGroup label={label} style={{width: 200}}>
             <Select onChange={(e) => onChange(e.target.value)}>
                 {options.map((option) => (
                     <option key={option.value} value={option.value} selected={value === option.value}>{option.label}</option>
                 ))}
             </Select>
-        </InputWrapper>
+        </FieldGroup>
     )
 }
 
 export {
     SelectField,
-    InputField
+    InputField,
+    FieldGroup
 }
