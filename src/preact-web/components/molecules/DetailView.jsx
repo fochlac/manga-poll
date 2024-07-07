@@ -90,7 +90,7 @@ const TitleContainer = styled.div`
     }
 `
 const InfoContainer = styled(FlexColumn)`
-    min-height: 204px;
+    ${({image}) => image ? 'min-height: 204px;' : ''}
 
     @media (max-width: 500px) {
         min-height: unset;
@@ -109,6 +109,8 @@ export function DetailView ({ onClose, source, urls }) {
 
     if (!source) return null
 
+    const hasImage = (!imageError && source.imageUrl)
+
     return (
         <Dialog
             title={''}
@@ -125,7 +127,7 @@ export function DetailView ({ onClose, source, urls }) {
         >
             <FlexRow align="flex-start" style={{ marginBottom: 16, flexShrink: 0 }} flip={500}>
                 {
-                    (!imageError && source.imageUrl) && (
+                    hasImage && (
                         <DetailImageContainer>
                             <ContainedImage
                                 size="cover"
@@ -136,7 +138,7 @@ export function DetailView ({ onClose, source, urls }) {
                         </DetailImageContainer>
                     )
                 }
-                <InfoContainer>
+                <InfoContainer image={hasImage}>
                     <TitleContainer noImage={imageError || !source.imageUrl}>
                         <DetailTitle>{source.title}</DetailTitle>
                         <Host>
