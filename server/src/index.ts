@@ -45,6 +45,7 @@ app.get('/api/*', (_req, res) => {
 })
 
 app.get('/*', (_req, res) => {
+    res.set('Cache-Control', 'must-revalidate')
     res.status(200).sendFile(resolve(__dirname, '../../dist/web/index.html'))
 })
 
