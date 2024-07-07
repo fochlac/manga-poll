@@ -1,15 +1,5 @@
 import firebase from 'firebase/app'
 
-export async function setupActiveSync () {
-    const registration = await navigator.serviceWorker.ready
-    const tags = await registration.periodicSync.getTags()
-    if (!tags.include('fetch-chapters')) {
-        await registration.periodicSync.register('fetch-chapters', {
-            minInterval: 15 * 60 * 1000
-        })
-    }
-}
-
 export async function getMessagingToken () {
     const messaging = firebase.messaging()
     const token = await messaging.getToken({

@@ -65,10 +65,6 @@ const config = {
             import: './src/web/sw/sw.js',
             filename: webappPath + 'sw.js'
         },
-        page: {
-            import: './src/web/app/index.js',
-            filename: webappPath + 'index.js'
-        },
         stats: {
             import: './src/web/stats/stats.js',
             filename: webappPath + 'stats.js'

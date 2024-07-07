@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks'
-import { getMessagingToken, requestPermission } from '../../sw/sw-helper'
+import { getMessagingToken, requestPermission } from '../../utils/sw'
 import { useDispatch, useSelector } from '../../utils/atom'
 import { ToggleSwitch } from '../atoms/ToggleSwitch'
 import { H6 } from '../atoms/Typography'

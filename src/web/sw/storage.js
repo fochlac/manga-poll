@@ -1,5 +1,5 @@
 import localForage from 'localforage'
-import { createDB } from '../common/db'
+import { createDB } from '../../common/db'
 
 let onChange = Function.prototype
 

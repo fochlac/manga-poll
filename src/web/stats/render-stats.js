@@ -1,4 +1,4 @@
-import { date, getIcon, mergeWarningCollections, time } from './utils'
+import { date, getIcon, time } from './utils'
 
 const deleteIcon = document.querySelector('svg.delete')
 const editIcon = document.querySelector('svg.edit')
@@ -13,10 +13,6 @@ export async function renderStats () {
     const sortedHosts = Object.keys(stats).sort((a, b) => String(a).localeCompare(b))
 
     renderHostList(stats, sortedHosts)
-    // renderHostDiagram(
-    //     stats,
-    //     sortedHosts.filter((host) => Object.keys(stats[host].warnings || {}).length)
-    // )
 }
 
 document.querySelector('#globalLegend').addEventListener('click', (e) => {
@@ -37,95 +33,7 @@ document.querySelector('#globalLegend').addEventListener('click', (e) => {
     }
 })
 
-function getFetchIntervals (day) {
-    const today = date(Date.now())
-    if (day === today) {
-        return new Date().getHours() * 12 + Math.ceil(new Date().getMinutes() / 5)
-    }
-    else if (day === 'Last hour') {
-        return 12
-    }
-    return 24 * 12
-}
-
-function renderHostDiagram (stats, hosts) {
-    const selectedHost = document.querySelector('#globalLegend .host.highlight')
-    const dayWarningMap = hosts.reduce(
-        (dayWarningMap, host) => {
-            Object.keys(stats[host].warnings).forEach((dateKey) => {
-                const warningDay = date(dateKey)
-                if (Date.now() - new Date(`${dateKey}Z`).getTime() <= 61 * 60 * 1000) {
-                    if (!dayWarningMap['Last hour'][host]) {
-                        dayWarningMap['Last hour'][host] = 0
-                    }
-                    dayWarningMap['Last hour'][host] += stats[host].warnings[dateKey].count
-                }
-                if (!dayWarningMap[warningDay]) {
-                    dayWarningMap[warningDay] = {}
-                }
-                if (!dayWarningMap[warningDay][host]) {
-                    dayWarningMap[warningDay][host] = 0
-                }
-                dayWarningMap[warningDay][host] += stats[host].warnings[dateKey].count
-            })
-
-            return dayWarningMap
-        },
-        { hosts, 'Last hour': {} }
-    )
-
-    document.querySelector('#globalDiagramm').innerHTML = ''
-
-    const days = new Array(7).fill(0).map((_v, index) => date(Date.now() - 3600000 * 24 * (6 - index)))
-    days.push('Last hour')
-
-    const allMax = days.reduce((allMax, day) => {
-        const dayMax = Object.keys(dayWarningMap[day] || {}).reduce((max, host) => {
-            const sourceCount = Object.keys(stats[host].sources).length
-            const errorCount = dayWarningMap[day][host] || 0
-            const percentage = Math.round((errorCount / sourceCount / getFetchIntervals(day)) * 100)
-            return percentage > max ? percentage : max
-        }, 0)
-        return dayMax > allMax ? dayMax : allMax
-    }, 0)
-    const maxPercentage = Math.min(100, Math.ceil(allMax / 5) * 5)
-
-    days.forEach((day) => {
-        const dayBars = dayWarningMap.hosts.reduce((dayBars, host) => {
-            const sourceCount = Object.keys(stats[host].sources).length
-            const errorCount = dayWarningMap[day]?.[host] || 0
-            if (errorCount === 0) {
-                dayBars += '<div class="percentage" style="width: 0px; border: none; visibility: hidden;"></div>'
-                return dayBars
-            }
-            const percentage = Math.min(Math.round((errorCount / sourceCount / getFetchIntervals(day)) * 100), 100)
-            const title = `${host}: ${percentage}% error rate (${errorCount})`
-            dayBars += `<div class="percentage" style="height: ${
-                (percentage / maxPercentage) * 100
-            }%" data-host="${host}" data-title="${title}"></div>`
-            return dayBars
-        }, '')
-        document.querySelector('#globalDiagramm').dataset.max = `${maxPercentage}%`
-        document.querySelector('#globalDiagramm').style.display = 'flex'
-        document.querySelector(
-            '#globalDiagramm'
-        ).innerHTML += `<div class="compound" data-date="${day}">${dayBars}</div>`
-    })
-
-    document.querySelector('#globalLegend').innerHTML = dayWarningMap.hosts
-        .map((host) => `<div class="host" data-host="${host}">${host}</div>`)
-        .join(' ')
-    if (selectedHost) {
-        document
-            .querySelectorAll(`#globalDiagramm .percentage[data-host="${selectedHost.dataset.host}"]`)
-            .forEach((elem) => {
-                elem.classList.add('highlight')
-            })
-        selectedHost.classList.add('highlight')
-    }
-}
-
-let cache = new Map()
+const cache = new Map()
 
 function renderHostList (stats, hosts) {
     const expandedHosts = Array.from(document.querySelectorAll('.host.expanded')).reduce((hostMap, el) => {
@@ -170,7 +78,7 @@ function renderHostList (stats, hosts) {
         else if (stats[host].failureRate.day > 0.02) {
             weight = ''
         }
-        const warnings = {} // mergeWarningCollections(stats[host].warnings, stats[host].chapterWarnings)
+        const warnings = {}
         const warning = Object.keys(warnings).length ? getIcon(weight) : ''
 
         const title = `${host}&nbsp;(${Object.keys(stats[host].sources).length})`
@@ -217,7 +125,6 @@ function renderHostList (stats, hosts) {
                             </div>
                         </div>
                     `
-                                            
         cache.set(host, {
             html,
             sources: JSON.stringify(stats[host].sources)

@@ -1,9 +1,9 @@
 
 import { db } from './storage'
 
-import { API } from '../common/api'
+import { API } from '../../common/api'
 
-import { getLinkHelpers } from '../common/settings'
+import { getLinkHelpers } from '../../common/settings'
 
 const Api = API('', db)
 

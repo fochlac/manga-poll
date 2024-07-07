@@ -3,7 +3,7 @@ import { API } from '../../common/api'
 import { createSchedule } from '../../common/schedule'
 import { getLinkHelpers } from '../../common/settings'
 import { hideChapter } from '../../common/urls'
-import { getMessagingToken } from '../../web/sw/sw-helper'
+import { getMessagingToken } from '../utils/sw'
 import { URL_LIST } from '../constants/routes'
 import { db } from '../storage'
 

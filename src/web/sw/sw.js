@@ -2,8 +2,8 @@
 import 'regenerator-runtime/runtime.js'
 import firebase from 'firebase/app'
 import 'firebase/messaging'
-import { db } from '../storage'
-import { fetchUrls } from '../fetch'
+import { db } from './storage'
+import { fetchUrls } from './fetch'
 
 const version = __SWVERSION__ || 0
 
