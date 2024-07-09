@@ -114,6 +114,15 @@ function createApi (baseUrl, db) {
             .catch((error) => ({ valid: false, error }))
     }
 
+    async function deleteLink (key) {
+        return fetch(`${baseUrl}/api/links/${key}`, {
+            method: 'delete',
+            headers: await getHeader()
+        })
+            .then((res) => String(res.status) === '204' ? Promise.resolve({ valid: true }) : Promise.reject())
+            .catch((error) => ({ valid: false, error }))
+    }
+
     async function createLink (initSet) {
         return fetch(`${baseUrl}/api/links`, {
             method: 'post',
@@ -140,7 +149,8 @@ function createApi (baseUrl, db) {
         Link: {
             insert: createLink,
             update: updateLink,
-            read: readLink
+            read: readLink,
+            delete: deleteLink
         },
         Hosts: {
             read: readHosts

@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from '../../utils/atom'
 import { Badge } from '../atoms/Badge'
 
 const Bar = styled.nav`
-    height: 36px;
+    height: ${({small}) => small ? 28 : 36}px;
     color: var(--brand);
     background: var(--brand-lightest);
     margin: 0;
@@ -21,7 +21,7 @@ const Tab = styled.a`
     border-bottom: solid 2px ${({ active }) => (active ? 'var(--font)' : 'transparent')};
     cursor: ${({ active }) => (active ? 'default' : 'pointer')};
     user-select: none;
-    line-height: 36px;
+    line-height: ${({small}) => small ? 28 : 36}px;
     height: 100%;
     flex-basis: ${({count}) => `${Math.floor(1 / count * 100)}%`};
     flex-grow: 1;
@@ -30,25 +30,25 @@ const Tab = styled.a`
     color: var(--font);
 `
 
-const NavigationTab = ({ children, link, count }) => {
+const NavigationTab = ({ children, link, count, small }) => {
     const dispatch = useDispatch()
     const route = useSelector((store) => store.route)
 
     return (
-        <Tab onClick={() => dispatch('navigate', link)} active={route?.key === link} count = {count}>
+        <Tab small={small} onClick={() => dispatch('navigate', link)} active={route?.key === link} count={count}>
             {children}
         </Tab>
     )
 }
 
-export function TabBar () {
+export function TabBar ({ small }) {
     const { urls } = useSelector((store) => ({ urls: store.urls }))
     return (
-        <Bar>
-            <NavigationTab link={URL_LIST} count={2}>
-                <Badge value={urls?.newUrls.length > 0 ? urls.newUrls.length : null}>Feed</Badge>
+        <Bar small={small}>
+            <NavigationTab small={small} link={URL_LIST} count={2}>
+                <Badge small={small} value={urls?.newUrls.length > 0 ? urls.newUrls.length : null}>Feed</Badge>
             </NavigationTab>
-            <NavigationTab link={BOOKMARKS} count={2}>Stories</NavigationTab>
+            <NavigationTab small={small} link={BOOKMARKS} count={2}>Stories</NavigationTab>
         </Bar>
     )
 }

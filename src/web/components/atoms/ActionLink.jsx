@@ -2,9 +2,9 @@ import styled from 'styled-components'
 import { preventDefault } from '../../utils/events'
 import { Link } from './Link'
 
-const getColor = (state = '') => ({destructive, light}) => {
+const getColor = (state = '') => ({destructive, light, disabled}) => {
     if (light) return 'var(--brand-contrast)'
-    return destructive ? `var(--link-destructive${state})` : `var(--link${state})`
+    return destructive ? `var(--link-destructive${!disabled ? state : ''})` : `var(--link${!disabled ? state : ''})`
 }
 
 export const ActionLinkRaw = styled(Link)`

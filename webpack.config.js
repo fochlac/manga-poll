@@ -38,7 +38,7 @@ const config = {
             filename: chromeExtensionPath + 'content-script.js'
         },
         popup: {
-            import: './src/extension/popup/popup.js',
+            import: './src/extension/popup.js',
             filename: chromeExtensionPath + 'popup.js'
         },
         'ext-sw': {
@@ -54,7 +54,7 @@ const config = {
             filename: firefoxExtensionPath + 'content-script.js'
         },
         'popup-firefox': {
-            import: './src/extension/popup/popup.js',
+            import: './src/extension/popup.js',
             filename: firefoxExtensionPath + 'popup.js'
         },
         'ext-ff-sw': {
@@ -103,6 +103,14 @@ const config = {
                     to: webappPath + "[name][ext]"
                 },
                 {
+                    from: "./static/web/fonts/*",
+                    to: webappPath + "/fonts/[name][ext]"
+                },
+                {
+                    from: "./static/web/icons/*",
+                    to: webappPath + "/icons/[name][ext]"
+                },
+                {
                     context: './static/extension/',
                     from: "**/*",
                     to: chromeExtensionPath
@@ -131,6 +139,7 @@ const config = {
         }),
         new webpack.DefinePlugin({
             __SWVERSION__: `"version_${Date.now()}"`,
+            API_BASE_URL: process.env.NODE_ENV !== 'production' ? 'http://localhost:43214' : 'https://manga.fochlac.com'
         }),
         new webpack.ProvidePlugin({
             process: 'process/browser.js',

@@ -97,7 +97,7 @@ const InfoContainer = styled(FlexColumn)`
     }
 `
 
-export function DetailView ({ onClose, source, urls }) {
+export function DetailView ({ onClose, source, urls, small }) {
     const dispatch = useDispatch()
     const [imageError, setImageError] = useState(false)
 
@@ -119,8 +119,8 @@ export function DetailView ({ onClose, source, urls }) {
                 height: 'max(calc(80vh - (100vw - 800px)), 80vh)',
                 width: 'calc(90vw - ((100vw - 800px) / 1.5))',
                 maxWidth: '100%',
-                maxHeight: 'calc(100% - 54px)',
-                marginTop: '54px',
+                maxHeight: `calc(100% - ${small ? '40px' : '54px'})`,
+                marginTop: small ? '40px' : '54px',
                 borderRadius: 'min(4px, calc(4px + 100vw - 700px))'
             }}
             bodyStyle={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', marginTop: -32, height: '100%' }}

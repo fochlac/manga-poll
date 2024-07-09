@@ -19,6 +19,10 @@ const List = styled.ul`
     padding: 0 max(calc((100vw - 800px) / 3), 4px) 0 max(8px, calc((100vw - 800px) / 3));
     box-sizing: border-box;
 `
+const HeaderRowText = styled.span`
+    font-weight: 600;
+    font-size: 15px;
+`
 
 function createUnique (key) {
     const rendered = {}
@@ -64,7 +68,7 @@ export function MangaFeed () {
                 <Fragment>
                     <ListHeader>
                         <FlexRow>
-                            <span>New Chapters</span>
+                            <HeaderRowText>New Chapters</HeaderRowText>
                             <RefreshTimer />
                         </FlexRow>
                         <CenteredDiv>
@@ -79,7 +83,7 @@ export function MangaFeed () {
             {Boolean(urls?.oldUrls?.length) && (
                 <Fragment>
                     <ListHeader ref={oldChapterRef}>
-                        <span>Old Chapters</span>
+                        <HeaderRowText>Old Chapters</HeaderRowText>
                         {topButtonVisible && (
                             <ActionLink onClick={() => listRef.current && (listRef.current.scrollTop = 0)}>
                                 Top &#8593;

@@ -1,4 +1,4 @@
-import { createDB } from '../../common/db'
+import { createDB } from '../common/db'
 
 const browserStorage = chrome?.storage || browser?.storage
 
@@ -39,8 +39,8 @@ function addListener (callback) {
                 changes[localKey] = localValue[localKey]
             }
         })
-        console.log(changes)
         if (Object.keys(changes).length) {
+            console.log('db-changes', changes)
             lastLocalValue = localValue
             lastSyncValue = syncValue
             return callback(changes)

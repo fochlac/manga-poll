@@ -5,158 +5,39 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manga Scout</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <div id="bookmark">
-      <p class="bookmark">
-        <span id="bookmark-title"></span>
-        <span class="bookmark-actions">
-          <span class="action submit" id="bookmark-track">Bookmark</span>
-        </span>
-      </p>
-    </div>
-    <h5>
-      <span id="popupTitle">Chapters</span>
-      <span id="progress" data-before="(Refresh now!)">(Next refresh: 60s)</span>
-      <div style="position: absolute; right: 10px; top: 0px">
-        <span class="action" id="chapters" style="display: none">Chapters</span>
-        <span class="action" id="add">Bookmarks</span>
-        <span class="action" id="settings">Settings</span>
-      </div>
-    </h5>
-    <div class="list">
-      <div id="intro">
-        <h5>How to get started</h5>
-        <div class="intro-row">
-          <div>1.</div>
-          <p>
-            Go to the page of the manga you want to track. 
-            <span style="white-space: nowrap;">
-              (i.e. https://fanfox.net/manga/tower_of_god/)
-            </span>
-          </p>
-        </div>
-        <div class="intro-row">
-          <div>2.</div>
-          <p>
-            Click the button to open this chrome extension. If the page is 
-            supported by this addon and you are not yet tracking this manga you 
-            will see this yellow bar:
-          </p>
-        </div>
-        <img src="" id="intro-bookmark">
-        <div class="intro-row">
-          <div>3.</div>
-          <p>
-            Finally click the "Bookmark"-button to start tracking the desired manga.
-          </p>
-        </div>
-        <div class="intro-row">
-          <p>You can check out all supported pages on the settings page.</p>
-        </div>
-      </div>
-      <ul id="urls"></ul>
-      <ul id="sources"></ul>
-      <div class="settings" style="display: none;">
-        <div id="darkmode">
-          <h6>Dark Mode</h6>
-          <div class="switch-case">
-            <span> Enable Dark Mode </span>
-            <label class="switch">
-              <input type="checkbox" id="darkmode-toggle" />
-              <span class="slider"></span>
-            </label>
-          </div>
-        </div>
-        <div class="linking">
-          <div>
-            <div class="link-id-block">
-              <h6>Link-Number</h6>
-              <label class="label">
-                You can use this number to synchronize with other clients.
-              </label>
-              <p id="link-id" class="link-id unlinked">Unlinked</p>
-              <p id="link-link-text" class="label">Or simply use the following link:</p>
-              <a href='' id="link-link" target="_blank" rel="noopener" class="label"></a>
-            </div>
-            <div id="link-section">
-              <h6>Link to Account</h6>
-              <div id="link-progress"><div></div></div>
-              <div id="link-error">
-                <span>Error while linking &ndash; please make sure you entered the correct number.</span>
-              </div>
-              <div class="link-section">
-                <div class="add-link">
-                  <label for="link-number" class="label">
-                    Enter an existing link-number
-                  </label>
-                  <div class="input-wrapper">
-                    <input type="text" id="link-number-1" inputmode="numeric" />-
-                    <input type="text" id="link-number-2" inputmode="numeric" />-
-                    <input type="text" id="link-number-3" inputmode="numeric" />
-                  </div>
-                  <button id="link-button">Submit</button>
-                </div>
-                <div class="new-link">
-                  <label for="new-link-button" class="label">
-                    or generate a new link-number.
-                  </label>
-                  <button id="new-link-button">Generate</button>
-                </div>
-              </div>
-            </div>
-            <div id="unlink-section" style="display: none">
-              <h6>Unlink</h6>
-              <div class="unlink-section">
-                <div class="unlink">
-                  <label for="new-link-button" class="label">
-                    If you click "Remove Linking" the connection to the linked
-                    account will be removed. The locally stored state will
-                    remain, but your changes will no longer be synced to other
-                    locations and you will no longer recieve updates from the
-                    account.
-                  </label>
-                  <button id="unlink-button">Remove Linking</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div id="donate">
-          <h6>Support</h6>
-          <label class="label">
-            If this extension and website is helpful to you, please consider
-            <a href="https://paypal.me/fochlac/5" target="_blank" rel="noopener">donating to help with the server costs</a>.
-            If you want me to add a not yet supported page, make sure it catches my attention by adding a message with
-            the missing page to your <a href="https://paypal.me/fochlac/20" target="_blank" rel="noopener">donation</a>.
-          </label>
-        </div>
-        <div id="hosts"></div>
-      </div>
-    </div>
-    <div id="addSection">
-      <div class="import">
-        <label for="import" class="action">
-          Import Bookmarks
-          <input
-            type="file"
-            id="import"
-            accept="application/json"
-            style="position: absolute; display: none"
-          />
-        </label>
-        <span id="export" class="action">Download Bookmarks</span>
-      </div>
-    </div>
-    <div id="impressum-bar">
-      <span>
-        Designed and developed by Florian Riedel. &copy; 2020
-      </span>
-      <a href="https://manga.fochlac.com?impressum" target="_blank" rel="noopener" class="action">Legal Disclosure</a>
-    </div>
   </body>
+  <!-- <div id="intro">
+  <h5>How to get started</h5>
+  <div class="intro-row">
+    <div>1.</div>
+    <p>
+      Go to the page of the manga you want to track. 
+      <span style="white-space: nowrap;">
+        (i.e. https://fanfox.net/manga/tower_of_god/)
+      </span>
+    </p>
+  </div>
+  <div class="intro-row">
+    <div>2.</div>
+    <p>
+      Click the button to open this chrome extension. If the page is 
+      supported by this addon and you are not yet tracking this manga you 
+      will see this yellow bar:
+    </p>
+  </div>
+  <img src="" id="intro-bookmark">
+  <div class="intro-row">
+    <div>3.</div>
+    <p>
+      Finally click the "Bookmark"-button to start tracking the desired manga.
+    </p>
+  </div>
+  <div class="intro-row">
+    <p>You can check out all supported pages on the settings page.</p>
+  </div>
+</div> -->
   <script src="popup.js"></script>
 </html>

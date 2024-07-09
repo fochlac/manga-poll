@@ -8,7 +8,7 @@ import { FlexRow } from '../atoms/Layout'
 import { useOverlayDelay } from './Router'
 
 const Bar = styled.header`
-    height: 54px;
+    height: ${({small}) => small ? 40 : 54}px;
     background: var(--brand);
     color: var(--brand-contrast);
     z-index: 1000;
@@ -17,20 +17,20 @@ const Bar = styled.header`
     justify-content: space-between;
     align-items: center;
     flex-direction: row;
-    padding: 0 16px 0 max(16px, calc((100vw - 800px) / 3 + 16px));
+    padding: 0 ${({small}) => small ? 7 : 16}px 0 max(16px, calc((100vw - 800px) / 3 + 16px));
 `
 const Title = styled.h1`
-    font-size: 22px;
+    font-size: ${({small}) => small ? 20 : 22}px;
     letter-spacing: 0.9px;
 `
 const HeaderImage = styled.img`
-    width: 32px;
-    height: 32px;
+    width: ${({small}) => small ? 24 : 32}px;
+    height: ${({small}) => small ? 24 : 32}px;
     margin-right: 12px;
     border-radius: 15%;
 `
 
-export function Header () {
+export function Header ({ small }) {
     const dispatch = useDispatch()
     const route = useSelector((store) => store.route)
     const [showX, setShowX] = useState(false)
@@ -40,10 +40,10 @@ export function Header () {
     }, [settingsOpen])
 
     return (
-        <Bar>
+        <Bar small={small}>
             <FlexRow onClick={() => dispatch('navigate', URL_LIST)} style={{ cursor: 'pointer' }}>
-                <HeaderImage src="/android-chrome-144x144.png" alt="Manga-Scout Logo" />
-                <Title id="popupTitle">Manga-Scout</Title>
+                <HeaderImage small={small} src="/icons/manga-32-half.png" alt="Manga-Scout Logo" />
+                <Title small={small} id="popupTitle">Manga-Scout</Title>
             </FlexRow>
             <FlexRow>
                 <ActionLink
@@ -52,7 +52,7 @@ export function Header () {
                     light
                     disabled={route.overlay === IMPRESSUM}
                 >
-                    <Settings size={24} />
+                    <Settings size={small ? 22 : 24} />
                 </ActionLink>
             </FlexRow>
         </Bar>

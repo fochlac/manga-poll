@@ -10,7 +10,7 @@ import { useState } from 'preact/hooks'
 import { fadeShrinkAnimation, rotation } from '../atoms/animations'
 
 const StyledRow = styled(FlexRow)`
-    padding: 4px 4px 4px;
+    padding: 2px 4px;
     border-bottom: solid 1px var(--background-off-strong);
     box-sizing: border-box;
     box-sizing: content-box;

@@ -8,19 +8,19 @@ const FooterBar = styled.div`
     cursor: default;
     display: flex;
     justify-content: space-between;
-    padding: 2px 8px 3px;
     border-top: solid 1px lightslategrey;
     margin-top: auto;
-    padding: 2px max(calc((100vw - 800px) / 3 + 16px), 16px) 3px max(16px, calc((100vw - 800px) / 3 + 8px));
+    padding: ${({small}) => small ? 1 : 2}px max(calc((100vw - 800px) / 3 + 16px), 16px) ${({small}) => small ? 2 : 3}px max(16px, calc((100vw - 800px) / 3 + 8px));
 `
 
-export function Footer () {
+export function Footer ({ small }) {
     const dispatch = useDispatch()
 
+    const style = small ? {fontSize: 12, lineHeight: '15px'} : { fontSize: 14 }
     return (
-        <FooterBar>
-            <SmallerText style={{ margin: 0, fontSize: '0.8rem' }}>Designed and developed by Florian Riedel. © 2020</SmallerText>
-            <ActionLink onClick={() => dispatch('overlay', IMPRESSUM)} style={{ whiteSpace: 'nowrap', fontSize: '0.8rem' }}>
+        <FooterBar small={small}>
+            <SmallerText style={{ margin: 0, ...style }}>Designed and developed by Florian Riedel. © 2020</SmallerText>
+            <ActionLink onClick={() => dispatch('overlay', IMPRESSUM)} style={{ whiteSpace: 'nowrap', ...style, fontWeight: 600 }}>
                 Legal Disclosure
             </ActionLink>
         </FooterBar>

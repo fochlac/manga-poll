@@ -6,7 +6,7 @@ export const Badge = styled.span`
     &::before {
         content: ${({ value }) => (['string', 'number'].includes(typeof value) ? `'${value}'` : null)};
         position: absolute;
-        bottom: 6px;
+        bottom: ${({small}) => small ? 3 : 6}px;
         right: -2px;
         transform: translateX(100%);
         background-color: var(--destructive-dark);

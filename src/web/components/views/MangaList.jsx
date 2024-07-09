@@ -75,12 +75,11 @@ const TYPE = {
 }
 
 const sortFunctions = {
-    [FILTERS.CHANGED]: () => (a, b) => a[1]?.created - b[1]?.created,
-    [FILTERS.ALPHABET]: (sources) => (a, b) =>
-        String(sources[a[0]]?.title?.trim()).localeCompare(sources[b[0]]?.title?.trim())
+    [FILTERS.CHANGED]: (urlMap) => (a, b) => urlMap.get(b?.id)?.[0]?.created - urlMap.get(a?.id)?.[0]?.created,
+    [FILTERS.ALPHABET]: () => (a, b) => String(a?.title?.trim()).localeCompare(b?.title?.trim())
 }
 
-export function MangaList () {
+export function MangaList ({ small }) {
     const urls = useSelector((store) => store.urls)
     const sources = useSelector((store) => store.sources)
 
@@ -108,12 +107,10 @@ export function MangaList () {
             return map
         }, urlMapNew)
     }, [urls])
+
     const sortedSources = useMemo(
-        () =>
-            Array.from(urlMap.entries())
-                .filter(([sourceId]) => sources[sourceId])
-                .sort(sortFunctions[order](sources)),
-        [order, urlMap, sources]
+        () => Object.values(sources).sort(sortFunctions[order](urlMap)),
+        [order, sources, urlMap]
     )
 
     return (
@@ -137,18 +134,18 @@ export function MangaList () {
                 </FieldGroup>
             </Bar>
             <List type={listType === TYPE.CARD ? 'grid' : 'flex'}>
-                {sortedSources.map(([sourceId, chapters]) => (
+                {sortedSources.map((source) => (
                     <ListComponent
                         search={search}
-                        chapters={chapters}
-                        key={sourceId}
-                        sourceId={sourceId}
-                        showDetails={() => showDetails(sourceId)}
+                        chapters={urlMap.get(source.id) ?? []}
+                        key={source.id}
+                        sourceId={source.id}
+                        showDetails={() => showDetails(source.id)}
                     />
                 ))}
             </List>
             {detailSource && (
-                <DetailView source={detailSource} onClose={() => showDetails(null)} urls={urlMap.get(detail)} />
+                <DetailView small={small} source={detailSource} onClose={() => showDetails(null)} urls={urlMap.get(detail) ?? []} />
             )}
         </Fragment>
     )

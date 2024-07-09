@@ -29,7 +29,7 @@ const Select = styled.select`
 const FieldGroup = ({ label, style, children }) => {
     return (
         <InputWrapper style={style}>
-            <Label style={{margin: '0 0 -2px 2px'}}>{label}</Label>
+            <Label style={{margin: '0 0 -1px 2px'}}>{label}</Label>
             {children}
         </InputWrapper>
     )

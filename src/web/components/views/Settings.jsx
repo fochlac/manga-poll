@@ -6,10 +6,9 @@ import { SupportedHosts } from '../molecules/SupportedHosts'
 import styled from 'styled-components'
 import { useEffect, useState } from 'preact/hooks'
 import { getLinkQuery } from '../../../common/settings'
-import { db } from '../../storage'
 import { Fragment } from 'preact'
 import { NotificationsToggle } from '../molecules/NotificationsToggle'
-import { Button } from '../atoms/Button'
+import { Button, DestructiveButton } from '../atoms/Button'
 import { FlexColumn, FlexRow } from '../atoms/Layout'
 import { LinkingSection } from '../molecules/LinkingSection'
 import { Overlay } from '../molecules/Overlay'
@@ -32,7 +31,7 @@ const StyledFlexColumn = styled(FlexColumn)`
     margin-left: 10px;
 `
 
-export function SettingsView ({ hideOverlay }) {
+export function SettingsView ({ hideOverlay, isExtension }) {
     const dispatch = useDispatch()
     const [showLinkWarning, setShowLinkWarning] = useState(false)
     const [externalKey] = useState(getLinkQuery() || window.getMangaScoutLinkId?.())
@@ -44,7 +43,7 @@ export function SettingsView ({ hideOverlay }) {
     }, [link?.key, externalKey])
 
     return (
-        <Overlay showTopbar visible={!hideOverlay} onClose={() => dispatch('overlay', '')} title="Settings">
+        <Overlay showTopbar={!isExtension} visible={!hideOverlay} onClose={() => dispatch('overlay', '')} title="Settings">
             {showLinkWarning && (
                 <div id="link-link-warning">
                     <span>
@@ -59,11 +58,11 @@ export function SettingsView ({ hideOverlay }) {
                 <H6>Dark Mode</H6>
                 <ToggleSwitch
                     initialChecked={settings?.dark}
-                    onChange={async (dark) => db.settings.local.set({ ...(await db.settings.local.read()), dark })}
+                    onChange={(dark) => dispatch('setTheme', dark)}
                     label="Enable Dark Mode"
                 />
             </div>
-            <NotificationsToggle />
+            {!isExtension && <NotificationsToggle />}
             <div class="linking">
                 <div>
                     <div class="link-id-block">
@@ -95,14 +94,16 @@ export function SettingsView ({ hideOverlay }) {
                                     </Fragment>
                                 )}
                             </FlexColumn>
-                            <StyledFlexColumn>
-                                <StyledQr value={`https://manga.fochlac.com?link=${link.key}`} />
-                            </StyledFlexColumn>
+                            {link?.key && (
+                                <StyledFlexColumn>
+                                    <StyledQr value={`https://manga.fochlac.com?link=${link.key}`} />
+                                </StyledFlexColumn>
+                            )}
                         </FlexRow>
                     </div>
                     <LinkingSection />
                     {!!link?.key && (
-                        <div id="unlink-section">
+                        <div>
                             <H6>Unlink</H6>
                             <div class="unlink-section">
                                 <SmallerText>
@@ -117,6 +118,20 @@ export function SettingsView ({ hideOverlay }) {
                             </div>
                         </div>
                     )}
+                    <div>
+                        <H6>Reset</H6>
+                        <div class="unlink-section">
+                            <SmallerText>
+                                    If you click "Reset" the connection to the linked account and all local data will be removed.
+                                    If you click "Delete" the linked account will be deleted and all data will be removed. Other
+                                    clients might still retain local data and need to be reset as well.
+                            </SmallerText>
+                            <FlexRow justify="space-evenly" style={{ padding: 8 }}>
+                                <DestructiveButton onClick={() => dispatch('reset')}>Reset</DestructiveButton>
+                                <DestructiveButton onClick={() => dispatch('resetAndDeleteAccount')}>Delete</DestructiveButton>
+                            </FlexRow>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div id="donate">

@@ -12,10 +12,11 @@ export const OVERLAY_HIDE_TIMEOUT = 0.2
 export function useOverlayDelay (fn, dependencies) {
     useEffect(() => {
         setTimeout(() => fn(), OVERLAY_HIDE_TIMEOUT)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, dependencies)
 }
 
-export function Router () {
+export function Router ({ isExtension }) {
     const route = useSelector((state) => state.route)
     const [hideOverlay, setHideOverlay] = useState(false)
     const [visibleOverlay, setVisibleOverlay] = useState(route?.overlay)
@@ -41,7 +42,7 @@ export function Router () {
         view = <MangaFeed />
         break
     case BOOKMARKS:
-        view = <MangaList />
+        view = <MangaList small={isExtension} />
         break
     default:
         view = <MangaFeed />
@@ -50,7 +51,7 @@ export function Router () {
     let overlay
     switch (visibleOverlay) {
     case SETTINGS:
-        overlay = <SettingsView hideOverlay={hideOverlay} />
+        overlay = <SettingsView isExtension={isExtension} hideOverlay={hideOverlay} />
         break
     case IMPRESSUM:
         overlay = <Impressum hideOverlay={hideOverlay} />

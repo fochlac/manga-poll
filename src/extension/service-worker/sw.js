@@ -1,9 +1,9 @@
 import 'regenerator-runtime/runtime.js'
 import { API } from '../../common/api'
 import { getLinkHelpers } from '../../common/settings'
-import { API_ADDRESS } from '../shared/constants'
-import { fetchUrls } from '../shared/fetch-urls'
-import { db } from '../shared/storage'
+import { API_ADDRESS } from '../constants'
+import { fetchUrls } from './fetch-urls'
+import { db } from '../storage'
 import { initMessageHandler } from './message-handler'
 
 const Api = API(API_ADDRESS, db)
@@ -31,6 +31,7 @@ async function refreshBadge () {
     }
     const { newUrls } = await db.urls.read()
 
+    action.setBadgeBackgroundColor({ color: '#8f000d' })
     action.setBadgeText(
         newUrls.length
             ? { text: newUrls.length >= 100 ? '99+' : String(newUrls.length) }

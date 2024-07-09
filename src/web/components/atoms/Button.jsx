@@ -30,7 +30,6 @@ export const DestructiveButton = styled(Button)`
     color: var(--destructive-lightest);
     font-weight: 700;
     margin-right: 1px;
-    margin-left: auto;
 
     &:hover {
         background: var(--destructive-button-hover);

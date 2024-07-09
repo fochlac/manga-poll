@@ -1,9 +1,7 @@
-import 'preact/debug'
 import 'regenerator-runtime/runtime.js'
 import firebase from 'firebase/app'
 import 'firebase/messaging'
 import { render } from 'preact'
-import { atom } from './store/atom'
 import { Provider } from './utils/atom'
 import { Router } from './components/molecules/Router'
 import { Header } from './components/molecules/Header'
@@ -13,6 +11,8 @@ import { Theme } from './components/atoms/CssVariables'
 import { LinkDetector } from './components/molecules/LinkDetector'
 import { useEffect } from 'preact/hooks'
 import { Cover } from './components/atoms/Cover'
+import { createAtom } from './store/atom'
+import { db } from './storage'
 
 firebase.initializeApp({
     apiKey: 'AIzaSyBe2mv85Y9-oQJhDFeqzCLrTaetRp_Cm50',
@@ -21,6 +21,8 @@ firebase.initializeApp({
     messagingSenderId: '246007842230',
     appId: '1:246007842230:web:46d93150bc98eaecb0ed17'
 })
+
+const atom = createAtom(db, '')
 
 function App () {
     useEffect(() => {

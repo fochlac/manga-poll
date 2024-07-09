@@ -10,6 +10,18 @@ const Timer = styled(ActionLink)`
     min-width: 110px;
     margin-right: 8px;
     text-align: left;
+    position: relative;
+
+    &:hover::before {
+        content: attr(data-before);
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--background);
+        white-space: nowrap;
+    }
 `
 
 export function RefreshTimer () {
@@ -34,7 +46,7 @@ export function RefreshTimer () {
     }, [setProgress, fetchTime, progress])
 
     return (
-        <Timer id="progress" data-before="Refresh now!" onClick={() => dispatch('triggerFetch')}>
+        <Timer data-before="Refresh now!" onClick={() => dispatch('triggerFetch')}>
             {progress}
         </Timer>
     )

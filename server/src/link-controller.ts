@@ -13,6 +13,7 @@ declare global {
     interface Link {
         id: string
         pw: string
+        deleted?: boolean
         hiddenChapters: Record<string, boolean>
         hide: number
         sources: unknown[]
@@ -170,7 +171,10 @@ export function linksController (app) {
     app.put('/api/links/:key', (req, res) => {
         try {
             const { id, pw } = fromKey(req.params.key)
-            if (!links[fromKey(req.params.key)?.id]) {
+            if (links[id]?.deleted) {
+                return res.status(404).json({ valid: false, message: 'Not found' })
+            }
+            if (!links[id]) {
                 links[id] = {
                     hiddenChapters: req.body.hiddenChapters,
                     hide: req.body.hide,
@@ -210,6 +214,9 @@ export function linksController (app) {
     app.get('/api/links/:key', (req, res) => {
         try {
             const id = checkKey(req.params.key)
+            if (links[id]?.deleted) {
+                return res.status(404).json({valid: false, message: 'Not found'})
+            }
             const changedSince = req.query.changedSince
             if (changedSince && Number(changedSince) >= links[id].lastModified) {
                 res.status(304).send({ valid: true, payload: null })
@@ -220,6 +227,28 @@ export function linksController (app) {
                     payload: createPayload(links[id])
                 })
             }
+        }
+        catch (e) {
+            console.log(e.message)
+            handleKeyError(res)
+        }
+    })
+
+    app.delete('/api/links/:key', (req, res) => {
+        try {
+            const id = checkKey(req.params.key)
+            links[id] = {
+                deleted: true,
+                lastModified: Date.now() * 10,
+                id: id,
+                pw: links[id].pw,
+                hiddenChapters: {},
+                hide: Date.now() * 10,
+                sources: []
+            }
+            write()
+
+            res.status(204).send()
         }
         catch (e) {
             console.log(e.message)

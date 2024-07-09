@@ -1,6 +1,8 @@
 import styled from 'styled-components'
 import { useSelector } from '../../utils/atom'
 import { H5 } from './Typography'
+import { useEffect, useState } from 'preact/hooks'
+import { Fragment } from 'preact'
 
 const CoverSheet = styled.div`
     position: absolute;
@@ -26,10 +28,23 @@ const CoverImage = styled.img`
 
 export const Cover = ({children}) => {
     const isLoading = useSelector((state) => state.isLoading)
+    const [show, setShow] = useState(false)
+    useEffect(() => {
+        if (isLoading) {
+            const timer = setTimeout(() => setShow(true), 300)
+            return () => clearTimeout(timer)
+        }
+
+        setShow(false)
+    }, [isLoading])
     if (!isLoading) return children
 
     return <CoverSheet>
-        <CoverImage src="/android-chrome-144x144.png" />
-        <H5>Manga-Scout</H5>
+        {show && (
+            <Fragment>
+                <CoverImage src="/icons/manga-163-half.png" />
+                <H5>Manga-Scout</H5>
+            </Fragment>
+        )}
     </CoverSheet>
 }
