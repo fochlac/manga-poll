@@ -10,6 +10,14 @@ function write (namespace, keyPairs) {
     return new Promise((resolve) => browserStorage[namespace].set(keyPairs, resolve))
 }
 
+function keys (namespace) {
+    return new Promise((resolve) => browserStorage[namespace].get((result) => resolve(Object.keys(result))))
+}
+
+function remove (namespace, keys) {
+    return new Promise((resolve) => browserStorage[namespace].remove(keys, resolve))
+}
+
 function stringifyCompare (a, b) {
     const compA = typeof a === 'string' ? a : JSON.stringify(a)
     const compB = typeof b === 'string' ? b : JSON.stringify(b)
@@ -50,7 +58,11 @@ function addListener (callback) {
 }
 
 const storage = {
-    read, write, addListener
+    read,
+    write,
+    addListener,
+    keys,
+    remove
 }
 
 export const db = createDB(storage)

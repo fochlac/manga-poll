@@ -6,7 +6,7 @@ const NAMESPACES = {
 }
 
 export function createDB (storage) {
-    const { read, write } = storage
+    const { read, write, keys, remove } = storage
 
     async function readSources () {
         const { sources } = await read(NAMESPACES.LOCAL, { sources: null })
@@ -115,9 +115,15 @@ export function createDB (storage) {
             writeObject[name] = JSON.stringify(store)
             return writeObject
         }, {hiddenRegistry: {update: Date.now(), list: []}})
+        const hiddenRegistry = writeObject.hiddenRegistry
         writeObject.hiddenRegistry = JSON.stringify(writeObject.hiddenRegistry)
-        console.log(writeObject, ...Object.values(writeObject).map((entry) => entry.length))
-        return write(NAMESPACES.LOCAL, writeObject)
+        await write(NAMESPACES.LOCAL, writeObject)
+        try {
+            const storageKeys = await keys(NAMESPACES.LOCAL)
+            const toBeDeleted = storageKeys.filter((key) => key.startsWith('hiddenChapters_') && !hiddenRegistry.list.includes(key))
+            await remove(NAMESPACES.LOCAL, toBeDeleted)
+        }
+        catch (e) { /* empty */ }
     }
 
     async function hideUrl (id) {

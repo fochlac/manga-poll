@@ -72,7 +72,7 @@ export function MangaFeed () {
                             <RefreshTimer />
                         </FlexRow>
                         <CenteredDiv>
-                            <ActionLink>Hide all</ActionLink>
+                            <ActionLink onClick={() => dispatch('hideAll')}>Hide all</ActionLink>
                         </CenteredDiv>
                     </ListHeader>
                     {urls.newUrls.map(unique((chapter) => (

@@ -16,6 +16,18 @@ async function write (_namespace, keyPairs) {
     onChange(keyPairs)
 }
 
+async function keys (_namespace) {
+    return await localForage.keys()
+}
+
+async function remove (_namespace, keys) {
+    await Promise.all(keys.map((key) => localForage.removeItem(key)))
+    onChange(keys.reduce((keyMap, key) => {
+        keyMap[key] = null
+        return keyMap
+    }, {}))
+}
+
 function addListener (callback = Function.prototype) {
     onChange = callback
     return window.addEventListener('storage', () => {
@@ -26,6 +38,8 @@ function addListener (callback = Function.prototype) {
 const storage = {
     read,
     write,
+    keys,
+    remove,
     addListener
 }
 

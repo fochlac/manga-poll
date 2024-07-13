@@ -164,6 +164,11 @@ export const createAtom = (db, baseUrl = 'https://manga.fochlac.com') => {
             async hideChapter (_atom, id) {
                 await hideChapter(db, id)
             },
+            async hideAll (_atom) {
+                const { newUrls, oldUrls } = await db.urls.read()
+                const lastCreated = (newUrls[0]?.created ?? 0) > (oldUrls[0]?.created ?? 0) ? (newUrls[0]?.created ?? 0) : (oldUrls[0]?.created ?? 0)
+                await db.urls.hideAll(lastCreated + 1)
+            },
             async incrementMaxOld ({ set }) {
                 const maxOld = await db.urls.getMaxOld()
                 db.urls.setMaxOld(maxOld + 100)
