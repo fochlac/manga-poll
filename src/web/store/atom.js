@@ -4,7 +4,7 @@ import { createSchedule } from '../../common/schedule'
 import { getLinkHelpers } from '../../common/settings'
 import { hideChapter } from '../../common/urls'
 import { getMessagingToken } from '../utils/sw'
-import { routeList, URL_LIST, routes } from '../constants/routes'
+import { routeList, URL_LIST, routes, IMPRESSUM } from '../constants/routes'
 
 export const createAtom = (db, baseUrl = 'https://manga.fochlac.com') => {
     const api = API(baseUrl, db)
@@ -24,7 +24,7 @@ export const createAtom = (db, baseUrl = 'https://manga.fochlac.com') => {
     const atom = makeAtom(
         {
             isLoading: true,
-            route: { key: initialKey, params: null }
+            route: { key: initialKey, params: null, overlay: location.search.includes('impressum') ? IMPRESSUM : null }
         },
         {
             async init ({ dispatch }) {
