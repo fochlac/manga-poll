@@ -17,14 +17,14 @@ export const createAtom = (db, baseUrl = 'https://manga.fochlac.com') => {
         }
         return URL_LIST
     }
-
+    const overlay = location.search.includes('impressum') ? IMPRESSUM : null
     const initialKey = getCurrentLocation()
     history.replaceState(null, '', routes[initialKey])
 
     const atom = makeAtom(
         {
             isLoading: true,
-            route: { key: initialKey, params: null, overlay: location.search.includes('impressum') ? IMPRESSUM : null }
+            route: { key: initialKey, params: null, overlay }
         },
         {
             async init ({ dispatch }) {
