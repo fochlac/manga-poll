@@ -229,6 +229,9 @@ async function fetchFrontPage (sources: Source[], urls: Record<string, Url>): Pr
 
         try {
             testForCloudFlare(body, response.status)
+            if (url.includes('flame')) {
+                console.log(url, body)
+            }
         }
         catch (e) {
             body = await queuePuppeteerFetch(url)

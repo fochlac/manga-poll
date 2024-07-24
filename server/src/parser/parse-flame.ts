@@ -10,8 +10,7 @@ import {
 } from '../parser'
 import { getHost, parseNAgoDateString } from '../utils/parse'
 
-const TYPE = 'asura'
-const BASEURL = 'https://asuracomic.net'
+const TYPE = 'flame'
 
 async function parseMangastreamFront (
     sources: Source[],
@@ -29,21 +28,18 @@ async function parseMangastreamFront (
         return trackedSeries
     }, {})
 
-    return $('a[href*="/series/"]')
+    return $('.info a[href*="/series/"]')
         .toArray()
         .reduce((sourceResults, elem) => {
-            if (!/^\/series\/[^/]+\/?$/.test($(elem).attr('href')) || $(elem).html().includes('<img')) {
-                return sourceResults
-            }
-            const url = BASEURL + $(elem).attr('href')
+            const url = $(elem).attr('href')
 
-            const title = $(elem).text()
+            const title = $(elem).attr('title')
             const path = url.split('/').slice(3).join('/')
             const source = trackedSeries[path] || trackedSeries[title.replace(/[\W_]+/g, '')]
 
             if (source) {
                 const mangaId = url?.split('/').filter((str) => str.trim().length).slice(-1)[0]
-                const chapters = $(elem).parent().parent().find('a:has(svg)').toArray()
+                const chapters = $(elem).parent().parent().find('.chapter-list a').toArray()
                 let update
                 if (source.url !== url || source.title !== title || source.mangaId !== url?.split('/').filter((str) => str.trim().length).slice(-1)[0]) {
                     update = {
@@ -55,9 +51,9 @@ async function parseMangastreamFront (
                 }
 
                 const chapterList = chapters.map((link) => {
-                    const url = BASEURL + $(link).attr('href')
-                    const rawChapter = $(link).find('svg').closest('div').text()
-                    const rawDate = parseNAgoDateString($(link).find('p').text())
+                    const url = $(link).attr('href')
+                    const rawChapter = $(link).find('.epxs').text()
+                    const rawDate = parseNAgoDateString($(link).find('.epxdate').text())
 
                     return {
                         url,
@@ -68,6 +64,7 @@ async function parseMangastreamFront (
                 })
 
                 const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(chapterList, source, urls)
+                console.log(newUrls, oldUrls)
 
                 sourceResults.push({
                     urls: newUrls,

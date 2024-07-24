@@ -32,6 +32,19 @@ const sources: Record<string, Source> = readFile<Source>(sourcesPath, (sources) 
             sources[key].type = 'asura'
             modified = true
         }
+        if (sources[key].url?.includes('flamescans')) {
+            sources[key].url = sources[key].url.replace('https://flamescans.me/homee/', 'https://flamecomics.me/')
+            sources[key].url = sources[key].url.replace('https://flamescans.me', 'https://flamecomics.me')
+            modified = true
+        }
+        if (sources[key].url?.includes('flamecomics.com')) {
+            sources[key].url = sources[key].url.replace('https://flamecomics.com', 'https://flamecomics.me')
+            modified = true
+        }
+        if (sources[key].url?.includes('flamecomics.me')) {
+            sources[key].type = 'flame'
+            modified = true
+        }
     })
     return modified
 }, writeSources)
