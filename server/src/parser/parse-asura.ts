@@ -104,6 +104,8 @@ async function fetchFrontPage (sources: Source[], urls: Record<string, Url>): Pr
             }
         }
 
+        if (!body) return []
+
         return parseMangastreamFront(sources, urls, body)
     }
     catch (err) {

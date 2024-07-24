@@ -147,6 +147,8 @@ async function fetchFrontPage (sources: Source[], urls: Record<string, Url>): Pr
             }
         }
 
+        if (!body) return []
+
         return parseFrontPage(sources, urls, body)
     }
     catch (err) {
