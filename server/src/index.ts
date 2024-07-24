@@ -14,6 +14,16 @@ import { createRateLimiter } from './utils/rate-limiter'
 import { createStatsEndpoints } from './stats'
 import { initImages } from './utils/images'
 
+import './parser/parse-fanfox'
+import './parser/parse-madara'
+import './parser/parse-mangadex'
+import './parser/parse-mangastream'
+import './parser/parse-genkan'
+import './parser/parse-leviathan'
+import './parser/parse-webtoons'
+import './parser/parse-reaper'
+import './parser/parse-asura'
+import './parser/parse-flame'
 import { findAndCleanDuplicates } from './duplicates'
 
 const app = express()
