@@ -76,6 +76,7 @@ export const testForCloudFlare = (text, status) => {
     if (
         text.includes('id="challenge-form"') ||
         text.includes('<title>Please Wait... | Cloudflare</title>') ||
+        text.includes('<title>Just a moment...</title>') ||
         (status > 400 && text.toLowerCase().includes('cloudflare') && text.includes('form id="challenge-form"'))
     ) {
         throw new Error('Cloudflare-JS-Challenge detected.')
@@ -101,6 +102,36 @@ export async function getResponseBody (response): Promise<string> {
     return body
 }
 
+export async function cloudscrape (url) {
+    console.log(`Puppeteer failed for ${url}. Trying cloudscrape...`)
+    const response = await fetch('https://api.proxyscrape.com/v3/accounts/freebies/scraperapi/request', {
+        method: 'post',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Api-Key': '43aff59d-dff0-4d0a-a8c6-3df3b1c6ba05'
+        },
+        body: JSON.stringify({
+            'url': url,
+            'browserHtml': true
+        })
+    })
+    const body = await response.json()
+    const {remaining_credits, data, used_credits, success} = body
+    if (!success) {
+        console.log('Cloudscrape: Unable to fetch ' + url)
+        return ''
+    }
+    console.log(`Remaining requests: ${Math.floor(remaining_credits / used_credits)}`)
+    try {
+        const path = resolve(__dirname, `../puppeteer/scrape-${getHost(url)}.html`)
+        await writeFile(path, data.browserHtml, 'utf-8')
+    }
+    catch (e) {
+        console.log(e)
+    }
+    return data.browserHtml
+}
+
 let puppeteerEnabled
 export async function startPuppeteer () {
     puppeteerEnabled = true
@@ -113,7 +144,7 @@ let queue = Promise.resolve()
 export function queuePuppeteerFetch (url) {
     if (!puppeteerEnabled) {
         console.log(`Cloudflare detected for ${url}.`)
-        return ''
+        return
     }
     console.log(`Cloudflare detected for ${url}. Queueing fetch via puppeteer.`)
     const promise = queue
@@ -149,12 +180,13 @@ export async function fetchWithPuppeteer (url): Promise<string> {
                 else if (
                     text.includes('<title>Attention Required! | Cloudflare</title>') ||
                     (text.includes('Access denied') && text.includes('Cloudflare')) ||
-                    text.includes('id="cf-bubbles"')
+                    text.includes('id="cf-bubbles"') ||
+                    text.includes('data-translate="blocked_why_headline"')
                 ) {
-                    return false
+                    throw new Error('Cloudflare block detected')
                 }
                 else if (text.includes('Verifying you are human')) {
-                    return false
+                    throw new Error('Cloudflare block detected')
                 }
                 return true
             },
@@ -162,8 +194,8 @@ export async function fetchWithPuppeteer (url): Promise<string> {
         )
         // eslint-disable-next-line no-undef
         const body = await page.evaluate(() => document.body.innerHTML)
-        const path = resolve(__dirname, `../puppeteer/${getHost(url)}.html`)
         try {
+            const path = resolve(__dirname, `../puppeteer/${getHost(url)}.html`)
             await writeFile(path, body, 'utf-8')
         }
         catch (e) {
@@ -174,7 +206,7 @@ export async function fetchWithPuppeteer (url): Promise<string> {
         return body
     }
     catch (e) {
-        console.log('catch close', e)
+        console.log(`Error while fetching ${url} via puppeteer:`, e.message.split('\n')[0])
         if (context) {
             await context.close().catch((e) => console.log('close failed'))
         }

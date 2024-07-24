@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, testForCloudFlare, categorizeRemoteUrls, queuePuppeteerFetch } from '../parser'
+import { registerParser, headers, testForCloudFlare, categorizeRemoteUrls, queuePuppeteerFetch, cloudscrape } from '../parser'
 import { getHost, parseNAgoDateString } from '../utils/parse'
 
 const TYPE = 'reaper'
@@ -118,6 +118,7 @@ async function parseFrontPage (
                 })
 
                 const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(chapterList, source, urls)
+                console.log('reaper2', newUrls, oldUrls)
 
                 sourceResults.push({
                     urls: newUrls,
@@ -138,9 +139,13 @@ async function fetchFrontPage (sources: Source[], urls: Record<string, Url>): Pr
 
         try {
             testForCloudFlare(body, response.status)
+            console.log(body)
         }
         catch (e) {
             body = await queuePuppeteerFetch(url)
+            if (body === '') {
+                body = await cloudscrape(url)
+            }
         }
 
         return parseFrontPage(sources, urls, body)
