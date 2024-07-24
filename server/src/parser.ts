@@ -5,6 +5,9 @@ import { chromium } from 'playwright-extra'
 import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 
 import { getUrlKey } from './utils/keys'
+import { writeFile } from 'fs/promises'
+import { getHost } from './utils/parse'
+import { resolve } from 'path'
 
 chromium.use(StealthPlugin())
 
@@ -159,6 +162,13 @@ export async function fetchWithPuppeteer (url): Promise<string> {
         )
         // eslint-disable-next-line no-undef
         const body = await page.evaluate(() => document.body.innerHTML)
+        const path = resolve(__dirname, `../puppeteer/${getHost(url)}.html`)
+        try {
+            await writeFile(path, body, 'utf-8')
+        }
+        catch (e) {
+            console.log(e)
+        }
         await context.close()
         await browser.close()
         return body

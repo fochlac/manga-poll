@@ -163,7 +163,7 @@ export function init () {
         if (isRunning < Date.now()) {
             fetchAllUrls()
         }
-    }, 60000 * 5)
+    }, 60000 * 10)
     fetchAllUrls(true)
 }
 
