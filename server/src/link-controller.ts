@@ -73,7 +73,7 @@ function createPayload (link: Link) {
         key: toKey(id, pw),
         hiddenChapters,
         hide,
-        sources: sources
+        sources: (sources || [])
             .map((linksrc) => sourceMap[checkForDuplicate(linksrc)])
             .filter((source) => !!source),
         lastModified
