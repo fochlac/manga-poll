@@ -64,7 +64,6 @@ async function parseMangastreamFront (
                 })
 
                 const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(chapterList, source, urls)
-                console.log(newUrls, oldUrls)
 
                 sourceResults.push({
                     urls: newUrls,
