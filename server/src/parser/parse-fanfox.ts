@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, getResponseBody, createSource, joinUrl, categorizeRemoteUrls } from '../parser'
+import { registerParser, headers, getResponseBody, joinUrl, categorizeRemoteUrls } from '../parser'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'fanfox'
@@ -90,24 +90,9 @@ async function fetchFanFox (source: Source, urls: Record<string, Url>): Promise<
     }
 }
 
-async function parseFanfoxPage (rawUrl: string) {
-    const sourcehtml: string = await fetch(rawUrl, { headers: { ...headers, cookie: 'isAdult=1;' } }).then((res) =>
-        res.text()
-    )
-
-    const $ = cheerio.load(sourcehtml)
-
-    const path = rawUrl.match(/\/manga\/[^/]*\//)?.[0]
-    const title = $('.reader-header-title-1 a:first-child').text() || $('.detail-info-right-title-font').text()
-
-    return createSource(TYPE, path?.split('/')[2], title, rawUrl.match(/^http.*fanfox.net\/manga\/[^/]*\//)?.[0])
-}
-
 const fanfox: Parser = {
     fetchFunction: fetchFanFox,
-    type: TYPE,
-    parseLink: parseFanfoxPage,
-    parseCondition: (url) => url.includes('fanfox.net')
+    type: TYPE
 }
 
 registerParser(fanfox)

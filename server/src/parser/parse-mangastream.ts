@@ -254,25 +254,7 @@ async function fetchFrontPage (sources: Source[], urls: Record<string, Url>): Pr
 export const mangastream: Parser = {
     fetchFunction: fetchMangastream,
     fetchFrontPageFunction: fetchFrontPage,
-    type: TYPE,
-    parseLink: async (rawUrl) => {
-        const sourcehtml: string = await fetch(rawUrl, { headers }).then((res) => res.text())
-        return testMangastream(rawUrl, sourcehtml)
-    },
-    parseCondition: async (url) => {
-        try {
-            const sourcehtml: string = await fetch(url, { headers, redirect: 'manual' }).then((res) => res.text())
-            const $ = cheerio.load(sourcehtml)
-            return (
-                sourcehtml.includes('ts-breadcrumb bixbox') ||
-                $('.readingnavtop .chpnw, .headpost [itemprop="name"], #content .hentry .thumb img')?.length > 0
-            )
-        }
-        catch (e) {
-            console.log('Error fetching url.', e)
-            return false
-        }
-    }
+    type: TYPE
 }
 
 registerParser(mangastream)

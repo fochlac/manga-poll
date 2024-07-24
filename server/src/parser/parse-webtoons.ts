@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import { createSource, categorizeRemoteUrls, registerParser, headers } from '../parser'
+import { categorizeRemoteUrls, registerParser, headers } from '../parser'
 import { parseStringPromise } from 'xml2js'
 import { getHost } from '../utils/parse'
 import https from 'https'
@@ -57,24 +57,9 @@ async function fetchWebtoons (source: Source, urls: Record<string, Url>): Promis
     }
 }
 
-async function parseWebtoonsLink (rawUrl: string) {
-    console.log(TYPE)
-    const url = rawUrl.split('/').slice(0, 6).join('/')
-    const id = rawUrl.split('title_no=')[1]?.split('&')[0]
-    const rssXml = await fetch(`${url}/rss?title_no=${id}`, { headers }).then((r) => r.text())
-    const rssJson = await parseStringPromise(rssXml)
-    const title = rssJson?.rss?.channel?.[0]?.title[0]
-    const description = rssJson?.rss?.channel?.[0]?.description[0]
-    const imageUrl = rssJson?.rss?.channel?.[0]?.image?.link
-
-    return createSource(TYPE, id, title, url, imageUrl, description)
-}
-
 const webtoons: Parser = {
     fetchFunction: fetchWebtoons,
-    type: TYPE,
-    parseLink: parseWebtoonsLink,
-    parseCondition: (url) => url.includes('webtoons.com')
+    type: TYPE
 }
 
 registerParser(webtoons)

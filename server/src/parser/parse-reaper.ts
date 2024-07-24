@@ -1,6 +1,6 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, testForCloudFlare, createSource, categorizeRemoteUrls, queuePuppeteerFetch } from '../parser'
+import { registerParser, headers, testForCloudFlare, categorizeRemoteUrls, queuePuppeteerFetch } from '../parser'
 import { getHost, parseNAgoDateString } from '../utils/parse'
 
 const TYPE = 'reaper'
@@ -161,24 +161,10 @@ async function fetchFrontPage (sources: Source[], urls: Record<string, Url>): Pr
     }
 }
 
-async function parseReaperPage (rawUrl: string) {
-    const sourcehtml: string = await fetch(rawUrl, { headers }).then((res) =>
-        res.text()
-    )
-
-    const $ = cheerio.load(sourcehtml)
-    const path = rawUrl.match(/\/comics\/[^/]*\//)?.[0]
-    const title = $('main h2').text() || $('main .container h1').text()
-
-    return createSource(TYPE, path?.split('/')[2], title, rawUrl.match(/^http.*reaperscans.com\/comics\/[^/]*\//)?.[0])
-}
-
 const reaper: Parser = {
     fetchFunction: fetchReaper,
     fetchFrontPageFunction: fetchFrontPage,
-    type: TYPE,
-    parseLink: parseReaperPage,
-    parseCondition: (url) => url.includes('reaperscans.com')
+    type: TYPE
 }
 
 registerParser(reaper)

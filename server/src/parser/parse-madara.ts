@@ -150,9 +150,6 @@ async function parseMadara (source: Source, urls: Record<string, Url>, body, sou
 
 const idRegex = /["']?manga_id["']?:\s?["']?(\d{2,10})["']?/g
 
-const fetchPage: (rawUrl: string) => Promise<string> = async (rawUrl) =>
-    await getResponseBody(await fetch(rawUrl, { headers })).catch(() => '')
-
 function parseMadaraPage (sourcehtml: string, rawUrl: string) {
     const $ = cheerio.load(sourcehtml)
 
@@ -298,12 +295,7 @@ async function fetchMadara (source: Source, urls: Record<string, Url>): Promise<
 
 const madara = {
     fetchFunction: fetchMadara,
-    type: TYPE,
-    parseLink: async (rawUrl: string) => {
-        const sourcehtml = await fetchPage(rawUrl)
-        return parseMadaraPage(sourcehtml, rawUrl)
-    },
-    parseCondition: () => false
+    type: TYPE
 }
 
 export const MADARA = TYPE

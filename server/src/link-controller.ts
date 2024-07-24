@@ -16,18 +16,12 @@ declare global {
         deleted?: boolean
         hiddenChapters: Record<string, boolean>
         hide: number
-        sources: unknown[]
+        sources: string[]
         lastModified: number
     }
 }
 
 let links: Record<string, Link> = {}
-try {
-    links = JSON.parse(fs.readFileSync(linksPath, { encoding: 'utf-8' }))
-}
-catch (e) {
-    console.log(e)
-}
 
 let writeLinksTimeout = null
 function write () {
@@ -35,6 +29,24 @@ function write () {
     writeLinksTimeout = setTimeout(() => {
         fs.writeFile(linksPath, JSON.stringify(links, null, 2), () => null)
     }, 100)
+}
+
+try {
+    links = JSON.parse(fs.readFileSync(linksPath, { encoding: 'utf-8' }))
+    const cutoff = Date.now() - 365 * 24 * 60 * 60 * 1000
+    let modified = false
+    Object.keys(links).forEach((key) => {
+        if (links[key].lastModified < cutoff) {
+            modified = true
+            delete links[key]
+        }
+    })
+    if (modified) {
+        write()
+    }
+}
+catch (e) {
+    console.log(e)
 }
 
 function toKey (id, pw) {
@@ -62,11 +74,7 @@ function createPayload (link: Link) {
         hiddenChapters,
         hide,
         sources: sources
-            .map(
-                (linksrc) =>
-                    (typeof linksrc === 'string' && sourceMap[checkForDuplicate(linksrc)]) ||
-                    (Object.prototype.hasOwnProperty.call(linksrc, 'id') && sourceMap[(linksrc as Source).id])
-            )
+            .map((linksrc) => sourceMap[checkForDuplicate(linksrc)])
             .filter((source) => !!source),
         lastModified
     }
@@ -112,6 +120,10 @@ function handleKeyError (res) {
                     }, 5000)
                 )
         )
+}
+
+export function getLinkSources () {
+    return Array.from(new Set([].concat(...Object.values(links).map((link) => link.sources))))
 }
 
 export function deleteSourceFromLinks (sourceId) {

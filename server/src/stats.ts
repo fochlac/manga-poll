@@ -182,8 +182,6 @@ export function logWarning (key, message, limit = 3) {
     }
     writeWarnings(warnings)
     updateHosts()
-
-    console.log(message)
 }
 
 const emptyStats = (url, type, warnings = {}) => ({
@@ -317,7 +315,7 @@ function mergeWarnings (w1 = { count: 0, warnings: [] }, w2 = { count: 0, warnin
                 warnings.push(warning)
             }
             return warnings
-        }, [...w2.warnings] || [])
+        }, [...w2.warnings])
     }
 }
 

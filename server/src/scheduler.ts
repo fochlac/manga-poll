@@ -4,7 +4,7 @@ import { sendTopicMessage } from './subscriptions-controller'
 import { getSources, updateSource } from './source-storage'
 import { logWarning, resetStatsCache } from './stats'
 import { getHost } from './utils/parse'
-import { markLinksWithSourceChanged } from './link-controller'
+import { getLinkSources, markLinksWithSourceChanged } from './link-controller'
 import { storeImage } from './utils/images'
 
 interface WorkerResult {
@@ -138,8 +138,15 @@ async function fetchForSources (sources: Record<string, Source>, isNew?: boolean
 const fetchAllUrls = async (isNew?: boolean) => {
     isRunning = Date.now() + 1000 * 60 * 15
     try {
-        const sources = await getSources()
-        await fetchForSources(sources, isNew)
+        const allSources = await getSources()
+        const monitoredSourceIds = getLinkSources()
+
+        const monitoredSources = monitoredSourceIds.reduce((sources, id) => {
+            sources[id] = allSources[id]
+            return sources
+        }, {})
+
+        await fetchForSources(monitoredSources, isNew)
         isRunning = 0
     }
     catch (e) {

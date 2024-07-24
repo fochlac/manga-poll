@@ -10,6 +10,7 @@ import '../parser/parse-genkan'
 import '../parser/parse-leviathan'
 import '../parser/parse-webtoons'
 import '../parser/parse-reaper'
+import '../parser/parse-asura'
 
 let skip = false
 async function fetchAllUrls (sources: Record<string, Source>, urls: Record<string, Url>, allowPuppeteer?: boolean) {

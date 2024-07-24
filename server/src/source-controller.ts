@@ -1,4 +1,4 @@
-import { checkSourceType, createSource, parseSourceLink } from './parser'
+import { checkSourceType, createSource } from './parser'
 import { fetchSource } from './scheduler'
 import { getHosts, updateHosts } from './stats'
 import { addSource, getSources, removeSource, updateSource } from './source-storage'
@@ -112,33 +112,6 @@ export function sourceController (app) {
         catch (err) {
             console.log('Unexpected Error while creating source:', err?.message, req?.body)
             res.status(500).json({ valid: false })
-        }
-    })
-
-    app.post('/api/sources/addFromUrl', async (req, res) => {
-        try {
-            const { url } = req.body
-            if (!url) {
-                throw new Error('No url passed to test endpoint.')
-            }
-
-            const rawSource = await parseSourceLink(url)
-            if (!rawSource) {
-                throw new Error(`Error parsing raw source "${url}".`)
-            }
-            const entry = await createSourceIfNeeded(rawSource)
-
-            if (entry) {
-                res.status(200).json({ valid: true, payload: entry })
-                updateHosts()
-            }
-            else {
-                throw new Error(`Could not create new source for url "${url}".`)
-            }
-        }
-        catch (e) {
-            console.log(e.message)
-            res.status(400).json({ valid: false })
         }
     })
 

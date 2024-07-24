@@ -1,22 +1,9 @@
 import cheerio from 'cheerio'
 import fetch from 'node-fetch'
-import { registerParser, headers, getResponseBody, createSource, joinUrl, categorizeRemoteUrls } from '../parser'
+import { registerParser, headers, getResponseBody, joinUrl, categorizeRemoteUrls } from '../parser'
 import { getHost, parseNAgoDateString } from '../utils/parse'
 
 const TYPE = 'genkan'
-
-async function testGenkan (rawUrl) {
-    const [url, id] = rawUrl.match(/https?:\/\/.*\/comics\/(\d*)-[-\w\d]*/) || []
-    if (!url || !id) {
-        throw Error(`Could not extract url and/or id from genkan page. url: ${url} id: ${id}`)
-    }
-    const sourcehtml: string = await fetch(url, { headers }).then((res) => res.text())
-
-    const $ = cheerio.load(sourcehtml)
-    const title = $('meta[property*="title"]').attr('content')
-
-    return createSource(TYPE, id, title, url)
-}
 
 async function fetchGenkan (source: Source, urls: Record<string, Url>): Promise<ChapterResult> {
     try {
@@ -90,18 +77,7 @@ async function fetchGenkan (source: Source, urls: Record<string, Url>): Promise<
 
 const genkan: Parser = {
     fetchFunction: fetchGenkan,
-    type: TYPE,
-    parseLink: testGenkan,
-    parseCondition: async (url) => {
-        try {
-            const sourcehtml: string = await fetch(url, { headers, redirect: 'manual' }).then((res) => res.text())
-            return sourcehtml.includes('Powered by Genkan.')
-        }
-        catch (e) {
-            console.log('Error fetching url.', e)
-            return false
-        }
-    }
+    type: TYPE
 }
 
 registerParser(genkan)

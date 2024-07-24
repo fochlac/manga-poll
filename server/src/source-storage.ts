@@ -2,6 +2,7 @@ import { customAlphabet, urlAlphabet } from 'nanoid'
 import { resolve } from 'path'
 import { markLinksWithSourceChanged } from './link-controller'
 import { createWrite, readFile } from './utils/db'
+import { getHost } from './utils/parse'
 
 declare global {
     interface Source {
@@ -27,8 +28,8 @@ const sources: Record<string, Source> = readFile<Source>(sourcesPath, (sources) 
             sources[key].url = sources[key].url.replace('realmscans.xyz', 'realmscans.to')
             modified = true
         }
-        if (sources[key].url?.includes('asura.nacm.xyz')) {
-            sources[key].url = sources[key].url.replace('asura.nacm.xyz', 'asurascans.com')
+        if (getHost(sources[key].url) === 'asurascans.com' && sources[key].type !== 'asura') {
+            sources[key].type = 'asura'
             modified = true
         }
     })

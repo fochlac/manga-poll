@@ -154,12 +154,7 @@ async function fetchLeviathan (source: Source, urls: Record<string, Url>): Promi
 
 const leviathan = {
     fetchFunction: fetchLeviathan,
-    type: TYPE,
-    parseLink: async (rawUrl) => {
-        const sourcehtml: string = await fetch(rawUrl, { headers }).then((res) => res.text())
-        return parseLeviathanPage(rawUrl, sourcehtml)
-    },
-    parseCondition: (url) => url.includes('leviatanscans.com') || url.includes('immortalupdates.com')
+    type: TYPE
 }
 
 registerParser(leviathan)

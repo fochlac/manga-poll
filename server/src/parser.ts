@@ -26,28 +26,20 @@ declare global {
         type: string
         fetchFunction: (source: Source, urls: Record<string, Url>) => Promise<ChapterResult>
         fetchFrontPageFunction?: (sources: Source[], urls: Record<string, Url>) => Promise<ChapterResult[]>
-        parseLink: (body: string) => Promise<Partial<Source>>
-        parseCondition: (body: string) => boolean | Promise<boolean>
     }
 }
 
 const defaultType = 'madara'
 const parserMap: Record<string, Parser['fetchFunction']> = {}
 const parserMapFront: Record<string, Parser['fetchFrontPageFunction']> = {}
-const linkParserList: Partial<Parser>[] = []
-let defaultLinkParser: Parser['parseLink']
 
-export function registerParser ({ type, fetchFunction, parseLink, parseCondition, fetchFrontPageFunction }: Parser) {
+export function registerParser ({ type, fetchFunction, fetchFrontPageFunction }: Parser) {
     if (typeof fetchFunction !== 'function') {
         console.log(`Error registering parser for type '${type}': invalid fetch function.`)
     }
     parserMap[type] = fetchFunction
     if (typeof fetchFrontPageFunction === 'function') {
         parserMapFront[type] = fetchFrontPageFunction
-    }
-    linkParserList.push({ parseLink, parseCondition, type })
-    if (type === defaultType) {
-        defaultLinkParser = parseLink
     }
     console.log(`Registered parser for type '${type}'.`)
 }
@@ -67,25 +59,6 @@ export function fetchFrontPage (type: string, sources: Source[], urls: Record<st
         throw Error(`No fetch function for parser type '${type}'.`)
     }
     return fetchFunction(sources, urls)
-}
-
-export async function parseSourceLink (link) {
-    let parser
-    for (const possibleParser of linkParserList) {
-        if (await possibleParser.parseCondition(link)) {
-            parser = possibleParser
-            break
-        }
-    }
-
-    if (!parser) {
-        console.log(`Could not find parser for url "${link}", using default parser.`)
-    }
-    else {
-        console.log(`Parsing with parser "${parser.type}".`)
-    }
-
-    return parser ? parser.parseLink(link) : defaultLinkParser(link)
 }
 
 export function checkSourceType (type) {

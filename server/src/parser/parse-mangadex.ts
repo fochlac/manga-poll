@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import { categorizeRemoteUrls, createSource, headers, registerParser } from '../parser'
+import { categorizeRemoteUrls, headers, registerParser } from '../parser'
 import { getHost } from '../utils/parse'
 
 const TYPE = 'mangadex'
@@ -104,61 +104,9 @@ async function fetchMangadex (source: Source, urls: Record<string, Url>): Promis
     }
 }
 
-async function parseMangadexPage (rawUrl: string) {
-    if (/title\/[\d-\w]*(\/[\d-\w]*|)$/.test(rawUrl)) {
-        const id = rawUrl.split('/title/')?.[1]?.split('/')[0]
-        if (!id) {
-            console.log('Could not extract id from manga link.')
-            return null
-        }
-        const mangaInfo = await fetch(`https://api.mangadex.org/manga/${id}`).then((r) => r.json())
-
-        if (mangaInfo?.data?.type !== 'manga') {
-            console.log('Invalid id extracted from manga link.')
-            return null
-        }
-
-        return createSource(TYPE, id, mangaInfo.data.attributes?.title?.en, `https://mangadex.org/title/${id}`)
-    }
-    else if (/chapter\/[\d-\w]*(\/\d*)?/.test(rawUrl)) {
-        const id = rawUrl.split('/chapter/')?.[1]?.split('/')[0]
-        if (!id) {
-            console.log('Could not extract id from chapter link.')
-            return null
-        }
-        const chapterInfo = await fetch(`https://api.mangadex.org/chapter/${id}?includes[]=manga`).then((r) => r.json())
-
-        if (chapterInfo?.data?.type !== 'chapter') {
-            console.log('Invalid id extracted from chapter link.')
-            return null
-        }
-
-        const mangaInfo = chapterInfo.relationships?.find((rel) => rel?.type === 'manga')
-
-        if (!mangaInfo) {
-            console.log('Could not find manga for the chapter link.')
-            return null
-        }
-
-        const title = Object.values(mangaInfo.attributes?.title || {})[0] as string
-
-        return {
-            type: TYPE,
-            mangaId: mangaInfo.id,
-            title,
-            url: `https://api.mangadex.org/manga/${mangaInfo.id}`
-        }
-    }
-    else {
-        console.log('Mangadex url of no chapter or manga posted.')
-    }
-}
-
 const fanfox: Parser = {
     fetchFunction: fetchMangadex,
-    type: TYPE,
-    parseLink: parseMangadexPage,
-    parseCondition: (url) => url.includes('mangadex.org')
+    type: TYPE
 }
 
 registerParser(fanfox)
