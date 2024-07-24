@@ -118,7 +118,6 @@ async function parseFrontPage (
                 })
 
                 const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(chapterList, source, urls)
-                console.log('reaper2', newUrls, oldUrls)
 
                 sourceResults.push({
                     urls: newUrls,
