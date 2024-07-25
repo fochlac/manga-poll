@@ -18,6 +18,7 @@ declare global {
         hide: number
         sources: string[]
         lastModified: number
+        lastSeen?: number
     }
 }
 
@@ -33,14 +34,14 @@ function write () {
 
 try {
     links = JSON.parse(fs.readFileSync(linksPath, { encoding: 'utf-8' }))
-    const cutoff = Date.now() - 365 * 24 * 60 * 60 * 1000
-    let modified = false
-    Object.keys(links).forEach((key) => {
-        if (links[key].lastModified < cutoff) {
-            modified = true
-            delete links[key]
-        }
-    })
+    // const cutoff = Date.now() - 365 * 24 * 60 * 60 * 1000
+    const modified = false
+    // Object.keys(links).forEach((key) => {
+    //     if (links[key].lastModified < cutoff) {
+    //         modified = true
+    //         delete links[key]
+    //     }
+    // })
     if (modified) {
         write()
     }
@@ -123,7 +124,10 @@ function handleKeyError (res) {
 }
 
 export function getLinkSources () {
-    return Array.from(new Set([].concat(...Object.values(links).map((link) => link.sources))))
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000
+    return Array.from(new Set(
+        [].concat(...Object.values(links).map((link) => link.lastSeen > cutoff ? link.sources : []))
+    ))
 }
 
 export function deleteSourceFromLinks (sourceId) {
@@ -229,6 +233,7 @@ export function linksController (app) {
             if (links[id]?.deleted) {
                 return res.status(404).json({valid: false, message: 'Not found'})
             }
+            links[id].lastSeen = Date.now()
             const changedSince = req.query.changedSince
             if (changedSince && Number(changedSince) >= links[id].lastModified) {
                 res.status(304).send({ valid: true, payload: null })
