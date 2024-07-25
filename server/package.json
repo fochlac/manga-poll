@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "build": "rm -rf ./dist/* && tsc -p ./tsconfig.json && chmod +x ./dist/index.js",
-    "start": "npm run build && node ./dist/index.js"
+    "start": "npm run build && set ENVM=DEV && node ./dist/index.js"
   },
   "author": "",
   "license": "ISC",

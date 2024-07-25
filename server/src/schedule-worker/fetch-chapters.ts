@@ -7,11 +7,11 @@ import '../parser/parse-madara'
 import '../parser/parse-mangadex'
 import '../parser/parse-mangastream'
 import '../parser/parse-genkan'
-import '../parser/parse-leviathan'
 import '../parser/parse-webtoons'
 import '../parser/parse-reaper'
 import '../parser/parse-asura'
 import '../parser/parse-flame'
+import '../parser/parse-mangagalaxy'
 
 let skip = false
 async function fetchAllUrls (sources: Record<string, Source>, urls: Record<string, Url>, allowPuppeteer?: boolean) {

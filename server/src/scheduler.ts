@@ -140,6 +140,7 @@ const fetchAllUrls = async (isNew?: boolean) => {
     try {
         const allSources = await getSources()
         const monitoredSourceIds = getLinkSources()
+        console.log(monitoredSourceIds.length, process.env.ENVM.trim(), process.env.ENVM.trim() === 'DEV')
 
         const monitoredSources = monitoredSourceIds.reduce((sources, id) => {
             sources[id] = allSources[id]

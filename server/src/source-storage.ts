@@ -41,8 +41,16 @@ const sources: Record<string, Source> = readFile<Source>(sourcesPath, (sources) 
             sources[key].url = sources[key].url.replace('https://flamecomics.com', 'https://flamecomics.me')
             modified = true
         }
-        if (sources[key].url?.includes('flamecomics.me')) {
+        if (sources[key].url?.includes('flamecomics.me') && sources[key].type !== 'flame') {
             sources[key].type = 'flame'
+            modified = true
+        }
+        if (sources[key].url?.includes('mangagalaxy') && sources[key].type !== 'mangagalaxy') {
+            sources[key].type = 'mangagalaxy'
+            modified = true
+        }
+        if (sources[key].type === 'leviathan') {
+            delete sources[key]
             modified = true
         }
     })
