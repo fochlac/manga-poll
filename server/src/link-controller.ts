@@ -126,7 +126,7 @@ function handleKeyError (res) {
 export function getLinkSources () {
     const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000
     return Array.from(new Set(
-        [].concat(...Object.values(links).map((link) => process.env.ENVM.trim() === 'DEV' || link.lastSeen > cutoff ? link.sources : []))
+        [].concat(...Object.values(links).map((link) => process.env.ENVM?.trim?.() === 'DEV' || link.lastSeen > cutoff ? link.sources : []))
     ))
 }
 
