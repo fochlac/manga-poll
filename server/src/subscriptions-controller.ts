@@ -33,16 +33,16 @@ const timeouts = {}
 export function sendTopicMessage (topic) {
     clearTimeout(timeouts[topic])
 
-    timeouts[topic] = setTimeout(() => {
-        console.log('sendTopicMessage', topic)
-        const payload = {
-            data: {
-                type: 'UPDATE_CHAPTER',
-                sourceId: topic
-            }
-        }
-        admin.messaging().sendToTopic(topic, payload, { priority: 'high' })
-    }, 100)
+    // timeouts[topic] = setTimeout(() => {
+    //     console.log('sendTopicMessage', topic)
+    //     const payload = {
+    //         data: {
+    //             type: 'UPDATE_CHAPTER',
+    //             sourceId: topic
+    //         }
+    //     }
+    //     admin.messaging().sendToTopic(topic, payload, { priority: 'high' })
+    // }, 100)
 }
 
 export function subscriptionsController (app) {
