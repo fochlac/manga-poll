@@ -25,7 +25,7 @@ async function parseMangastreamFront (
     const trackedSeries:Record<string, Source> = sources.reduce((trackedSeries, source) => {
         const path = source.url.split('/').slice(3).join('/')
         trackedSeries[path] = source
-        trackedSeries[source.title.replace(/[\W_]+/g, '')] = source
+        trackedSeries[source.title.slice(0, 30).replace(/[\W_]+/g, '')] = source
         return trackedSeries
     }, {})
 
@@ -39,13 +39,13 @@ async function parseMangastreamFront (
 
             const title = $(elem).text()
             const path = url.split('/').slice(3).join('/')
-            const source = trackedSeries[path] || trackedSeries[title.replace(/[\W_]+/g, '')]
+            const source = trackedSeries[path] || trackedSeries[title.slice(0, 30).replace(/[\W_]+/g, '')]
 
             if (source) {
                 const mangaId = url?.split('/').filter((str) => str.trim().length).slice(-1)[0]
                 const chapters = $(elem).parent().parent().find('a:has(svg)').toArray()
                 let update
-                if (source.url !== url || source.title !== title || source.mangaId !== url?.split('/').filter((str) => str.trim().length).slice(-1)[0]) {
+                if (source.url !== url || source.title.slice(0, 30) !== title.slice(0, 30) || source.mangaId !== url?.split('/').filter((str) => str.trim().length).slice(-1)[0]) {
                     update = {
                         ...source,
                         mangaId,
