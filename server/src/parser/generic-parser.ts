@@ -11,14 +11,14 @@ import {
 import { getHost } from '../utils/parse'
 
 interface ParserOptions {
-    TYPE: string;
-    getBaseUrl?: (sources: Source[]) => string;
-    normalizeTitle?: (title: string) => string;
-    selectSeriesEntries: ($: CheerioAPI) => Cheerio<AnyNode>;
-    getSeriesUrl: ($: CheerioAPI, elem: AnyNode) => string;
-    getSeriesTitle: ($: CheerioAPI, elem: AnyNode) => string;
-    getMangaId: (options: {$: CheerioAPI, elem: AnyNode, url: string}) => string;
-    getChapters: (options: {$: CheerioAPI, elem: AnyNode, host: string, url: string}) => Partial<Url>[];
+    TYPE: string
+    getBaseUrl?: (sources: Source[]) => string
+    normalizeTitle?: (title: string) => string
+    selectSeriesEntries: ($: CheerioAPI) => Cheerio<AnyNode>
+    getSeriesUrl: ($: CheerioAPI, elem: AnyNode) => string
+    getSeriesTitle: ($: CheerioAPI, elem: AnyNode) => string
+    getMangaId: (options: { $: CheerioAPI; elem: AnyNode; url: string }) => string
+    getChapters: (options: { $: CheerioAPI; elem: AnyNode; host: string; url: string }) => Partial<Url>[]
     debug?: boolean
 }
 
@@ -44,7 +44,7 @@ export const createParser = ({
         const baseDate = new Date()
         baseDate.setHours(0, 0, 0, 0)
         const host = getHost(sources[0].url)
-        const trackedSeries:Record<string, Source> = sources.reduce((trackedSeries, source) => {
+        const trackedSeries: Record<string, Source> = sources.reduce((trackedSeries, source) => {
             const path = source.url.split('/').slice(3).join('/')
             trackedSeries[path] = source
             if (normTitle(source.title)) {
@@ -53,7 +53,14 @@ export const createParser = ({
             return trackedSeries
         }, {})
 
-        if (debug) console.log('trackedSeries', Object.values(trackedSeries).map((series) => series.title))
+        if (debug) {
+            console.log(
+                'trackedSeries:\n',
+                Object.entries(trackedSeries)
+                    .map(([key, series]) => [series.title, key])
+                    .join('\n')
+            )
+        }
 
         const entries = selectSeriesEntries($).toArray()
         if (debug) console.log('entries', entries.length)
@@ -67,7 +74,7 @@ export const createParser = ({
             if (debug) console.log('source', source, path, normTitle(title))
 
             if (source) {
-                const mangaId = getMangaId({$, elem, url})
+                const mangaId = getMangaId({ $, elem, url })
                 let update
                 if (source.url !== url || source.title !== title || source.mangaId !== mangaId) {
                     update = {
@@ -78,7 +85,7 @@ export const createParser = ({
                     }
                 }
 
-                const chapterList = getChapters({$, elem, host, url})
+                const chapterList = getChapters({ $, elem, host, url })
 
                 const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(chapterList, source, urls)
 
@@ -122,13 +129,7 @@ export const createParser = ({
             return sources.map((source) => ({
                 urls: [],
                 source,
-                warnings: [
-                    [
-                        host,
-                        `Error fetching frontpage for ${host}: ${err?.message || 'Unknown Error.'}`,
-                        0
-                    ]
-                ]
+                warnings: [[host, `Error fetching frontpage for ${host}: ${err?.message || 'Unknown Error.'}`, 0]]
             }))
         }
     }
