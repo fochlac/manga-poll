@@ -18,7 +18,7 @@ interface ParserOptions {
     getSeriesUrl: ($: CheerioAPI, elem: AnyNode) => string;
     getSeriesTitle: ($: CheerioAPI, elem: AnyNode) => string;
     getMangaId: (options: {$: CheerioAPI, elem: AnyNode, url: string}) => string;
-    getChapters: (options: {$: CheerioAPI, elem: AnyNode, host: string}) => Partial<Url>[];
+    getChapters: (options: {$: CheerioAPI, elem: AnyNode, host: string, url: string}) => Partial<Url>[];
     debug?: boolean
 }
 
@@ -78,7 +78,7 @@ export const createParser = ({
                     }
                 }
 
-                const chapterList = getChapters({$, elem, host})
+                const chapterList = getChapters({$, elem, host, url})
 
                 const { newUrls, oldUrls, warnings } = categorizeRemoteUrls(chapterList, source, urls)
 

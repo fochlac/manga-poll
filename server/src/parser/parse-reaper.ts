@@ -5,24 +5,24 @@ const TYPE = 'reaper'
 
 export const reaper = createParser({
     TYPE,
-    selectSeriesEntries: ($) => $('h2:contains(\'Latest Comics\')').parent().find('p > a[href*="/comics/"]'),
+    selectSeriesEntries: ($) => $('h1:contains(\'Latest updates on comics\')').parent()
+        .find('.grid > .flex a[href*="/series/"]'),
     getSeriesUrl: ($, elem) => $(elem).attr('href'),
     getSeriesTitle: ($, elem) => $(elem).text().trim(),
-    getBaseUrl: (sources) => `${sources[0].url.split('/').slice(0, 3).join('/')}/latest/comics?page=2`,
+    getBaseUrl: (sources) => `${sources[0].url.split('/').slice(0, 3).join('/')}/latest/comics`,
     getMangaId: ({ url }) => url?.split('/').filter((str) => str.trim().length).slice(-1)[0],
-    getChapters: ({$, elem, host}) => {
-        const chapters = $(elem).parent().parent().find('a[href*="/chapters/"]').toArray()
+    getChapters: ({$, elem, host, url}) => {
+        const chapters = $(elem).parent().find(`a[href*="/series/${url.split('/series/')[1]}"]/chapter`).toArray()
         return chapters.map((linkEl) => {
             const link = $(linkEl)
             const url = link.attr('href')
-            const rawChapter = link.contents().not(link.children()).text().trim()
-            const rawDate = parseNAgoDateString(link.find('p').text())
+            const [rawChapter, rawDate] = Array.from(link.find('span'))
 
             return {
                 url,
-                chapter: String(rawChapter).trim().match(/^Chapter ([\d.]+)/)?.[1],
+                chapter: String($(rawChapter).text()).trim().match(/^Chapter ([\d.]+)/)?.[1],
                 host,
-                created: rawDate
+                created: parseNAgoDateString($(rawDate).text())
             }
         })
     }
