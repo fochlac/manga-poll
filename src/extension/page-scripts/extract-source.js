@@ -1,3 +1,4 @@
+import { testAsura } from './test-asura'
 import { testFanFox } from './test-fanfox'
 import { testGenkan } from './test-genkan'
 import { testLeviathan } from './test-leviathan'
@@ -36,6 +37,9 @@ export function extractSource () {
         }
         else if (window.location.host.includes('reaperscans.com')) {
             result = testReaper()
+        }
+        else if (window.location.host.includes('asuracomic.net')) {
+            result = testAsura()
         }
         else {
             result = testMadara()

@@ -1,6 +1,6 @@
 export function testReaper () {
-    const title = document.querySelector('main h2, main .container h1')?.innerText?.trim()
-    const url = window.location.pathname.match(/^\/comics\/[^/]*/)?.[0]
+    const title = document.querySelector('main h2, main #content h1')?.innerText?.trim()
+    const url = window.location.pathname.match(/^\/series\/[^/]*/)?.[0]
     const chapter = /(\d+)/.exec(document.querySelector('main .fixed h1')?.innerText || '')?.[1]
 
     return {
