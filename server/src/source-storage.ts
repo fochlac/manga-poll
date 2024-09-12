@@ -21,41 +21,21 @@ const nanoid = customAlphabet(urlAlphabet, 10)
 const sourcesPath = resolve(__dirname, '../db/sources.json')
 const writeSources = createWrite(sourcesPath)
 
-const sources: Record<string, Source> = readFile<Source>(sourcesPath, (sources) => {
-    let modified = false
-    Object.keys(sources).forEach((key) => {
-        if (sources[key].url?.includes('realmscans.xyz')) {
-            sources[key].url = sources[key].url.replace('realmscans.xyz', 'realmscans.to')
-            modified = true
-        }
-        if (getHost(sources[key].url) === 'asurascans.com' && sources[key].type !== 'asura') {
-            sources[key].type = 'asura'
-            modified = true
-        }
-        if (sources[key].url?.includes('flamescans')) {
-            sources[key].url = sources[key].url.replace('https://flamescans.me/homee/', 'https://flamecomics.me/')
-            sources[key].url = sources[key].url.replace('https://flamescans.me', 'https://flamecomics.me')
-            modified = true
-        }
-        if (sources[key].url?.includes('flamecomics.com')) {
-            sources[key].url = sources[key].url.replace('https://flamecomics.com', 'https://flamecomics.me')
-            modified = true
-        }
-        if (sources[key].url?.includes('flamecomics.me') && sources[key].type !== 'flame') {
-            sources[key].type = 'flame'
-            modified = true
-        }
-        if (sources[key].url?.includes('mangagalaxy') && sources[key].type !== 'mangagalaxy') {
-            sources[key].type = 'mangagalaxy'
-            modified = true
-        }
-        if (sources[key].type === 'leviathan') {
-            delete sources[key]
-            modified = true
-        }
-    })
-    return modified
-}, writeSources)
+const sources: Record<string, Source> = readFile<Source>(
+    sourcesPath,
+    (sources) => {
+        let modified = false
+        Object.keys(sources).forEach((key) => {
+            if (sources[key].url?.includes('reaperscans.com') && sources[key].url?.includes('/comics/')) {
+                sources[key].url = sources[key].url.replace(/\/comics\/(\d+-)?/, '/series/')
+                sources[key].mangaId = sources[key].mangaId.replace(/^(\d+-)?/, '')
+                modified = true
+            }
+        })
+        return modified
+    },
+    writeSources
+)
 
 export function getSources () {
     return sources
