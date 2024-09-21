@@ -18,7 +18,7 @@ export const reaper = createParser({
     getChapters: ({ $, elem, host, url }) => {
         const chapters = $(elem)
             .parent()
-            .find(`a[href*="/series/${url.split('/series/')[1]}"]/chapter`)
+            .find(`a[href*="/series/${url.split('/series/')[1]}/chapter"]`)
             .toArray()
         return chapters.map((linkEl) => {
             const link = $(linkEl)
