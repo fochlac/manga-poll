@@ -324,10 +324,12 @@ export function categorizeRemoteUrls (
             else if (
                 isValid &&
                 stored &&
-                (stored.url !== url.url || (!stored.chapter && url.chapter)) &&
-                stored.created < url.created
+                (stored.url !== url.url || (!stored.chapter && url.chapter))
             ) {
-                collector.oldUrls.push(url)
+                collector.oldUrls.push({
+                    ...url,
+                    created: stored.created
+                })
             }
             else if (!stored || !isValid) {
                 invalidUrls[url.url] = invalidUrls[url.url] ? invalidUrls[url.url] + 1 : 1
