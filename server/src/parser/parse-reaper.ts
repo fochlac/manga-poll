@@ -22,7 +22,7 @@ export const reaper = createParser({
             .toArray()
         return chapters.map((linkEl) => {
             const link = $(linkEl)
-            const url = link.attr('href')
+            const url = `https://reaperscans.com${link.attr('href')}`
             const [rawChapter, rawDate] = Array.from(link.find('span'))
 
             return {
