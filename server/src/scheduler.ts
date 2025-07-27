@@ -52,7 +52,7 @@ async function fetchForSources (sources: Record<string, Source>, isNew?: boolean
     const start = Date.now()
     console.log('Fetching new chapters...')
     const storedUrls = getUrls()
-    const allowPuppeteer = Object.keys(sources).length > 2 && Date.now() - lastPuppeteer >= 60 * 60 * 1000
+    const allowPuppeteer = Object.keys(sources).length > 2 && Date.now() - lastPuppeteer >= 60 * 60 * 1000 * 6
     if (allowPuppeteer) {
         lastPuppeteer = Date.now()
     }
