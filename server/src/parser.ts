@@ -101,35 +101,36 @@ export async function getResponseBody (response): Promise<string> {
 
     return body
 }
-
+const token = '2Sl6GiQ2V23ZH1Sbbd7cc026a265656e96d293e8b49126ef9'
 export async function cloudscrape (url) {
     console.log(`Puppeteer failed for ${url}. Trying cloudscrape...`)
-    const response = await fetch('https://api.proxyscrape.com/v3/accounts/freebies/scraperapi/request', {
+    const browserlessUrl = `https://production-sfo.browserless.io/unblock?token=${token}&proxy=residential`
+
+    const response = await fetch(browserlessUrl, {
         method: 'post',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Api-Key': '43aff59d-dff0-4d0a-a8c6-3df3b1c6ba05'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            'url': url,
-            'browserHtml': true
+            url,
+            browserWSEndpoint: false,
+            cookies: false,
+            content: true,
+            screenshot: false
         })
     })
-    const body = await response.json()
-    const {remaining_credits, data, used_credits, success} = body
-    console.log(`Remaining requests: ${Math.floor(remaining_credits / used_credits)}`, body)
-    if (!success) {
-        console.log('Cloudscrape: Unable to fetch ' + url)
+    if (response.status > 300) {
+        console.log('browserless: Error fetching' + url, await response.text())
         return ''
     }
+    const body = await response.json()
+    const { content } = body
     try {
         const path = resolve(__dirname, `../puppeteer/scrape-${getHost(url)}.html`)
-        await writeFile(path, data.browserHtml, 'utf-8')
+        await writeFile(path, content, 'utf-8')
     }
     catch (e) {
         console.log(e)
     }
-    return data.browserHtml
+    return content
 }
 
 let puppeteerEnabled
