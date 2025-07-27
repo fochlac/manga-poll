@@ -117,7 +117,7 @@ export const createParser = ({
             }
             catch (e) {
                 body = await queuePuppeteerFetch(url)
-                if (body === '' && browserlessSelector) {
+                if (body === '' && browserlessSelector && url.includes('rizzfables.com.')) {
                     body = await cloudscrape(url, browserlessSelector)
                 }
             }
