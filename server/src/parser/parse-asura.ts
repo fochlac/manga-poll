@@ -13,9 +13,9 @@ export const asura = createParser({
         }
         return true
     }),
-    getSeriesUrl: ($, elem) => BASEURL + $(elem).attr('href'),
+    getSeriesUrl: ($, elem) => BASEURL + $(elem).attr('href').replace(/-([a-z0-9]{8})$/, '-'),
     getSeriesTitle: ($, elem) => $(elem).text(),
-    getMangaId: ({ url }) => url?.split('/').filter((str) => str.trim().length).slice(-1)[0],
+    getMangaId: ({ url }) => url?.split('/').filter((str) => str.trim().length).slice(-1)[0].replace(/-([a-z0-9]{8})$/, '-'),
     getChapters: ({$, elem, host}) => {
         const chapters = $(elem).parent().parent().find('a:has(svg)').toArray()
         return chapters.map((link) => {

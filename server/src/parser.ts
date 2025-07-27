@@ -208,7 +208,7 @@ export async function fetchWithPuppeteer (url): Promise<string> {
     catch (e) {
         console.log(`Error while fetching ${url} via puppeteer:`, e.message.split('\n')[0])
         if (context) {
-            await context.close().catch((e) => console.log('close failed'))
+            await context.close().catch(() => console.log('close failed'))
         }
         await browser.close()
         return ''

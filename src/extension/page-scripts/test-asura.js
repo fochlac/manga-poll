@@ -1,6 +1,6 @@
 export function testAsura () {
     const title = document.querySelector('a[href="/"]+svg+h3,a[href="/series"]+a>h3').innerText
-    const url = window.location.pathname.match(/^\/series\/[^/]*/)?.[0]
+    const url = window.location.pathname.match(/^\/series\/[^/]*/)?.[0].replace(/-([a-z0-9]{8})$/, '-')
     const [chapter, nr] = window.location.pathname.split('/').slice(-2)
 
     return {

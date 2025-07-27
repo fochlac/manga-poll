@@ -1,8 +1,7 @@
 import { customAlphabet, urlAlphabet } from 'nanoid'
 import { resolve } from 'path'
-import { markLinksWithSourceChanged } from './link-controller'
+import { deleteSourceFromLinks, markLinksWithSourceChanged } from './link-controller'
 import { createWrite, readFile } from './utils/db'
-import { getHost } from './utils/parse'
 
 declare global {
     interface Source {
@@ -25,13 +24,26 @@ const sources: Record<string, Source> = readFile<Source>(
     sourcesPath,
     (sources) => {
         let modified = false
+        const deletionList = []
         Object.keys(sources).forEach((key) => {
-            if (sources[key].url?.includes('reaperscans.com') && sources[key].url?.includes('/comics/')) {
-                sources[key].url = sources[key].url.replace(/\/comics\/(\d+-)?/, '/series/')
-                sources[key].mangaId = sources[key].mangaId.replace(/^(\d+-)?/, '')
+            if (sources[key].url?.includes('reaperscans.com')) {
+                delete sources[key]
+                deletionList.push(key)
+                modified = true
+            }
+            if (sources[key].type === 'asura' && !sources[key].url.endsWith('-')) {
+                sources[key].url = sources[key].url.replace(/-([a-z0-9]{8})$/, '-')
+                sources[key].mangaId = sources[key].mangaId.replace(/-([a-z0-9]{8})$/, '-')
                 modified = true
             }
         })
+        setTimeout(() => {
+            if (deletionList.length) {
+                console.log(`Removed ${deletionList.length} sources with reaperscans.com URLs.`)
+                deleteSourceFromLinks(deletionList)
+            }
+        }, 1000)
+
         return modified
     },
     writeSources

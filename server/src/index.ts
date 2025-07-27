@@ -58,4 +58,7 @@ findAndCleanDuplicates()
 server.listen(port, '0.0.0.0', () => {
     console.log(`listening to http://localhost:${port}/`)
     init()
+    setInterval(() => {
+        findAndCleanDuplicates()
+    }, 1000 * 60 * 60 * 24) // every 24 hours
 })
