@@ -117,7 +117,7 @@ export async function cloudscrape (url) {
     })
     const body = await response.json()
     const {remaining_credits, data, used_credits, success} = body
-    console.log(`Remaining requests: ${Math.floor(remaining_credits / used_credits)}`)
+    console.log(`Remaining requests: ${Math.floor(remaining_credits / used_credits)}`, body)
     if (!success) {
         console.log('Cloudscrape: Unable to fetch ' + url)
         return ''
