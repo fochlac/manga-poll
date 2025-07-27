@@ -102,7 +102,7 @@ export async function getResponseBody (response): Promise<string> {
     return body
 }
 const token = '2Sl6GiQ2V23ZH1Sbbd7cc026a265656e96d293e8b49126ef9'
-export async function cloudscrape (url) {
+export async function cloudscrape (url, browserlessSelector) {
     console.log(`Puppeteer failed for ${url}. Trying cloudscrape...`)
     const browserlessUrl = `https://production-sfo.browserless.io/unblock?token=${token}&proxy=residential`
 
@@ -114,7 +114,8 @@ export async function cloudscrape (url) {
             browserWSEndpoint: false,
             cookies: false,
             content: true,
-            screenshot: false
+            screenshot: false,
+            waitForSelector: { selector: browserlessSelector, timeout: 10000 }
         })
     })
     if (response.status > 300) {

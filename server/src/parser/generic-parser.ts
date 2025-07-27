@@ -12,6 +12,7 @@ import { getHost } from '../utils/parse'
 
 interface ParserOptions {
     TYPE: string
+    browserlessSelector?: string
     getBaseUrl?: (sources: Source[]) => string
     normalizeTitle?: (title: string) => string
     selectSeriesEntries: ($: CheerioAPI) => Cheerio<AnyNode>
@@ -28,6 +29,7 @@ export const createParser = ({
     normalizeTitle = (title) => title.replace(/[\W_]+/g, ''),
     selectSeriesEntries,
     getSeriesUrl,
+    browserlessSelector,
     getSeriesTitle,
     getMangaId,
     getChapters,
@@ -115,8 +117,8 @@ export const createParser = ({
             }
             catch (e) {
                 body = await queuePuppeteerFetch(url)
-                if (body === '') {
-                    body = await cloudscrape(url)
+                if (body === '' && browserlessSelector) {
+                    body = await cloudscrape(url, browserlessSelector)
                 }
             }
 

@@ -6,6 +6,7 @@ const TYPE = 'mangastream'
 export const mangastream = createParser({
     TYPE,
     selectSeriesEntries: ($) => $('a.series:has(h4)'),
+    browserlessSelector: 'a.series:has(h4)',
     getSeriesUrl: ($, elem) => $(elem).attr('href'),
     getSeriesTitle: ($, elem) => $(elem).attr('title'),
     getMangaId: ({ url }) => url?.split('/').filter((str) => str.trim().length).slice(-1)[0],
