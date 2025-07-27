@@ -117,11 +117,11 @@ export async function cloudscrape (url) {
     })
     const body = await response.json()
     const {remaining_credits, data, used_credits, success} = body
+    console.log(`Remaining requests: ${Math.floor(remaining_credits / used_credits)}`)
     if (!success) {
         console.log('Cloudscrape: Unable to fetch ' + url)
         return ''
     }
-    console.log(`Remaining requests: ${Math.floor(remaining_credits / used_credits)}`)
     try {
         const path = resolve(__dirname, `../puppeteer/scrape-${getHost(url)}.html`)
         await writeFile(path, data.browserHtml, 'utf-8')
