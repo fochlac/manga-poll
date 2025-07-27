@@ -31,7 +31,7 @@ const sources: Record<string, Source> = readFile<Source>(
                 deletionList.push(key)
                 modified = true
             }
-            if (sources[key].type === 'asura' && !sources[key].url.endsWith('-')) {
+            if (sources[key] && sources[key].type === 'asura' && !sources[key].url.endsWith('-')) {
                 sources[key].url = sources[key].url.replace(/-([a-z0-9]{8})$/, '-')
                 sources[key].mangaId = sources[key].mangaId.replace(/-([a-z0-9]{8})$/, '-')
                 modified = true
