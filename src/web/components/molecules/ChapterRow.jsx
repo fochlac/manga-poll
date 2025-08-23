@@ -70,7 +70,7 @@ export function ChapterRow ({ chapter, showTitle, isNew, chapters, onExpand }) {
     const newChap = chapter.isNew || isNew
 
     return (
-        <StyledRow as="li" key={chapter.id} hide={hide}>
+        <StyledRow as="li" key={chapter.id} hide={hide && (typeof chapters !== 'number' || chapters <= 1)}>
             <FlexRow style={{ width: '100%', marginRight: 4 }}>
                 <Link onClick={hideChapter} newTab href={chapter.url}>
                     {showTitle ? `${chapter.title} - ` : ''}
@@ -88,7 +88,7 @@ export function ChapterRow ({ chapter, showTitle, isNew, chapters, onExpand }) {
                 <Time>{formatTime(chapter.created)}</Time>
             </FlexRow>
             {(newChap && !hide) && (
-                <CardActionIcon data-title="Mark as seen" left style={{ marginLeft: 'auto', width: 18, height: 18, position: 'relative' }}>
+                <CardActionIcon data-title="Mark as seen" left style={{ marginLeft: 2, width: 18, height: 18, position: 'relative' }}>
                     <HideButton
                         onClick={hideChapter}
                         style={{ paddingTop: 1, marginBottom: -1 }}
@@ -98,7 +98,7 @@ export function ChapterRow ({ chapter, showTitle, isNew, chapters, onExpand }) {
                 </CardActionIcon>
             )}
             {hide && (
-                <CardActionIcon style={{ marginLeft: 'auto', flexShrink: 0 }}>
+                <CardActionIcon style={{ marginLeft: 4, width: 18, height: 18, flexShrink: 0, marginRight: -2 }}>
                     <LoaderAnimated size={14} />
                 </CardActionIcon>
             )}

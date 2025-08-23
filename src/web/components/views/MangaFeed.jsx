@@ -95,7 +95,7 @@ export function MangaFeed () {
                         </CenteredDiv>
                     </ListHeader>
                     {Object.entries(newUrlGroups).map(([sourceId, group]) => (
-                        <Fragment key={group[0].sourceId}>
+                        <Fragment key={sourceId}>
                             {expandedGroups.has(sourceId) &&
                                 group
                                     .slice(0, -1)
@@ -103,7 +103,7 @@ export function MangaFeed () {
                                         <ChapterRow key={chapter.url} chapter={chapter} showTitle isNew />
                                     )))}
                             <ChapterRow
-                                key={sourceId}
+                                key={group[group.length - 1].url}
                                 onExpand={() => setExpandedGroups((prev) => new Set(prev).add(sourceId))}
                                 chapters={!expandedGroups.has(sourceId) ? group.length : 0}
                                 chapter={group[group.length - 1]}
