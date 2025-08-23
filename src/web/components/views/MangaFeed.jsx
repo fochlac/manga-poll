@@ -33,12 +33,24 @@ function createUnique (key) {
     }
 }
 
+function createGroupBy (key) {
+    return (list) =>
+        list.reduce((group, entity) => {
+            const groupKey = entity?.[key]
+            if (!groupKey) return group
+            if (!group[groupKey]) group[groupKey] = []
+            group[groupKey].push(entity)
+            return group
+        }, {})
+}
+
 export function MangaFeed () {
     const { urls } = useSelector((store) => ({ urls: store.urls, maxOld: store.maxOld }))
     const dispatch = useDispatch()
     const listRef = useRef()
     const oldChapterRef = useRef()
     const [topButtonVisible, setTopButtonVisible] = useState(false)
+    const [expandedGroups, setExpandedGroups] = useState(new Set())
     const scrollHandler = useCallback(() => {
         const urls = listRef.current
         if (!urls) {
@@ -52,7 +64,11 @@ export function MangaFeed () {
             maxScroll = urls.scrollHeight
             dispatch('incrementMaxOld')
         }
-        if (urls.scrollTop > 0 && oldChapterRef.current && Math.abs(getRefTop(listRef) - getRefTop(oldChapterRef)) < 10) {
+        if (
+            urls.scrollTop > 0 &&
+            oldChapterRef.current &&
+            Math.abs(getRefTop(listRef) - getRefTop(oldChapterRef)) < 10
+        ) {
             setTopButtonVisible(true)
         }
         else {
@@ -61,6 +77,9 @@ export function MangaFeed () {
     }, [listRef, setTopButtonVisible, dispatch, oldChapterRef])
 
     const unique = createUnique('url')
+    const groupBy = createGroupBy('sourceId')
+
+    const newUrlGroups = groupBy(urls?.newUrls || [])
 
     return (
         <List onScroll={scrollHandler} ref={listRef}>
@@ -75,9 +94,24 @@ export function MangaFeed () {
                             <ActionLink onClick={() => dispatch('hideAll')}>Hide all</ActionLink>
                         </CenteredDiv>
                     </ListHeader>
-                    {urls.newUrls.map(unique((chapter) => (
-                        <ChapterRow key={chapter.url} chapter={chapter} isNew showTitle />
-                    )))}
+                    {Object.entries(newUrlGroups).map(([sourceId, group]) => (
+                        <Fragment key={group[0].sourceId}>
+                            {expandedGroups.has(sourceId) &&
+                                group
+                                    .slice(0, -1)
+                                    .map(unique((chapter) => (
+                                        <ChapterRow key={chapter.url} chapter={chapter} showTitle isNew />
+                                    )))}
+                            <ChapterRow
+                                key={sourceId}
+                                onExpand={() => setExpandedGroups((prev) => new Set(prev).add(sourceId))}
+                                chapters={!expandedGroups.has(sourceId) ? group.length : 0}
+                                chapter={group[group.length - 1]}
+                                isNew
+                                showTitle
+                            />
+                        </Fragment>
+                    ))}
                 </Fragment>
             )}
             {Boolean(urls?.oldUrls?.length) && (
@@ -90,9 +124,9 @@ export function MangaFeed () {
                             </ActionLink>
                         )}
                     </ListHeader>
-                    {urls.oldUrls.map(unique((chapter) => (
-                        <ChapterRow key={chapter.url} chapter={chapter} showTitle />
-                    )))}
+                    {urls.oldUrls.map(
+                        unique((chapter) => <ChapterRow key={chapter.url} chapter={chapter} showTitle />)
+                    )}
                 </Fragment>
             )}
         </List>

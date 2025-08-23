@@ -22,6 +22,20 @@ const StyledRow = styled(FlexRow)`
     ${({hide}) => hide ? fadeShrinkAnimation : ''};
     animation-duration: 1s;
 `
+const ActionBadge = styled(ActionLink)`
+    background: var(--brand);
+    color: var(--brand-contrast) !important;
+    border-radius: 10px;
+    height: 14px;
+    line-height: 12px;
+    font-size: 12px;
+    padding: 1px 6px 1px 4px;
+    font-weight: 700;
+    margin: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`
 const HideButton = styled(ActionLink)`
     position: absolute;
     height: 30px;
@@ -34,8 +48,17 @@ const HideButton = styled(ActionLink)`
 const LoaderAnimated = styled(Loader)`
     ${rotation};
 `
+const Spacer = styled.span`
+    flex-shrink: 0;
+    flex-grow: 999999;
+    flex-basis: 0;
+`
+const Time = styled.small`
+    margin-top: 1px;
+    font-style: italic;
+`
 
-export function ChapterRow ({ chapter, showTitle, isNew }) {
+export function ChapterRow ({ chapter, showTitle, isNew, chapters, onExpand }) {
     const dispatch = useDispatch()
     const [hide, setHide] = useState(false)
 
@@ -54,6 +77,13 @@ export function ChapterRow ({ chapter, showTitle, isNew }) {
                     <wbr />
                     {`Ch. ${chapter.chapter}`}
                 </Link>
+                <Spacer />
+                <wbr />
+                {typeof chapters === 'number' && chapters > 1 && (
+                    <ActionBadge onClick={onExpand}>
+                    +{chapters}
+                    </ActionBadge>
+                )}
                 <wbr />
                 <Time>{formatTime(chapter.created)}</Time>
             </FlexRow>
@@ -75,9 +105,3 @@ export function ChapterRow ({ chapter, showTitle, isNew }) {
         </StyledRow>
     )
 }
-
-const Time = styled.small`
-    margin-left: auto;
-    margin-top: 1px;
-    font-style: italic;
-`
