@@ -32,6 +32,11 @@ export function normalizeAsuraMangaId (mangaId?: string) {
     return String(mangaId).replace(/-([a-z0-9]{8})$/, '-')
 }
 
+export function normalizeAsuraChapter (url?: string, chapter?: string) {
+    const chapterFromUrl = String(url || '').match(/\/chapter\/([\d.]+)/)?.[1]
+    return chapterFromUrl || chapter
+}
+
 export function getHost (url) {
     const host = url.replace(/https?:\/\//, '').split('/')[0]?.split('.').slice(-2).join('.')
 

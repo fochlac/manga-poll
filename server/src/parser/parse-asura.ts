@@ -21,13 +21,13 @@ export const asura = createParser({
     getChapters: ({$, elem, host}) => {
         const chapters = $(elem).closest('div.grid.grid-cols-12').find('a[href*="/chapter/"]').toArray()
         return chapters.map((link) => {
-            const url = BASEURL + $(link).attr('href')
-            const rawChapter = $(link).text()
+            const path = $(link).attr('href')
+            const url = BASEURL + path
             const rawDate = parseNAgoDateString($(link).find('time').text())
 
             return {
                 url,
-                chapter: String(rawChapter).trim().match(/^Chapter ([\d.]+)/)?.[1],
+                chapter: String(path).match(/\/chapter\/([\d.]+)/)?.[1],
                 host,
                 created: rawDate
             }

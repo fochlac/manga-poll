@@ -1,4 +1,4 @@
-import { decodeHTMLEntities, executeOnce, extractMostFrequentValue, getHost, pad, randomId } from '../utils'
+import { decodeHTMLEntities, executeOnce, extractMostFrequentValue, getHost, normalizeUrl, pad, randomId } from '../utils'
 
 describe('utils', () => {
     describe('extractMostFrequentValue', () => {
@@ -23,6 +23,36 @@ describe('utils', () => {
             expect(getHost('https://reaperscans.com/series/my-oppa-is-too-innocent/chapter-20/')).toEqual('reaperscans.com')
             expect(getHost('https://www.gruppenhaus.de/ferienhaus')).toEqual('gruppenhaus.de')
             expect(getHost('https://asuracomic.net/series/overgeared-12345678')).toEqual('asurascans.com')
+        })
+    })
+
+    describe('normalizeUrl', () => {
+        it('should normalize broken asura chapter numbers from the url', () => {
+            expect(normalizeUrl({
+                url: 'https://asurascans.com/comics/regressor-of-the-fallen-family-7f873ca6/chapter/124',
+                host: 'asurascans.com',
+                chapter: '12412',
+                sourceId: 'source123',
+                id: 'old-id'
+            })).toMatchObject({
+                host: 'asurascans.com',
+                chapter: '124',
+                id: 'asurascans.com--source123--124'
+            })
+        })
+
+        it('should normalize chapter numbers from merged chapter-and-time text cases', () => {
+            expect(normalizeUrl({
+                url: 'https://asurascans.com/comics/regressor-of-the-fallen-family-7f873ca6/chapter/122',
+                host: 'asurascans.com',
+                chapter: '1223',
+                sourceId: 'source123',
+                id: 'old-id'
+            })).toMatchObject({
+                host: 'asurascans.com',
+                chapter: '122',
+                id: 'asurascans.com--source123--122'
+            })
         })
     })
 

@@ -58,6 +58,15 @@ export function normalizeAsuraMangaId (mangaId) {
     return String(mangaId).replace(/-([a-z0-9]{8})$/, '-')
 }
 
+export function normalizeAsuraChapter (url, chapter) {
+    const chapterFromUrl = String(url || '').match(/\/chapter\/([\d.]+)/)?.[1]
+    return chapterFromUrl || chapter
+}
+
+export function createUrlId (url) {
+    return `${url.host}--${url.sourceId}--${String(url.chapter ?? '').replace(/[\s()]*/g, '')}`
+}
+
 export function normalizeSource (source) {
     if (!source || source.type !== 'asura') {
         return source
@@ -80,10 +89,17 @@ export function normalizeUrl (url) {
         return url
     }
 
+    const normalizedChapter = normalizeAsuraChapter(url.url, url.chapter)
     return {
         ...url,
         url: normalizeAsuraUrl(url.url),
-        host: 'asurascans.com'
+        host: 'asurascans.com',
+        chapter: normalizedChapter,
+        id: url.sourceId ? createUrlId({
+            ...url,
+            host: 'asurascans.com',
+            chapter: normalizedChapter
+        }) : url.id
     }
 }
 

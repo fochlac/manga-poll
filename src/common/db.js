@@ -13,7 +13,20 @@ export function createDB (storage) {
     }
 
     function normalizeUrlList (urls = []) {
-        return (Array.isArray(urls) ? urls : Object.values(urls || {})).map((url) => normalizeUrl(url))
+        return (Array.isArray(urls) ? urls : Object.values(urls || {}))
+            .map((url) => normalizeUrl(url))
+            .reduce((list, url) => {
+                const duplicateIndex = list.findIndex((storedUrl) => storedUrl?.id === url?.id)
+
+                if (duplicateIndex === -1) {
+                    list.push(url)
+                }
+                else if ((url?.created || 0) >= (list[duplicateIndex]?.created || 0)) {
+                    list[duplicateIndex] = url
+                }
+
+                return list
+            }, [])
     }
 
     async function persistSources (sources) {
@@ -68,7 +81,12 @@ export function createDB (storage) {
         const { urls } = await read(NAMESPACES.LOCAL, { urls: '[]' })
 
         const hiddenChapters = await readHiddenChapters()
-        const urlList = parse(urls, [])
+        const rawUrlList = parse(urls, [])
+        const urlList = normalizeUrlList(rawUrlList)
+
+        if (JSON.stringify(rawUrlList) !== JSON.stringify(urlList)) {
+            await persistUrls(urlList)
+        }
 
         const checkOld = (chapter) => {
             if (hide && chapter.created < hide || hiddenChapters[chapter.id]) {

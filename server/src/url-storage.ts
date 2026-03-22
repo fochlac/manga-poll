@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import { createWrite, readFile } from './utils/db'
 import { getUrlKey } from './utils/keys'
-import { getHost, isAsuraHost, normalizeAsuraUrl } from './utils/parse'
+import { getHost, isAsuraHost, normalizeAsuraChapter, normalizeAsuraUrl } from './utils/parse'
 
 const urlsPath = resolve(__dirname, '../db/urls.json')
 
@@ -39,14 +39,16 @@ function migrateAsuraUrl (urls: Record<string, Url>, urlKey: string) {
 
     const normalizedUrl = normalizeAsuraUrl(url.url)
     const normalizedHost = getHost(normalizedUrl)
-    const newKey = getUrlKey({ ...url, url: normalizedUrl, host: normalizedHost }, url.sourceId)
+    const normalizedChapter = normalizeAsuraChapter(normalizedUrl, url.chapter)
+    const newKey = getUrlKey({ ...url, url: normalizedUrl, host: normalizedHost, chapter: normalizedChapter }, url.sourceId)
 
-    if (url.url === normalizedUrl && url.host === normalizedHost && urlKey === newKey) {
+    if (url.url === normalizedUrl && url.host === normalizedHost && url.chapter === normalizedChapter && urlKey === newKey) {
         return false
     }
 
     url.url = normalizedUrl
     url.host = normalizedHost
+    url.chapter = normalizedChapter
     url.id = newKey
     urls[newKey] = urls[newKey] || url
     if (newKey !== urlKey) {
