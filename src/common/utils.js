@@ -15,8 +15,76 @@ export function pad (no, length = 2) {
     return (zeros + no).slice(-length)
 }
 
+const ASURA_HOSTS = ['asura.gg', 'nacm.xyz', 'asuratoon.com', 'asuracomics.gg', 'asuracomic.net', 'asurascans.com']
+
+export function isAsuraHost (host = '') {
+    return ASURA_HOSTS.includes(String(host).replace(/^www\./, ''))
+}
+
 export function getHost (url) {
-    return url.replace(/https?:\/\//, '').split('/')[0]?.split('.').slice(-2).join('.')
+    const host = url.replace(/https?:\/\//, '').split('/')[0]?.split('.').slice(-2).join('.')
+
+    if (isAsuraHost(host)) {
+        return 'asurascans.com'
+    }
+    return host
+}
+
+export function normalizeAsuraUrl (url) {
+    if (!url) {
+        return url
+    }
+
+    let normalizedUrl = String(url).trim()
+        .replace(
+            /https?:\/\/(?:www\.)?(?:asura\.gg|nacm\.xyz|asuratoon\.com|asuracomics\.gg|asuracomic\.net|asurascans\.com)/i,
+            'https://asurascans.com'
+        )
+        .replace(/\/series\//i, '/comics/')
+
+    normalizedUrl = normalizedUrl.replace(
+        /(https?:\/\/asurascans\.com\/comics\/[^/?#]+)-([a-z0-9]{8})(?=(?:\/)?(?:[?#].*)?$)/i,
+        '$1-'
+    )
+
+    return normalizedUrl
+}
+
+export function normalizeAsuraMangaId (mangaId) {
+    if (!mangaId) {
+        return mangaId
+    }
+
+    return String(mangaId).replace(/-([a-z0-9]{8})$/, '-')
+}
+
+export function normalizeSource (source) {
+    if (!source || source.type !== 'asura') {
+        return source
+    }
+
+    return {
+        ...source,
+        url: normalizeAsuraUrl(source.url),
+        mangaId: normalizeAsuraMangaId(source.mangaId)
+    }
+}
+
+export function normalizeUrl (url) {
+    if (!url) {
+        return url
+    }
+
+    const shouldNormalize = isAsuraHost(url.host) || isAsuraHost(getHost(url.url || ''))
+    if (!shouldNormalize) {
+        return url
+    }
+
+    return {
+        ...url,
+        url: normalizeAsuraUrl(url.url),
+        host: 'asurascans.com'
+    }
 }
 
 export function randomId (length = 20) {

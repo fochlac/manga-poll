@@ -1,8 +1,41 @@
+const ASURA_HOSTS = ['asura.gg', 'nacm.xyz', 'asuratoon.com', 'asuracomics.gg', 'asuracomic.net', 'asurascans.com']
+
+export function isAsuraHost (host = '') {
+    return ASURA_HOSTS.includes(String(host).replace(/^www\./, ''))
+}
+
+export function normalizeAsuraUrl (url?: string) {
+    if (!url) {
+        return url
+    }
+
+    let normalizedUrl = String(url).trim()
+        .replace(
+            /https?:\/\/(?:www\.)?(?:asura\.gg|nacm\.xyz|asuratoon\.com|asuracomics\.gg|asuracomic\.net|asurascans\.com)/i,
+            'https://asurascans.com'
+        )
+        .replace(/\/series\//i, '/comics/')
+
+    normalizedUrl = normalizedUrl.replace(
+        /(https?:\/\/asurascans\.com\/comics\/[^/?#]+)-([a-z0-9]{8})(?=(?:\/)?(?:[?#].*)?$)/i,
+        '$1-'
+    )
+
+    return normalizedUrl
+}
+
+export function normalizeAsuraMangaId (mangaId?: string) {
+    if (!mangaId) {
+        return mangaId
+    }
+
+    return String(mangaId).replace(/-([a-z0-9]{8})$/, '-')
+}
 
 export function getHost (url) {
     const host = url.replace(/https?:\/\//, '').split('/')[0]?.split('.').slice(-2).join('.')
 
-    if (host === 'asura.gg' || host === 'nacm.xyz' || host === 'asuratoon.com' || host === 'asuracomic.net') {
+    if (isAsuraHost(host)) {
         return 'asurascans.com'
     }
     return host

@@ -38,7 +38,10 @@ export function extractSource () {
         else if (window.location.host.includes('reaperscans.com')) {
             result = testReaper()
         }
-        else if (window.location.host.includes('asuracomic.net')) {
+        else if (
+            window.location.host.includes('asuracomic.net') ||
+            window.location.host.includes('asurascans.com')
+        ) {
             result = testAsura()
         }
         else {

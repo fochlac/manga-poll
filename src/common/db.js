@@ -1,4 +1,4 @@
-import { parse, randomId } from './utils'
+import { normalizeSource, normalizeUrl, parse, randomId } from './utils'
 
 const NAMESPACES = {
     SYNC: 'sync',
@@ -8,13 +8,36 @@ const NAMESPACES = {
 export function createDB (storage) {
     const { read, write, keys, remove } = storage
 
+    function normalizeSourceList (sources = []) {
+        return (Array.isArray(sources) ? sources : Object.values(sources || {})).map((source) => normalizeSource(source))
+    }
+
+    function normalizeUrlList (urls = []) {
+        return (Array.isArray(urls) ? urls : Object.values(urls || {})).map((url) => normalizeUrl(url))
+    }
+
+    async function persistSources (sources) {
+        return write(NAMESPACES.LOCAL, { sources })
+    }
+
+    async function persistUrls (urls) {
+        return write(NAMESPACES.LOCAL, { urls: JSON.stringify(urls) })
+    }
+
     async function readSources () {
         const { sources } = await read(NAMESPACES.LOCAL, { sources: null })
-        return sources || []
+        const sourceList = sources || []
+        const normalizedSources = normalizeSourceList(sourceList)
+
+        if (JSON.stringify(sourceList) !== JSON.stringify(normalizedSources)) {
+            await persistSources(normalizedSources)
+        }
+
+        return normalizedSources
     }
 
     function writeSources (sources) {
-        return write(NAMESPACES.LOCAL, { sources })
+        return persistSources(normalizeSourceList(sources))
     }
 
     async function addSource (source) {
@@ -138,7 +161,7 @@ export function createDB (storage) {
     }
 
     function writeUrls (urls) {
-        return write(NAMESPACES.LOCAL, { urls: JSON.stringify(urls) })
+        return persistUrls(normalizeUrlList(urls))
     }
 
     async function init () {
@@ -158,6 +181,15 @@ export function createDB (storage) {
                 newUid = `anon_${randomId()}`
             }
             write(NAMESPACES.SYNC, { uid: newUid })
+        }
+
+        await readSources()
+
+        const { urls } = await read(NAMESPACES.LOCAL, { urls: '[]' })
+        const urlList = parse(urls, [])
+        const normalizedUrls = normalizeUrlList(urlList)
+        if (JSON.stringify(urlList) !== JSON.stringify(normalizedUrls)) {
+            await persistUrls(normalizedUrls)
         }
     }
 
@@ -215,15 +247,16 @@ export function createDB (storage) {
     }
 
     async function setLinkData ({ sources, hiddenChapters, hide, key }) {
+        const normalizedSources = normalizeSourceList(sources)
         const storedSources = (await readSources()).reduce((ss, source) => source ? ({ ...ss, [source.id]: source }) : ss, {})
-        const hasChangedSources = Object.keys(storedSources).length !== sources.length ||
-            sources.some(({id, ...linkSource}) => {
+        const hasChangedSources = Object.keys(storedSources).length !== normalizedSources.length ||
+            normalizedSources.some(({id, ...linkSource}) => {
                 const source = storedSources[id]
                 return !source || Object.keys(linkSource).some((attr) => linkSource[attr] !== source[attr])
             })
         const promises = [Promise.resolve()]
         if (hasChangedSources) {
-            promises.push(writeSources(sources))
+            promises.push(writeSources(normalizedSources))
         }
         const settings = await read(NAMESPACES.SYNC, { hide: 0, uid: '' })
         const currentHiddenChapters = await readHiddenChapters()

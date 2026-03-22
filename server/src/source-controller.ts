@@ -6,11 +6,25 @@ import { deleteUrlBySource } from './url-storage'
 import { deleteSourceFromLinks, markLinksWithSourceChanged } from './link-controller'
 import { adminUrl } from './utils/authentication'
 import { checkForDuplicate } from './duplicates'
+import { normalizeAsuraMangaId, normalizeAsuraUrl } from './utils/parse'
+
+function normalizeIncomingSource<T extends Partial<Source>>(rawSource: T): T {
+    if (rawSource?.type !== 'asura') {
+        return rawSource
+    }
+
+    return {
+        ...rawSource,
+        url: normalizeAsuraUrl(rawSource.url),
+        mangaId: normalizeAsuraMangaId(rawSource.mangaId)
+    }
+}
 
 async function createSourceIfNeeded (rawSource) {
-    const { title, url, mangaId, type } = rawSource
+    const normalizedSource = normalizeIncomingSource(rawSource)
+    const { title, url, mangaId, type } = normalizedSource
     if (!title || !url || !mangaId || !type) {
-        throw new Error(`Error creating new source. Basic values are missing:\n${JSON.stringify(rawSource)}`)
+        throw new Error(`Error creating new source. Basic values are missing:\n${JSON.stringify(normalizedSource)}`)
     }
     if (!checkSourceType(type)) {
         throw new Error(`Error creating new source. Source type "${type}" is not supported.`)
@@ -78,15 +92,16 @@ export function sourceController (app) {
                 const sourceList = req.body.sources as Source[]
                 let hasChanges = false
                 for (const source of sourceList) {
-                    if (sources[checkForDuplicate(source.id)]) {
-                        responseBody.push(sources[checkForDuplicate(source.id)])
+                    const normalizedSource = normalizeIncomingSource(source)
+                    if (sources[checkForDuplicate(normalizedSource.id)]) {
+                        responseBody.push(sources[checkForDuplicate(normalizedSource.id)])
                         if (!hasChanges) {
-                            hasChanges = source.id !== checkForDuplicate(source.id)
+                            hasChanges = normalizedSource.id !== checkForDuplicate(normalizedSource.id)
                         }
                         continue
                     }
                     hasChanges = true
-                    const { url, mangaId } = source
+                    const { url, mangaId } = normalizedSource
                     if (!url || !mangaId) {
                         console.log('Error matching source, url or mangaid are missing')
                         continue
@@ -99,7 +114,7 @@ export function sourceController (app) {
                         responseBody.push(entry)
                     }
                     else {
-                        console.log(`Error matching source entry:\n${JSON.stringify(source)}`)
+                        console.log(`Error matching source entry:\n${JSON.stringify(normalizedSource)}`)
                     }
                 }
 

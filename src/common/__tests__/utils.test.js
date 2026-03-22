@@ -22,6 +22,7 @@ describe('utils', () => {
         it('should extract the most frequent value', () => {
             expect(getHost('https://reaperscans.com/series/my-oppa-is-too-innocent/chapter-20/')).toEqual('reaperscans.com')
             expect(getHost('https://www.gruppenhaus.de/ferienhaus')).toEqual('gruppenhaus.de')
+            expect(getHost('https://asuracomic.net/series/overgeared-12345678')).toEqual('asurascans.com')
         })
     })
 

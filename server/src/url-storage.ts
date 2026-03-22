@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import { createWrite, readFile } from './utils/db'
 import { getUrlKey } from './utils/keys'
-import { getHost } from './utils/parse'
+import { getHost, isAsuraHost, normalizeAsuraUrl } from './utils/parse'
 
 const urlsPath = resolve(__dirname, '../db/urls.json')
 
@@ -22,53 +22,46 @@ const sourceIdMap = {}
 const createdIdMap = {}
 const createdLowerLimit: Record<string, number> = {}
 
+function migrateAsuraUrl (urls: Record<string, Url>, urlKey: string) {
+    const url = urls[urlKey]
+    if (!url) {
+        return false
+    }
+
+    const shouldNormalize =
+        isAsuraHost(url.host) ||
+        /(asura\.gg|nacm\.xyz|asuratoon\.com|asuracomics\.gg|asuracomic\.net|asurascans\.com)/.test(urlKey) ||
+        /(asura\.gg|nacm\.xyz|asuratoon\.com|asuracomics\.gg|asuracomic\.net|asurascans\.com)/.test(url.url || '')
+
+    if (!shouldNormalize) {
+        return false
+    }
+
+    const normalizedUrl = normalizeAsuraUrl(url.url)
+    const normalizedHost = getHost(normalizedUrl)
+    const newKey = getUrlKey({ ...url, url: normalizedUrl, host: normalizedHost }, url.sourceId)
+
+    if (url.url === normalizedUrl && url.host === normalizedHost && urlKey === newKey) {
+        return false
+    }
+
+    url.url = normalizedUrl
+    url.host = normalizedHost
+    url.id = newKey
+    urls[newKey] = urls[newKey] || url
+    if (newKey !== urlKey) {
+        delete urls[urlKey]
+    }
+    return true
+}
+
 const urls = readFile<Url>(
     urlsPath,
     (urls) => {
         let modified = false
         Object.keys(urls).forEach((urlKey) => {
             const url = urls[urlKey]
-            if (urlKey.includes('asura.gg')) {
-                url.url = url.url.replace('asura.gg', 'asurascans.com')
-                const newKey = getUrlKey(url, url.sourceId)
-                url.id = newKey
-                url.host = getHost(url.url)
-                urls[newKey] = url
-                delete urls[urlKey]
-                modified = true
-            }
-            if (urlKey.includes('asuratoon.com')) {
-                url.url = url.url.replace('asuratoon.com', 'asurascans.com')
-                const newKey = getUrlKey(url, url.sourceId)
-                url.id = newKey
-                url.host = getHost(url.url)
-                urls[newKey] = url
-                delete urls[urlKey]
-                modified = true
-            }
-            if (urlKey.includes('asuracomics.gg')) {
-                url.url = url.url.replace('asuracomics.gg', 'asurascans.com')
-                const newKey = getUrlKey(url, url.sourceId)
-                url.id = newKey
-                url.host = getHost(url.url)
-                urls[newKey] = url
-                delete urls[urlKey]
-                modified = true
-            }
-            if (urlKey.includes('asuracomic.net')) {
-                url.id = getUrlKey(url, url.sourceId)
-                url.host = getHost(url.url)
-                urls[url.id] = urls[url.id] || url
-                delete urls[urlKey]
-                modified = true
-            }
-            if (urlKey.includes('www.asurascans.com')) {
-                url.url = url.url.replace('www.asurascans.com', 'asurascans.com')
-                const newKey = getUrlKey(url, url.sourceId)
-                url.id = newKey
-                url.host = getHost(url.url)
-                urls[newKey] = url
-                delete urls[urlKey]
+            if (migrateAsuraUrl(urls, urlKey)) {
                 modified = true
             }
             if (urlKey.includes('realmscans.xyz')) {

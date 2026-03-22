@@ -6,7 +6,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 
 import { getUrlKey } from './utils/keys'
 import { writeFile } from 'fs/promises'
-import { getHost } from './utils/parse'
+import { getHost, normalizeAsuraMangaId, normalizeAsuraUrl } from './utils/parse'
 import { resolve } from 'path'
 
 chromium.use(StealthPlugin())
@@ -282,6 +282,10 @@ export function createSource (
     }
     if (missingFields.length) {
         throw Error(`Parsing source failed - following fields are empty ${missingFields.join(', ')}.`)
+    }
+    if (type === 'asura') {
+        url = normalizeAsuraUrl(url)
+        mangaId = normalizeAsuraMangaId(mangaId)
     }
     return {
         type,

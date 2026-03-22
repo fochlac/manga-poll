@@ -2,6 +2,7 @@ import { customAlphabet, urlAlphabet } from 'nanoid'
 import { resolve } from 'path'
 import { deleteSourceFromLinks, markLinksWithSourceChanged } from './link-controller'
 import { createWrite, readFile } from './utils/db'
+import { normalizeAsuraMangaId, normalizeAsuraUrl } from './utils/parse'
 
 declare global {
     interface Source {
@@ -31,10 +32,15 @@ const sources: Record<string, Source> = readFile<Source>(
                 deletionList.push(key)
                 modified = true
             }
-            if (sources[key] && sources[key].type === 'asura' && !sources[key].url.endsWith('-')) {
-                sources[key].url = sources[key].url.replace(/-([a-z0-9]{8})$/, '-')
-                sources[key].mangaId = sources[key].mangaId.replace(/-([a-z0-9]{8})$/, '-')
-                modified = true
+            if (sources[key] && sources[key].type === 'asura') {
+                const normalizedUrl = normalizeAsuraUrl(sources[key].url)
+                const normalizedMangaId = normalizeAsuraMangaId(sources[key].mangaId)
+
+                if (sources[key].url !== normalizedUrl || sources[key].mangaId !== normalizedMangaId) {
+                    sources[key].url = normalizedUrl
+                    sources[key].mangaId = normalizedMangaId
+                    modified = true
+                }
             }
         })
         setTimeout(() => {
@@ -54,6 +60,10 @@ export function getSources () {
 }
 
 export async function addSource (title, url, mangaId, type, imageUrl = '', description = '') {
+    if (type === 'asura') {
+        url = normalizeAsuraUrl(url)
+        mangaId = normalizeAsuraMangaId(mangaId)
+    }
     const entry = {
         title,
         url,
@@ -73,6 +83,10 @@ export async function addSource (title, url, mangaId, type, imageUrl = '', descr
 export async function updateSource (id, { title, url, mangaId, imageUrl, description }: Partial<Source>) {
     const entry = sources[id]
     if (entry) {
+        if (entry.type === 'asura') {
+            url = normalizeAsuraUrl(url)
+            mangaId = normalizeAsuraMangaId(mangaId)
+        }
         entry.title = title
         entry.url = url
         entry.mangaId = mangaId
